@@ -77,18 +77,21 @@ static func crew_text(v: Dictionary) -> String:
 static func compute_staff(st_id: String) -> Dictionary:
 	var st: Dictionary = State.stations[st_id]
 	var factor := float(Data.modes.get("staffing", {}).get(st["kind"], 1.0))
-	var sum := {}
+	var quals := {}
+	var filler := 0.0
 	var fill: Array = Data.organisations.get(st["org"], {}).get("fill", ["TM"])
 	for vid in State.station_vehicles(st_id):
 		var t: Dictionary = Data.vehicle_types[State.vehicles[vid]["type"]]
 		var n := 0
 		for q in t.get("quals", {}):
-			sum[q] = float(sum.get(q, 0.0)) + float(t["quals"][q])
+			quals[q] = float(quals.get(q, 0.0)) + float(t["quals"][q])
 			n += int(t["quals"][q])
-		var rest: int = int(t["crew"]) - n
-		if rest > 0 and fill.size() > 0:
-			sum[fill[0]] = float(sum.get(fill[0], 0.0)) + rest
+		filler += max(0, int(t["crew"]) - n)
+	# Funktionsträger sind immer vollständig vorhanden; bei hauptamtlichen Wachen
+	# (Faktor < 1) ist die Mannschaft knapper bemessen als die Summe aller Sitzplätze.
 	var out := {}
-	for q in sum:
-		out[q] = int(ceil(float(sum[q]) * factor))
+	for q in quals:
+		out[q] = int(ceil(float(quals[q]) * max(1.0, factor)))
+	if filler > 0.0 and fill.size() > 0:
+		out[fill[0]] = int(out.get(fill[0], 0)) + int(ceil(filler * factor))
 	return out
