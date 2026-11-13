@@ -50,12 +50,6 @@ jobs:
           Copy-Item packaging\config_README.txt build\windows\config\LIESMICH.txt
           Copy-Item packaging\LIESMICH.txt, packaging\LIZENZHINWEISE.txt build\windows\
           if (!(Test-Path build\windows\LEITSTELLE112.exe)) { throw "Export fehlgeschlagen" }
-      - name: Selbsttest der EXE unter Windows
-        shell: pwsh
-        run: |
-          $p = Start-Process build\windows\LEITSTELLE112.exe -ArgumentList "--headless","--selbsttest","--log-file","selbsttest.log" -Wait -PassThru
-          Get-Content selbsttest.log | Select-String "OK|FEHLER|SELBSTTEST"
-          if ($p.ExitCode -ne 0) { throw "Selbsttest fehlgeschlagen" }
       - name: Installer (Inno Setup)
         shell: pwsh
         run: |
@@ -67,3 +61,13 @@ jobs:
           path: |
             build/windows/
             build/installer/*.exe
+      - name: Selbsttest der EXE unter Windows
+        shell: pwsh
+        run: |
+          $log = Join-Path $PWD "selbsttest.log"
+          $p = Start-Process build\windows\LEITSTELLE112.exe -ArgumentList "--headless","--selbsttest","--log-file","`"$log`"" -Wait -PassThru
+          Write-Host "Exit-Code: $($p.ExitCode)"
+          if (Test-Path $log) { Get-Content $log | Select-String "OK|FEHLER|SELBSTTEST|ERROR" }
+          $ulog = Join-Path $env:APPDATA "LEITSTELLE112\logs\godot.log"
+          if (Test-Path $ulog) { Get-Content $ulog -Tail 40 }
+          if ($p.ExitCode -ne 0) { throw "Selbsttest fehlgeschlagen" }
