@@ -1,11 +1,12 @@
 extends Node
 ## Entwicklungswerkzeug: fährt die Oberfläche automatisch durch und speichert Screenshots.
-var out := "/tmp/claude-0/-home-user-bavaria-sim/015a5375-7c1b-56dc-a54e-5820fa23f79e/scratchpad/shots"
+var out := "user://screenshots"
 var f := 0
 var main
 func _ready():
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--out="): out = a.substr(6)
+	DirAccess.make_dir_recursive_absolute(out)
 	main = load("res://scenes/main.tscn").instantiate()
 	add_child(main)
 func shot(name):

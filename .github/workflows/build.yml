@@ -1,0 +1,69 @@
+name: Build und Tests
+
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 4.7.1
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Godot laden
+        run: |
+          curl -sSL -o g.zip https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip -q g.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
+      - name: Import
+        run: ./godot --headless --path . --import || true
+      - name: Kerntests
+        run: ./godot --headless --path . res://tests/run_tests.tscn
+      - name: Mehrspielertest (Host + 2 Clients)
+        run: tools/test_multiplayer.sh ./godot
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Godot und Exportvorlagen laden
+        shell: pwsh
+        run: |
+          $v = "$env:GODOT_VERSION"
+          Invoke-WebRequest "https://github.com/godotengine/godot/releases/download/$v-stable/Godot_v$v-stable_win64.exe.zip" -OutFile g.zip
+          Expand-Archive g.zip -DestinationPath godot
+          Invoke-WebRequest "https://github.com/godotengine/godot/releases/download/$v-stable/Godot_v$v-stable_export_templates.tpz" -OutFile t.zip
+          Expand-Archive t.zip -DestinationPath tpl
+          $dst = "$env:APPDATA\Godot\export_templates\$v.stable"
+          New-Item -ItemType Directory -Force $dst | Out-Null
+          Copy-Item tpl\templates\* $dst
+      - name: Windows-Export
+        shell: pwsh
+        run: |
+          $g = (Get-ChildItem godot\*_console.exe).FullName
+          New-Item -ItemType Directory -Force build\windows\config, build\windows\config_standard\world | Out-Null
+          & $g --headless --path . --import
+          & $g --headless --path . --export-release "Windows Desktop" build\windows\LEITSTELLE112.exe
+          Copy-Item data\*.json build\windows\config_standard\
+          Copy-Item data\world\*.json build\windows\config_standard\world\
+          Copy-Item packaging\config_README.txt build\windows\config\LIESMICH.txt
+          Copy-Item packaging\LIESMICH.txt, packaging\LIZENZHINWEISE.txt build\windows\
+          if (!(Test-Path build\windows\LEITSTELLE112.exe)) { throw "Export fehlgeschlagen" }
+      - name: Selbsttest der EXE unter Windows
+        shell: pwsh
+        run: |
+          $p = Start-Process build\windows\LEITSTELLE112.exe -ArgumentList "--headless","--selbsttest","--log-file","selbsttest.log" -Wait -PassThru
+          Get-Content selbsttest.log | Select-String "OK|FEHLER|SELBSTTEST"
+          if ($p.ExitCode -ne 0) { throw "Selbsttest fehlgeschlagen" }
+      - name: Installer (Inno Setup)
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\LEITSTELLE112.iss
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LEITSTELLE112-Windows
+          path: |
+            build/windows/
+            build/installer/*.exe

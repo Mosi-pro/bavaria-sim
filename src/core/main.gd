@@ -22,6 +22,9 @@ func _ready() -> void:
 	await get_tree().process_frame
 	World.ensure_built()
 	loading.queue_free()
+	if OS.get_cmdline_args().has("--selbsttest") or OS.get_cmdline_user_args().has("--selbsttest"):
+		_selftest()
+		return
 	Game.session_started.connect(_show_workstation)
 	Game.session_ended.connect(_on_session_ended)
 	Net.connection_lost.connect(func(text): Game.leave(text))
@@ -61,3 +64,42 @@ func _on_session_ended(reason: String) -> void:
 	_show_menu()
 	if reason != "":
 		UI.message(screen, "Sitzung beendet", reason)
+
+## Selbsttest der installierten Anwendung (Aufruf: LEITSTELLE112.exe --headless --selbsttest).
+## Prüft Konfiguration, Stadtaufbau, Notruf → Einsatz → Alarmierung → Anfahrt sowie Speichern/Laden.
+func _selftest() -> void:
+	const Advisor = preload("res://src/dispatch/advisor.gd")
+	const CallGen = preload("res://src/incidents/call_generator.gd")
+	const SaveSystem = preload("res://src/save/save_system.gd")
+	var me := {"name": "Selbsttest", "role": "leitung"}
+	var ok := true
+	var report := func(cond: bool, text: String):
+		print(("[OK]     " if cond else "[FEHLER] ") + text)
+		if not cond:
+			ok = false
+	report.call(Data.vehicle_types.size() > 30 and Data.stations.size() > 50 and Data.incident_types.size() > 20, "Konfiguration geladen (%d Fahrzeugtypen, %d Wachen, %d Einsatzarten)" % [Data.vehicle_types.size(), Data.stations.size(), Data.incident_types.size()])
+	report.call(World.edge_a.size() > 8000, "Stadt Bavaria aufgebaut (%d Straßenabschnitte)" % World.edge_a.size())
+	Settings.set_v("game", "autosave", false)
+	Sim.new_game({"mode": "frei", "seed": 112})
+	Sim.running = false
+	State.meta["next_call"] = 1e12
+	var cid := CallGen.spawn_event("brand_wohnung", {"district": "altstadt", "variant": 1})
+	report.call(Sim.act({"a": "call_take", "id": cid}, me)["ok"], "Notruf angenommen")
+	var c: Dictionary = State.calls[cid]
+	CallGen._set_loc_level(c, State.truths[c["truth"]], 2)
+	var res: Dictionary = Sim.act({"a": "call_create", "id": cid, "form": {"keyword": "B 3", "x": c["loc"]["x"], "y": c["loc"]["y"]}}, me)
+	report.call(res.get("ok", false), "Einsatz angelegt")
+	var inc: Dictionary = State.incidents[res["id"]]
+	var sug: Array = Advisor.suggest(inc)["suggested"]
+	report.call(Sim.act({"a": "inc_alarm", "id": inc["id"], "vehicles": sug}, me)["ok"], "%d Fahrzeuge alarmiert" % sug.size())
+	for i in 1200:
+		Sim.step(0.5)
+		if inc["revealed"]:
+			break
+	report.call(inc["revealed"], "Fahrzeuge an der Einsatzstelle eingetroffen, Lagemeldung erhalten")
+	report.call(SaveSystem.save("Selbsttest") == "" and SaveSystem.load_game("selbsttest") == "", "Spielstand gespeichert und geladen")
+	SaveSystem.delete("selbsttest")
+	var key := Sim.Personnel != null
+	report.call(key, "Module vollständig")
+	print("SELBSTTEST " + ("BESTANDEN" if ok else "FEHLGESCHLAGEN"))
+	get_tree().quit(0 if ok else 1)

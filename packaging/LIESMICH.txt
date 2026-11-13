@@ -1,0 +1,23 @@
+LEITSTELLE 112 – Integrierte Leitstelle Bavaria
+===============================================
+
+Start:          LEITSTELLE112.exe (oder Startmenü / Desktopverknüpfung)
+Systemvoraus.:  Windows 10/11, 64 Bit, Grafikkarte mit Vulkan-Unterstützung
+                (aktueller Grafiktreiber empfohlen)
+
+Erste Schritte
+  Hauptmenü -> "Freies Spiel" -> Schicht beginnen.
+  F2 nimmt Notrufe an, Rückfragen stellen, Einsatz anlegen, im Dispositions-
+  fenster Fahrzeuge wählen und ALARMIEREN. Hilfe -> Kurzanleitung im Spiel.
+
+Mehrspieler
+  Host:    Hauptmenü -> SPIEL ERSTELLEN. Der eigene PC führt die Simulation aus.
+           Im LAN finden Mitspieler die Sitzung automatisch. Für Internetspiele
+           den Spielport (Standard 24112/UDP) am Router auf diesen PC weiterleiten
+           und die öffentliche IP-Adresse weitergeben.
+  Client:  Hauptmenü -> MULTIPLAYER -> Sitzung wählen oder IP/Port eingeben.
+  Die Windows-Firewall fragt beim ersten Hosten nach einer Freigabe – bitte
+  für private Netzwerke zulassen.
+
+Daten:          %APPDATA%\LEITSTELLE112 (Spielstände, Einstellungen, Datenbank)
+Konfiguration:  Ordner "config" (siehe dortige LIESMICH.txt)

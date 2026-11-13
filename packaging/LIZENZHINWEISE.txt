@@ -1,0 +1,34 @@
+LEITSTELLE 112 – Lizenzhinweise
+===============================
+
+Spielwelt
+  Die Stadt Bavaria, alle Stadtteile, Straßen, Wachen, Funkrufnamen, Personen
+  und Telefonnummern sind frei erfunden. Ähnlichkeiten mit realen Orten,
+  Einrichtungen oder Personen sind zufällig. Es wurden keine realen Einsatz-,
+  Personal- oder Schichtpläne verwendet.
+
+Grafik und Audio
+  Karte, Symbole und sämtliche Töne werden vom Programm bzw. von den
+  mitgelieferten Werkzeugen (tools/) selbst erzeugt. Es werden keine
+  Fremdaufnahmen oder fremden Grafiken verwendet.
+
+Godot Engine
+  Dieses Programm verwendet die Godot Engine.
+  Copyright (c) 2014-present Godot Engine contributors.
+  Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+  Lizenz: MIT (https://godotengine.org/license). Die Godot Engine enthält
+  weitere Drittkomponenten unter freien Lizenzen (u. a. ENet, FreeType,
+  HarfBuzz, mbedTLS, zstd); Details unter https://godotengine.org/license.
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions: The above copyright
+  notice and this permission notice shall be included in all copies or
+  substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS",
+  WITHOUT WARRANTY OF ANY KIND.
+
+Mit der Installation bestätigen Sie, dass es sich um ein Spiel handelt und
+nicht um ein Ausbildungs- oder Einsatzführungssystem.
