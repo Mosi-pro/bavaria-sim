@@ -1,0 +1,98 @@
+{
+  "_comment": "Vordefinierte Einsatzlagen. events: t = Sekunden nach Start; type = Einsatzart; district/poi/cls legen den Ort fest; variant erzwingt eine Lagevariante.",
+  "scenarios": [
+    {
+      "id": "grossbrand", "name": "Großbrand im Industriehafen", "start_hour": 15, "weather": "klar", "duration": 10800, "background_rate": 0.45,
+      "desc": "Im Tanklager- und Logistikbereich des Industriehafens bricht ein Feuer aus, das sich rasch zum Großbrand entwickelt. Parallel läuft der Grundschutz der Millionenstadt weiter.",
+      "goal": "Großbrand unter Kontrolle bringen, ohne den Grundschutz der Stadt zu vernachlässigen.",
+      "events": [
+        {"t": 25, "type": "brand_industrie", "poi": "containerterminal", "variant": 2},
+        {"t": 420, "type": "med_herz", "district": "industriehafen"},
+        {"t": 900, "type": "grossbrand", "poi": "tanklager", "variant": 1},
+        {"t": 1500, "type": "vu_leicht", "district": "industriehafen"},
+        {"t": 2400, "type": "brand_wohnung", "district": "ostpark"},
+        {"t": 3600, "type": "gefahrgut", "poi": "chemiepark", "variant": 0}
+      ]
+    },
+    {
+      "id": "massenkarambolage", "name": "Massenkarambolage auf der A 99", "start_hour": 7, "weather": "nebel", "duration": 9000, "background_rate": 0.6,
+      "desc": "Dichter Nebel im Berufsverkehr: Auf dem Autobahnring ereignet sich eine Massenkarambolage mit zahlreichen Verletzten. Folgeunfälle im Rückstau sind zu erwarten.",
+      "goal": "Alle Verletzten versorgen und abtransportieren. Folgeunfälle rechtzeitig bedienen.",
+      "events": [
+        {"t": 30, "type": "vu_massen", "cls": 0, "variant": 1},
+        {"t": 240, "type": "vu_eingeklemmt", "cls": 0, "variant": 1},
+        {"t": 600, "type": "vu_leicht", "cls": 0},
+        {"t": 900, "type": "brand_pkw", "cls": 0},
+        {"t": 1500, "type": "vu_leicht", "cls": 2},
+        {"t": 2100, "type": "med_bewusstlos", "district": "nordstadt"},
+        {"t": 2700, "type": "vu_eingeklemmt", "cls": 6}
+      ]
+    },
+    {
+      "id": "unwetter", "name": "Unwetterfront über Bavaria", "start_hour": 18, "weather": "sturm", "duration": 10800, "background_rate": 1.0, "weather_lock": true,
+      "desc": "Eine schwere Gewitterfront mit Orkanböen und Starkregen zieht über das Stadtgebiet. Innerhalb kurzer Zeit laufen dutzende Notrufe auf.",
+      "goal": "Priorisieren: Menschenleben vor Sachwerten. Einsätze sinnvoll bündeln und abarbeiten.",
+      "events": [
+        {"t": 20, "type": "baum", "district": "waldheim"},
+        {"t": 60, "type": "unwetter_keller", "district": "suedstadt"},
+        {"t": 110, "type": "unwetter_dach", "district": "zentrum_nord"},
+        {"t": 170, "type": "baum", "district": "suedwest", "variant": 1},
+        {"t": 230, "type": "unwetter_keller", "district": "westend"},
+        {"t": 300, "type": "baum", "district": "seeburg"},
+        {"t": 380, "type": "unwetter_keller", "district": "nordost", "variant": 1},
+        {"t": 450, "type": "bma", "poi": "nordgalerie", "variant": 0},
+        {"t": 520, "type": "unwetter_dach", "district": "altstadt", "variant": 1},
+        {"t": 640, "type": "baum", "district": "stadionviertel", "variant": 2},
+        {"t": 760, "type": "wasserrettung", "variant": 0},
+        {"t": 900, "type": "unwetter_keller", "district": "ostpark"},
+        {"t": 1100, "type": "brand_efh", "district": "suedwest", "variant": 2},
+        {"t": 1300, "type": "baum", "district": "nordstadt"},
+        {"t": 1500, "type": "vu_eingeklemmt", "cls": 6}
+      ]
+    },
+    {
+      "id": "gefahrgut", "name": "Gefahrgutunfall am Güterbahnhof", "start_hour": 10, "weather": "bewoelkt", "duration": 9000, "background_rate": 0.5,
+      "desc": "Beim Rangieren im Güterbahnhof Bavaria wird ein Kesselwagen beschädigt. Brennbares Gas tritt aus, ein Wohngebiet liegt in Windrichtung.",
+      "goal": "Gefahrenbereich absichern, Bevölkerung schützen, Leckage abdichten.",
+      "events": [
+        {"t": 30, "type": "gefahrgut", "poi": "gbf", "variant": 2},
+        {"t": 600, "type": "med_notfall", "district": "gueterstadt"},
+        {"t": 1200, "type": "vu_leicht", "district": "gueterstadt"},
+        {"t": 2100, "type": "brand_industrie", "poi": "stahlwerk", "variant": 0},
+        {"t": 3000, "type": "med_herz", "district": "westend"}
+      ]
+    },
+    {
+      "id": "grossveranstaltung", "name": "Großveranstaltung in der Bavaria-Arena", "start_hour": 19, "weather": "klar", "duration": 10800, "background_rate": 0.8,
+      "desc": "Ausverkauftes Pokalspiel mit 62.000 Zuschauern. Rund um das Stadion steigt das Einsatzaufkommen – dann kommt es im Stadion zu einem Zwischenfall.",
+      "goal": "Sanitäts- und Sicherheitslage am Stadion bewältigen, Stadtgebiet weiter versorgen.",
+      "city_event": {"name": "Pokalspiel in der Bavaria-Arena", "poi": "arena", "factor": 4.0},
+      "events": [
+        {"t": 120, "type": "pol_schlaegerei", "district": "stadionviertel"},
+        {"t": 400, "type": "med_notfall", "poi": "arena"},
+        {"t": 700, "type": "pol_ruhe", "district": "stadionviertel"},
+        {"t": 1100, "type": "med_bewusstlos", "poi": "arena"},
+        {"t": 1800, "type": "veranstaltung", "poi": "arena", "variant": 1},
+        {"t": 2600, "type": "pol_schlaegerei", "district": "stadionviertel", "variant": 1},
+        {"t": 3300, "type": "vu_leicht", "district": "stadionviertel"},
+        {"t": 4200, "type": "brand_pkw", "district": "stadionviertel"}
+      ]
+    },
+    {
+      "id": "hochwasser", "name": "Hochwasser an der Bavar", "start_hour": 5, "weather": "starkregen", "duration": 14400, "background_rate": 0.7, "weather_lock": true,
+      "desc": "Nach tagelangem Dauerregen tritt die Bavar über die Ufer. Dämme müssen verteidigt, Keller ausgepumpt und Anwohner evakuiert werden.",
+      "goal": "Dämme sichern, Evakuierungen durchführen, Wasserrettung sicherstellen.",
+      "events": [
+        {"t": 30, "type": "hochwasser", "water": 5, "variant": 0},
+        {"t": 300, "type": "unwetter_keller", "district": "suedstadt"},
+        {"t": 600, "type": "hochwasser", "water": 3, "variant": 1},
+        {"t": 900, "type": "unwetter_keller", "district": "zentrum_sued", "variant": 1},
+        {"t": 1300, "type": "wasserrettung", "water": 4, "variant": 0},
+        {"t": 1800, "type": "unwetter_keller", "district": "universitaet"},
+        {"t": 2400, "type": "hochwasser", "water": 6, "variant": 0},
+        {"t": 3000, "type": "wasserrettung", "water": 3, "variant": 1},
+        {"t": 3600, "type": "unwetter_keller", "district": "ostpark"}
+      ]
+    }
+  ]
+}

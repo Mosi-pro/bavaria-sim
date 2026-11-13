@@ -1,0 +1,7 @@
+{
+  "first_m": ["Andreas", "Thomas", "Michael", "Stefan", "Christian", "Markus", "Peter", "Florian", "Maximilian", "Lukas", "Josef", "Franz", "Sebastian", "Tobias", "Martin", "Jürgen", "Klaus", "Wolfgang", "Hans", "Dieter", "Mehmet", "Ali", "Luca", "Jonas", "Felix", "Paul", "Daniel", "Alexander", "Benedikt", "Korbinian", "Xaver", "Ludwig", "Georg", "Anton", "Dragan", "Piotr"],
+  "first_f": ["Maria", "Anna", "Sabine", "Petra", "Monika", "Claudia", "Julia", "Katharina", "Stefanie", "Christina", "Elisabeth", "Theresa", "Franziska", "Lena", "Laura", "Sophie", "Hannah", "Ursula", "Renate", "Ingrid", "Gisela", "Ayşe", "Elif", "Jana", "Nicole", "Sandra", "Andrea", "Barbara", "Veronika", "Magdalena", "Resi", "Johanna", "Olga", "Katarzyna"],
+  "last": ["Müller", "Schmidt", "Huber", "Bauer", "Wagner", "Maier", "Mayer", "Fischer", "Weber", "Schneider", "Gruber", "Hofmann", "Wimmer", "Lang", "Aigner", "Brandl", "Eder", "Fuchs", "Hartl", "Kraus", "Lechner", "Moser", "Obermaier", "Pichler", "Reiter", "Schuster", "Steiner", "Stadler", "Winkler", "Zimmermann", "Yılmaz", "Kaya", "Nowak", "Petrović", "Rossi", "Berger", "Lindner", "Seidl", "Thalhammer", "Niedermeier", "Hirschberger", "Angerer", "Baumgartner", "Kreuzer", "Sedlmeier"],
+  "prefix_mobile": ["0151", "0160", "0170", "0171", "0172", "0175", "0176", "0179"],
+  "prefix_land": "0855"
+}

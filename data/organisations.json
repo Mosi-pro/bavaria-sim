@@ -1,0 +1,8 @@
+{
+  "fw":   {"name": "Feuerwehr Bavaria", "short": "FW", "cat": "feuerwehr", "color": "#C83D3D", "callsign": "Florian Bavaria {nr}/{kenn}-{n}", "fill": ["TM", "AGT", "MA", "GF", "ZF"]},
+  "rd":   {"name": "Rettungsdienst Bavaria", "short": "RD", "cat": "rettungsdienst", "color": "#D6A83B", "callsign": "Rettung Bavaria {nr}/{kenn}-{n}", "fill": ["RS", "NFS"]},
+  "pol":  {"name": "Polizei Bavaria", "short": "POL", "cat": "polizei", "color": "#497FA8", "callsign": "Löwe {nr}/{n}{kenn}", "fill": ["PVB"]},
+  "kats": {"name": "Katastrophenschutz Bavaria", "short": "KatS", "cat": "katastrophenschutz", "color": "#4C9868", "callsign": "Kater Bavaria {nr}/{kenn}-{n}", "fill": ["KH"]},
+  "thw":  {"name": "Technisches Hilfswerk Bavaria", "short": "THW", "cat": "sonstige", "color": "#6F7FC0", "callsign": "Heros Bavaria {nr}/{kenn}-{n}", "fill": ["HE"]},
+  "wr":   {"name": "Wasserrettung Bavaria", "short": "WR", "cat": "sonstige", "color": "#3F9AA8", "callsign": "Pelikan Bavaria {nr}/{kenn}-{n}", "fill": ["WR"]}
+}

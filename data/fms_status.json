@@ -1,0 +1,24 @@
+{
+  "_comment": "Funkmeldesystem-Status. Texte, Farben und Verwendung sind frei konfigurierbar.",
+  "status": {
+    "0": {"short": "0", "text": "Priorisierter Sprechwunsch (Notruf)", "color": "#C83D3D", "dispatchable": false},
+    "1": {"short": "1", "text": "Einsatzbereit über Funk", "color": "#4C9868", "dispatchable": true},
+    "2": {"short": "2", "text": "Einsatzbereit auf Wache", "color": "#4C9868", "dispatchable": true},
+    "3": {"short": "3", "text": "Einsatz übernommen", "color": "#D6A83B", "dispatchable": false},
+    "4": {"short": "4", "text": "Ankunft Einsatzstelle", "color": "#C83D3D", "dispatchable": false},
+    "5": {"short": "5", "text": "Sprechwunsch", "color": "#C97BD1", "dispatchable": false},
+    "6": {"short": "6", "text": "Nicht einsatzbereit / außer Dienst", "color": "#6B737B", "dispatchable": false},
+    "7": {"short": "7", "text": "Patient aufgenommen", "color": "#497FA8", "dispatchable": false},
+    "8": {"short": "8", "text": "Ankunft Transportziel", "color": "#497FA8", "dispatchable": false},
+    "9": {"short": "9", "text": "Alarmiert / Quittung ausstehend", "color": "#D6A83B", "dispatchable": false}
+  },
+  "radio_phrases": {
+    "3": "Einsatz übernommen, ausgerückt.",
+    "4": "Eintreffen an Einsatzstelle.",
+    "1": "Einsatzbereit über Funk.",
+    "2": "Zurück auf Wache, einsatzbereit.",
+    "7": "Patient aufgenommen, Transport zum Zielkrankenhaus.",
+    "8": "Ankunft am Transportziel.",
+    "6": "Nicht einsatzbereit."
+  }
+}

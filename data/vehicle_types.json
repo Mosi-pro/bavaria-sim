@@ -1,0 +1,66 @@
+{
+  "_comment": "Fahrzeugklassen. speed = Höchstgeschwindigkeit km/h, crew = Regelbesatzung, min = Mindestbesatzung, quals = erforderliche Qualifikationen, caps = taktische Fähigkeiten.",
+  "qualifications": {
+    "TM": "Truppmann/-frau", "AGT": "Atemschutzgeräteträger", "MA": "Maschinist", "GF": "Gruppenführer", "ZF": "Zugführer / Einsatzleiter",
+    "RS": "Rettungssanitäter", "NFS": "Notfallsanitäter", "NA": "Notarzt",
+    "PVB": "Polizeivollzugsbeamter", "KH": "Katastrophenschutzhelfer", "HE": "THW-Helfer", "WR": "Wasserretter"
+  },
+  "capabilities": {
+    "fuehrung_fw": "Einsatzleitung Feuerwehr", "elw2": "Führungsunterstützung (ELW 2)", "loeschen": "Löschfahrzeug", "wasser": "Löschwasservorrat (TLF)",
+    "thl": "Technische Hilfeleistung", "rw": "Rüstwagen", "dlk": "Drehleiter", "atemschutz": "Atemschutzlogistik", "gefahrgut": "Gefahrgutausstattung",
+    "logistik": "Logistik", "mannschaft": "Mannschaftstransport", "wasserrettung": "Wasserrettung", "taucher": "Tauchereinsatz", "flf": "Flugfeldlöschfahrzeug",
+    "rtw": "Rettungswagen", "notarzt": "Notarzt", "ktw": "Krankentransport", "itw": "Intensivtransport", "seg": "Schnelleinsatzgruppe Sanität", "elrd": "Einsatzleitung Rettungsdienst",
+    "polizei": "Polizeistreife", "pol_verkehr": "Verkehrspolizei", "pol_fuehrung": "Polizeiführung", "pol_gruppe": "Einsatzgruppe Polizei", "sek": "Spezialeinheit", "kripo": "Kriminalpolizei",
+    "betreuung": "Betreuung", "kats_fuehrung": "Führung Katastrophenschutz", "thw": "THW Bergung", "pumpen": "Hochleistungspumpen"
+  },
+  "types": {
+    "KDOW":    {"short": "KdoW", "name": "Kommandowagen", "org": "fw", "kenn": "10", "speed": 160, "crew": 1, "min": 1, "quals": {"ZF": 1}, "caps": {"fuehrung_fw": 1}, "price": 55000, "equip": ["Führungsmittel", "Funk", "Wärmebildkamera"]},
+    "ELW1":    {"short": "ELW 1", "name": "Einsatzleitwagen 1", "org": "fw", "kenn": "12", "speed": 150, "crew": 3, "min": 2, "quals": {"ZF": 1}, "caps": {"fuehrung_fw": 1}, "price": 140000, "equip": ["Funkarbeitsplätze", "Lagekarte", "Besprechungsraum"]},
+    "ELW2":    {"short": "ELW 2", "name": "Einsatzleitwagen 2", "org": "fw", "kenn": "13", "speed": 110, "crew": 6, "min": 4, "quals": {"ZF": 2}, "caps": {"fuehrung_fw": 1, "elw2": 1}, "price": 620000, "equip": ["Führungsraum", "Fernmeldeeinrichtung", "Lagedarstellung"]},
+    "LF10":    {"short": "LF 10", "name": "Löschgruppenfahrzeug 10", "org": "fw", "kenn": "42", "speed": 110, "crew": 9, "min": 6, "quals": {"GF": 1, "MA": 1, "AGT": 2}, "caps": {"loeschen": 1}, "price": 320000, "equip": ["1.200 l Wasser", "Pumpe FPN 10-1000", "4 Atemschutzgeräte", "Steckleiter"]},
+    "LF20":    {"short": "LF 20", "name": "Löschgruppenfahrzeug 20", "org": "fw", "kenn": "41", "speed": 110, "crew": 9, "min": 6, "quals": {"GF": 1, "MA": 1, "AGT": 4}, "caps": {"loeschen": 1}, "price": 410000, "equip": ["2.000 l Wasser", "Pumpe FPN 10-2000", "4 Atemschutzgeräte", "Schiebleiter"]},
+    "HLF10":   {"short": "HLF 10", "name": "Hilfeleistungslöschgruppenfahrzeug 10", "org": "fw", "kenn": "43", "speed": 110, "crew": 9, "min": 6, "quals": {"GF": 1, "MA": 1, "AGT": 2}, "caps": {"loeschen": 1, "thl": 1}, "price": 390000, "equip": ["1.200 l Wasser", "Hydraulischer Rettungssatz", "Hebekissen", "4 Atemschutzgeräte"]},
+    "HLF20":   {"short": "HLF 20", "name": "Hilfeleistungslöschgruppenfahrzeug 20", "org": "fw", "kenn": "40", "speed": 110, "crew": 9, "min": 6, "quals": {"GF": 1, "MA": 1, "AGT": 4}, "caps": {"loeschen": 1, "thl": 1}, "price": 480000, "equip": ["2.000 l Wasser", "Hydraulischer Rettungssatz", "Hebekissen", "Lichtmast", "4 Atemschutzgeräte"]},
+    "TLF3000": {"short": "TLF 3000", "name": "Tanklöschfahrzeug 3000", "org": "fw", "kenn": "21", "speed": 100, "crew": 3, "min": 3, "quals": {"GF": 1, "MA": 1}, "caps": {"loeschen": 1, "wasser": 1}, "price": 340000, "equip": ["3.000 l Wasser", "Dachmonitor", "Schaummittel"]},
+    "TLF4000": {"short": "TLF 4000", "name": "Tanklöschfahrzeug 4000", "org": "fw", "kenn": "23", "speed": 95, "crew": 3, "min": 3, "quals": {"GF": 1, "MA": 1}, "caps": {"loeschen": 1, "wasser": 1}, "price": 420000, "equip": ["4.000 l Wasser", "500 l Schaummittel", "Dachmonitor"]},
+    "DLK":     {"short": "DLK 23/12", "name": "Drehleiter mit Korb 23/12", "org": "fw", "kenn": "30", "speed": 100, "crew": 3, "min": 2, "quals": {"GF": 1, "MA": 1}, "caps": {"dlk": 1}, "price": 780000, "equip": ["Rettungskorb", "Wenderohr", "Krankentragenhalterung"]},
+    "RW":      {"short": "RW", "name": "Rüstwagen", "org": "fw", "kenn": "61", "speed": 100, "crew": 3, "min": 3, "quals": {"GF": 1, "MA": 1}, "caps": {"thl": 1, "rw": 1}, "price": 520000, "equip": ["Seilwinde 50 kN", "Schwerer Rettungssatz", "Hebekissen", "Stromerzeuger"]},
+    "GWL":     {"short": "GW-L", "name": "Gerätewagen Logistik", "org": "fw", "kenn": "55", "speed": 100, "crew": 3, "min": 2, "quals": {"MA": 1}, "caps": {"logistik": 1}, "price": 210000, "equip": ["Ladebordwand", "Rollcontainer", "Schlauchmaterial"]},
+    "GWG":     {"short": "GW-G", "name": "Gerätewagen Gefahrgut", "org": "fw", "kenn": "52", "speed": 100, "crew": 3, "min": 3, "quals": {"GF": 1, "AGT": 2}, "caps": {"gefahrgut": 1}, "price": 560000, "equip": ["Chemikalienschutzanzüge", "Messgeräte", "Auffangbehälter", "Umfüllpumpen"]},
+    "GWA":     {"short": "GW-A", "name": "Gerätewagen Atemschutz", "org": "fw", "kenn": "53", "speed": 100, "crew": 3, "min": 2, "quals": {"AGT": 1, "MA": 1}, "caps": {"atemschutz": 1}, "price": 300000, "equip": ["40 Atemschutzgeräte", "Reserveflaschen", "Messtechnik"]},
+    "MZF":     {"short": "MZF", "name": "Mehrzweckfahrzeug", "org": "fw", "kenn": "11", "speed": 140, "crew": 6, "min": 2, "quals": {"GF": 1}, "caps": {"mannschaft": 1, "fuehrung_fw": 1}, "price": 95000, "equip": ["Funkarbeitsplatz", "Verkehrsabsicherung"]},
+    "MTF":     {"short": "MTF", "name": "Mannschaftstransportfahrzeug", "org": "fw", "kenn": "14", "speed": 140, "crew": 8, "min": 2, "quals": {"MA": 1}, "caps": {"mannschaft": 1}, "price": 65000, "equip": ["Verkehrsabsicherung"]},
+    "GWW":     {"short": "GW-W", "name": "Gerätewagen Wasserrettung", "org": "fw", "kenn": "59", "speed": 110, "crew": 6, "min": 4, "quals": {"GF": 1, "MA": 1}, "caps": {"wasserrettung": 1}, "price": 260000, "equip": ["Rettungsboot", "Überlebensanzüge", "Wurfleinen"]},
+    "FLF":     {"short": "FLF", "name": "Flugfeldlöschfahrzeug", "org": "fw", "kenn": "25", "speed": 120, "crew": 3, "min": 3, "quals": {"GF": 1, "MA": 1}, "caps": {"loeschen": 1, "wasser": 1, "flf": 1}, "price": 1400000, "equip": ["12.500 l Wasser", "1.500 l Schaummittel", "Löscharm"]},
+
+    "RTW":     {"short": "RTW", "name": "Rettungswagen", "org": "rd", "kenn": "71", "speed": 150, "crew": 2, "min": 2, "quals": {"NFS": 1}, "caps": {"rtw": 1}, "price": 240000, "equip": ["EKG/Defibrillator", "Beatmungsgerät", "Fahrtrage", "Notfallrucksack"]},
+    "NEF":     {"short": "NEF", "name": "Notarzteinsatzfahrzeug", "org": "rd", "kenn": "76", "speed": 180, "crew": 2, "min": 2, "quals": {"NA": 1, "NFS": 1}, "caps": {"notarzt": 1}, "price": 160000, "equip": ["Notarztausstattung", "Medikamente", "Mobiles Ultraschallgerät"]},
+    "KTW":     {"short": "KTW", "name": "Krankentransportwagen", "org": "rd", "kenn": "72", "speed": 140, "crew": 2, "min": 2, "quals": {"RS": 1}, "caps": {"ktw": 1}, "price": 120000, "equip": ["Fahrtrage", "Tragestuhl", "Sauerstoff"]},
+    "ITW":     {"short": "ITW", "name": "Intensivtransportwagen", "org": "rd", "kenn": "74", "speed": 120, "crew": 3, "min": 3, "quals": {"NA": 1, "NFS": 1}, "caps": {"rtw": 1, "notarzt": 1, "itw": 1}, "price": 480000, "equip": ["Intensivbeatmung", "Spritzenpumpen", "Schwerlasttrage"]},
+    "NAW":     {"short": "NAW", "name": "Notarztwagen", "org": "rd", "kenn": "70", "speed": 150, "crew": 3, "min": 3, "quals": {"NA": 1, "NFS": 1}, "caps": {"rtw": 1, "notarzt": 1}, "price": 300000, "equip": ["RTW-Ausstattung", "Notarztausstattung"]},
+    "ELRD":    {"short": "ELW RD", "name": "Einsatzleitwagen Rettungsdienst", "org": "rd", "kenn": "10", "speed": 170, "crew": 2, "min": 2, "quals": {"NFS": 1}, "caps": {"elrd": 1}, "price": 130000, "equip": ["Führungsmittel", "Patientenanhängekarten", "Funk"]},
+    "GWSAN":   {"short": "GW-San", "name": "Gerätewagen Sanität (SEG Behandlung)", "org": "rd", "kenn": "58", "speed": 110, "crew": 6, "min": 4, "quals": {"NFS": 1}, "caps": {"seg": 1}, "price": 210000, "equip": ["Behandlungsplatz 25", "Zelte", "Tragen"]},
+    "SEGKTW":  {"short": "SEG-KTW", "name": "SEG Transport (KTW Typ B)", "org": "rd", "kenn": "73", "speed": 130, "crew": 2, "min": 2, "quals": {"RS": 1}, "caps": {"ktw": 1, "seg": 1}, "price": 110000, "equip": ["Zwei Tragen", "Sauerstoff"]},
+
+    "FUSTW":   {"short": "FuStW", "name": "Funkstreifenwagen", "org": "pol", "kenn": "", "speed": 190, "crew": 2, "min": 2, "quals": {"PVB": 2}, "caps": {"polizei": 1}, "price": 70000, "equip": ["Verkehrssicherung", "Anhaltesignalgeber"]},
+    "VERKEHR": {"short": "VD", "name": "Fahrzeug Verkehrsdienst", "org": "pol", "kenn": "V", "speed": 200, "crew": 2, "min": 2, "quals": {"PVB": 2}, "caps": {"polizei": 1, "pol_verkehr": 1}, "price": 90000, "equip": ["Unfallaufnahme", "Absperrmaterial", "Messtechnik"]},
+    "GRUKW":   {"short": "GruKw", "name": "Gruppenkraftwagen (Mannschaftswagen)", "org": "pol", "kenn": "G", "speed": 140, "crew": 9, "min": 6, "quals": {"PVB": 6}, "caps": {"polizei": 2, "pol_gruppe": 1}, "price": 110000, "equip": ["Absperrgitter", "Körperschutzausstattung"]},
+    "POLELW":  {"short": "ELW Pol", "name": "Einsatzleitwagen Polizei", "org": "pol", "kenn": "E", "speed": 150, "crew": 3, "min": 2, "quals": {"PVB": 2}, "caps": {"pol_fuehrung": 1}, "price": 180000, "equip": ["Führungsraum", "Funk", "Lagedarstellung"]},
+    "SEK":     {"short": "SE", "name": "Spezialeinheit (abstrakte Spieleinheit)", "org": "pol", "kenn": "S", "speed": 190, "crew": 8, "min": 6, "quals": {"PVB": 6}, "caps": {"sek": 1, "polizei": 1}, "price": 300000, "equip": ["Sonderausstattung"]},
+    "KRIPO":   {"short": "KDD", "name": "Kriminaldauerdienst", "org": "pol", "kenn": "K", "speed": 180, "crew": 2, "min": 2, "quals": {"PVB": 2}, "caps": {"kripo": 1}, "price": 60000, "equip": ["Spurensicherung"]},
+
+    "BTKOMBI": {"short": "BtKombi", "name": "Betreuungskombi", "org": "kats", "kenn": "14", "speed": 140, "crew": 6, "min": 3, "quals": {"KH": 3}, "caps": {"betreuung": 1}, "price": 60000, "equip": ["Decken", "Verpflegung", "Registrierung"]},
+    "GWBT":    {"short": "GW-Bt", "name": "Gerätewagen Betreuung", "org": "kats", "kenn": "57", "speed": 100, "crew": 3, "min": 2, "quals": {"KH": 2}, "caps": {"betreuung": 1, "logistik": 1}, "price": 150000, "equip": ["Feldbetten", "Zelte", "Feldküche"]},
+    "KATSSAN": {"short": "GW-San KatS", "name": "Sanitätsgruppe Katastrophenschutz", "org": "kats", "kenn": "58", "speed": 110, "crew": 6, "min": 4, "quals": {"KH": 4}, "caps": {"seg": 1}, "price": 190000, "equip": ["Behandlungsplatz", "Tragen", "Sanitätsmaterial"]},
+    "KATSKDOW": {"short": "FüKW", "name": "Führungskraftwagen Katastrophenschutz", "org": "kats", "kenn": "12", "speed": 150, "crew": 3, "min": 2, "quals": {"KH": 2}, "caps": {"kats_fuehrung": 1}, "price": 120000, "equip": ["Führungsmittel", "Funk"]},
+    "KATSLKW": {"short": "LKW KatS", "name": "LKW Logistik Katastrophenschutz", "org": "kats", "kenn": "56", "speed": 90, "crew": 3, "min": 2, "quals": {"KH": 2}, "caps": {"logistik": 1}, "price": 170000, "equip": ["Ladebordwand", "Sandsäcke", "Stromerzeuger"]},
+
+    "WRKFZ":   {"short": "WRF", "name": "Wasserrettungsfahrzeug mit Boot", "org": "wr", "kenn": "91", "speed": 130, "crew": 4, "min": 3, "quals": {"WR": 3}, "caps": {"wasserrettung": 1}, "price": 140000, "equip": ["Motorrettungsboot", "Rettungsbrett", "Wurfsack"]},
+    "WRTAUCH": {"short": "GW-T", "name": "Gerätewagen Tauchen", "org": "wr", "kenn": "94", "speed": 120, "crew": 4, "min": 3, "quals": {"WR": 3}, "caps": {"wasserrettung": 1, "taucher": 1}, "price": 220000, "equip": ["Tauchgeräte", "Signalleinen", "Sonar"]},
+
+    "THWGKW":  {"short": "GKW", "name": "Gerätekraftwagen (Bergungsgruppe)", "org": "thw", "kenn": "22", "speed": 90, "crew": 9, "min": 6, "quals": {"HE": 6}, "caps": {"thw": 1, "thl": 1}, "price": 380000, "equip": ["Hydraulische Rettungsgeräte", "Hebekissen", "Abstützsystem", "Beleuchtung"]},
+    "THWMTW":  {"short": "MTW TZ", "name": "Mannschaftstransportwagen Zugtrupp", "org": "thw", "kenn": "21", "speed": 130, "crew": 6, "min": 3, "quals": {"HE": 3}, "caps": {"mannschaft": 1, "thw": 1}, "price": 80000, "equip": ["Führungsmittel"]},
+    "THWLKW":  {"short": "LKW-K", "name": "LKW mit Ladekran", "org": "thw", "kenn": "35", "speed": 85, "crew": 3, "min": 2, "quals": {"HE": 2}, "caps": {"logistik": 1, "thw": 1}, "price": 290000, "equip": ["Ladekran", "Kettenzüge"]},
+    "THWPUMPE": {"short": "FGr WP", "name": "Fachgruppe Wasserschaden/Pumpen", "org": "thw", "kenn": "44", "speed": 85, "crew": 6, "min": 4, "quals": {"HE": 4}, "caps": {"pumpen": 1, "thw": 1}, "price": 450000, "equip": ["Schmutzwasserpumpe 5.000 l/min", "Schlauchmaterial"]}
+  }
+}
