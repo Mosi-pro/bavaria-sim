@@ -9,6 +9,7 @@ signal session_ended(reason)
 signal action_failed(text)
 
 var in_session := false
+var ui: Control = null
 var me := {"id": 1, "name": "Disponent", "role": "leitung"}
 
 func _ready() -> void:
@@ -52,6 +53,8 @@ func load_game(id: String) -> String:
 ## Client: Sitzung beginnt, sobald der vollständige Zustand vom Host vorliegt.
 func start_as_client() -> void:
 	Sim.stop()
+	World.ensure_built()
+	Sim._build_hospitals()
 	in_session = true
 	session_started.emit()
 

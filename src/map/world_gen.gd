@@ -358,6 +358,8 @@ func _build_edges() -> void:
 						continue
 					fl = 1
 				var cls := CLS_WOHN
+				if main and style == "land" and not w.in_city(mid) and hashf(line + dir * 500, (i if dir == 0 else j) / 5, 77) < 0.38:
+					continue
 				if main:
 					cls = CLS_LAND if (style == "land" or lu == "forest") else CLS_HAUPT
 				else:

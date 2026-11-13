@@ -20,8 +20,13 @@ static func suggest(inc: Dictionary, org_filter: Array = []) -> Dictionary:
 		var eta: float = times[n] if n >= 0 else INF
 		if reason == "":
 			eta += VL.turnout_mean(v)
-		rows.append({"id": vid, "eta": eta, "dist": State.veh_pos(v).distance_to(target), "reason": reason, "caps": VL.caps(v)})
-	rows.sort_custom(func(a, b): return a["eta"] < b["eta"])
+		rows.append({"id": vid, "eta": eta, "dist": State.veh_pos(v).distance_to(target), "reason": reason, "caps": VL.caps(v), "crew": int(Data.vehicle_types[v["type"]]["crew"])})
+	rows.sort_custom(func(a, b):
+		if absf(a["eta"] - b["eta"]) > 20.0:
+			return a["eta"] < b["eta"]
+		if a["crew"] != b["crew"]:
+			return a["crew"] > b["crew"]
+		return a["id"] < b["id"])
 	var need := {}
 	var aao: Dictionary = Data.keywords.get(inc["keyword"], {}).get("aao", {})
 	for k in aao:
