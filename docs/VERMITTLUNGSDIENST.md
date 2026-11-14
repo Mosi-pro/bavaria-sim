@@ -70,6 +70,14 @@ Damit die Portfreigabe dauerhaft stimmt, sollte der Wyse immer dieselbe Adresse 
 
 Der Dienst startet ab jetzt automatisch bei jedem Einschalten und nach Abstürzen neu.
 
+4. **Absichern** (im selben Ordner, weiterhin als root):
+   ```
+   bash absichern.sh
+   ```
+   Das richtet die Firewall ein: eingehend nur Port 24180 und SSH nur aus dem Heimnetz.
+   Außerdem darf der Wyse **keine anderen Geräte in deinem Heimnetz erreichen**, schaltet
+   automatische Sicherheitsupdates ein und sperrt die root-Anmeldung per SSH.
+
 ## 4. Portfreigabe im Router
 
 Freizugeben ist **TCP-Port 24180** auf den Wyse. Das gilt nur für deinen Router, nicht für den der Kunden.

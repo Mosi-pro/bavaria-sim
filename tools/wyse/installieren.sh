@@ -19,3 +19,4 @@ sleep 3
 systemctl --no-pager --lines=5 status leitstelle112-vermittlung || true
 echo
 echo "Fertig. Protokoll ansehen mit:  journalctl -u leitstelle112-vermittlung -f"
+echo "Empfohlen für den Betrieb zuhause:  bash absichern.sh"
