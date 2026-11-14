@@ -366,6 +366,10 @@ static func option(items: Array, selected := 0) -> OptionButton:
 	if items.size() > 0:
 		o.select(clampi(selected, 0, items.size() - 1))
 	o.focus_mode = Control.FOCUS_NONE
+	# Nicht nach dem längsten Eintrag ausrichten – sonst werden Fenster überbreit.
+	o.fit_to_longest_item = false
+	o.clip_text = true
+	o.custom_minimum_size.x = 120
 	return o
 
 static func form(rows: Array) -> GridContainer:
@@ -381,6 +385,18 @@ static func form(rows: Array) -> GridContainer:
 	return g
 
 ## Eingebettetes Programmfenster mit Standardverhalten.
+## Sichtbarer Bereich, in dem Fenster liegen dürfen (unterhalb der Menü- und Werkzeugleiste).
+static func _screen(parent: Node) -> Rect2i:
+	var vp: Vector2 = parent.get_viewport().get_visible_rect().size
+	return Rect2i(Vector2i(4, 30), Vector2i(int(vp.x) - 8, int(vp.y) - 34))
+
+## Fenstergröße auf den Bildschirm begrenzen.
+static func fit_size(parent: Node, want: Vector2i) -> Vector2i:
+	var r := _screen(parent)
+	return Vector2i(mini(want.x, r.size.x), mini(want.y, r.size.y - 26))
+
+## Eingebettetes Programmfenster. Das Fenster wächst nie über den Bildschirm hinaus;
+## passt der Inhalt nicht hinein, wird er scrollbar (Knöpfe bleiben erreichbar).
 static func window(parent: Node, title: String, size: Vector2i, content: Control, key := "") -> Window:
 	if key != "":
 		for c in parent.get_children():
@@ -388,56 +404,114 @@ static func window(parent: Node, title: String, size: Vector2i, content: Control
 				c.grab_focus()
 				c.move_to_foreground()
 				return null
+	size = fit_size(parent, size)
 	var w := Window.new()
 	w.title = title
 	w.size = size
-	w.min_size = Vector2i(min(size.x, 320), min(size.y, 200))
-	w.wrap_controls = true
+	w.min_size = Vector2i(mini(size.x, 320), mini(size.y, 160))
+	w.wrap_controls = false
 	w.set_meta("key", key)
 	w.close_requested.connect(w.queue_free)
 	var bgp := Panel.new()
 	bgp.add_theme_stylebox_override("panel", box(MAIN))
 	bgp.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	w.add_child(bgp)
+	var sc := ScrollContainer.new()
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	sc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var m := margin(content, 8)
+	m.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	m.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc.add_child(m)
+	w.add_child(sc)
+	parent.add_child(w)
+	_place(parent, w, true)
+	w.show()
+	_fit_width.call_deferred(parent, w, m)
+	return w
+
+## Nach dem ersten Layout: Fenster so breit machen, dass der Inhalt hineinpasst
+## (höchstens Bildschirmbreite; darüber hinaus horizontal scrollbar).
+static func _fit_width(parent: Node, w: Window, content: Control) -> void:
+	if not is_instance_valid(w) or not is_instance_valid(content):
+		return
+	var need := int(ceil(content.get_combined_minimum_size().x)) + 14
+	if need > w.size.x:
+		var r := _screen(parent)
+		w.size.x = mini(need, r.size.x)
+		_place(parent, w, false)
+
+## Fenster im sichtbaren Bereich platzieren (leicht versetzt, damit sich Fenster nicht verdecken).
+static func _place(parent: Node, w: Window, cascade: bool) -> void:
+	var r := _screen(parent)
+	var size := w.size
+	var off := Vector2i.ZERO
+	if cascade:
+		var n: int = parent.get_meta("win_n", 0)
+		parent.set_meta("win_n", (n + 1) % 8)
+		off = Vector2i(n * 22 - 60, n * 22 - 30)
+	var pos := r.position + (r.size - size) / 2 + off
+	pos.x = clampi(pos.x, r.position.x, maxi(r.position.x, r.end.x - size.x))
+	pos.y = clampi(pos.y, r.position.y + 26, maxi(r.position.y + 26, r.end.y - size.y))
+	w.position = pos
+
+## Hinweis- bzw. Bestätigungsdialog mit fester Knopfleiste. Langer Text wird gescrollt.
+static func _dialog(parent: Node, title: String, text: String, buttons: Array) -> Window:
+	var w := Window.new()
+	w.title = title
+	w.wrap_controls = false
+	w.transient = true
+	w.always_on_top = true
+	var width := 520
+	var est_lines := 0
+	for line in text.split("\n"):
+		est_lines += 1 + int(line.length() / 68)
+	var want_h := clampi(est_lines * 19 + 96, 150, 2000)
+	w.size = fit_size(parent, Vector2i(width, want_h))
+	w.size.y = mini(w.size.y, int(_screen(parent).size.y * 0.8))
+	w.min_size = Vector2i(320, 140)
+	var bgp := Panel.new()
+	bgp.add_theme_stylebox_override("panel", box(MAIN))
+	bgp.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	w.add_child(bgp)
+	var l := label(text)
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var sc := ScrollContainer.new()
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	sc.add_child(l)
+	var bar := hbox([spacer()], 6)
+	var first: Button = null
+	for b in buttons:
+		var btn := button(b[0], func():
+			w.queue_free()
+			if b[1].is_valid():
+				b[1].call())
+		btn.custom_minimum_size.x = 96
+		if b.size() > 2 and b[2]:
+			accent(btn, BLUE)
+		bar.add_child(btn)
+		if first == null:
+			first = btn
+	var v := vbox([sc, HSeparator.new(), bar], 8)
+	var m := margin(v, 12)
 	m.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	w.add_child(m)
+	w.close_requested.connect(w.queue_free)
 	parent.add_child(w)
-	var vp: Vector2 = parent.get_viewport().get_visible_rect().size
-	var n: int = parent.get_meta("win_n", 0)
-	parent.set_meta("win_n", (n + 1) % 8)
-	var pos := (Vector2i(vp) - size) / 2 + Vector2i(n * 22 - 60, n * 22 - 30)
-	pos.x = clampi(pos.x, 4, max(4, int(vp.x) - size.x - 4))
-	pos.y = clampi(pos.y, 60, max(60, int(vp.y) - size.y - 4))
-	w.position = pos
+	_place(parent, w, false)
 	w.show()
+	if first != null:
+		first.focus_mode = Control.FOCUS_ALL
+		first.grab_focus.call_deferred()
 	return w
 
 static func message(parent: Node, title: String, text: String) -> void:
-	var d := AcceptDialog.new()
-	d.title = title
-	d.dialog_text = text
-	d.dialog_autowrap = true
-	d.min_size = Vector2i(420, 140)
-	d.confirmed.connect(d.queue_free)
-	d.canceled.connect(d.queue_free)
-	parent.add_child(d)
-	d.popup_centered()
+	_dialog(parent, title, text, [["OK", Callable(), true]])
 
 static func confirm(parent: Node, title: String, text: String, cb: Callable) -> void:
-	var d := ConfirmationDialog.new()
-	d.title = title
-	d.dialog_text = text
-	d.dialog_autowrap = true
-	d.min_size = Vector2i(420, 140)
-	d.ok_button_text = "Ja"
-	d.cancel_button_text = "Abbrechen"
-	d.confirmed.connect(func():
-		cb.call()
-		d.queue_free())
-	d.canceled.connect(d.queue_free)
-	parent.add_child(d)
-	d.popup_centered()
+	_dialog(parent, title, text, [["Ja", cb, true], ["Abbrechen", Callable()]])
 
 static func short_callsign(v: Dictionary) -> String:
 	var cs: String = v["callsign"]

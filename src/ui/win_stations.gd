@@ -33,7 +33,7 @@ func setup(station_id := "") -> void:
 			_fill_detail())
 	budget = UI.label("", UI.TEXT2)
 	var left := UI.vbox([org_opt, tree, budget, UI.hbox([UI.button("Neuer Standort …", _new_station), UI.button("Region übernehmen …", _zones)])])
-	left.custom_minimum_size.x = 330
+	left.custom_minimum_size.x = 300
 	add_child(left)
 	add_child(VSeparator.new())
 	detail = UI.vbox([])
@@ -129,12 +129,12 @@ func _fill_detail() -> void:
 			tnames.append(State.stations[id]["name"])
 	var topt := UI.option(tnames if tnames.size() > 0 else ["(kein Standort mit freiem Stellplatz)"], 0)
 	topt.clip_text = true
-	topt.custom_minimum_size.x = 220
+	topt.custom_minimum_size.x = 180
 	var get_vid := func():
 		var it := vt.get_selected()
 		return "" if it == null else it.get_metadata(0)
+	detail.add_child(UI.label("Markiertes Fahrzeug:", UI.TEXT2))
 	detail.add_child(UI.hbox([
-		UI.label("Markiertes Fahrzeug:", UI.TEXT2),
 		UI.button("verlegen nach", func():
 			var vid: String = get_vid.call()
 			if vid != "" and targets.size() > 0:

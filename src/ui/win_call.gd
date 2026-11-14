@@ -47,7 +47,7 @@ func setup(id: String) -> void:
 	loc_state = UI.label("", UI.TEXT)
 	loc_lbl = UI.label("", UI.TEXT)
 	loc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	loc_lbl.custom_minimum_size.x = 300
+	loc_lbl.custom_minimum_size.x = 280
 	var b_wo := UI.accent(UI.button("Wo genau?", func(): _ask("q_wo"), "Nach Straße und Hausnummer fragen. Bei ungenauen Angaben mehrfach fragen."), UI.BLUE)
 	var b_aml := UI.button("Standort orten", func(): Game.act({"a": "call_locate", "id": call_id}), "Handy-Standort abfragen (AML). Klappt nicht immer, bei Festnetz nie.")
 	var b_pick := UI.button("Auf Karte wählen", func(): Game.ui.map.set_tool("pick", "Einsatzort auf der Karte anklicken", _picked), "Den Ort selbst auf der Karte festlegen")
@@ -70,13 +70,13 @@ func setup(id: String) -> void:
 	known.custom_minimum_size.y = 96
 	var s2 := UI.vbox([_step_head("②", "Was ist passiert?"), qgrid, UI.caption("Bisher bekannt"), known], 4)
 	var left := UI.vbox([s1, HSeparator.new(), s2], 8)
-	left.custom_minimum_size.x = 330
+	left.custom_minimum_size.x = 310
 	# ---- rechts: Gespräch und Schritt 3
 	transcript = UI.rich(false)
-	transcript.custom_minimum_size = Vector2(400, 120)
+	transcript.custom_minimum_size = Vector2(300, 120)
 	hint_lbl = UI.label("", UI.GREEN)
 	hint_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hint_lbl.custom_minimum_size.x = 400
+	hint_lbl.custom_minimum_size.x = 300
 	var cat_names: Array = ["— Einsatzart wählen —"]
 	for c in CATS:
 		cat_names.append(Data.category_name(c))
@@ -88,7 +88,7 @@ func setup(id: String) -> void:
 	kw_opt.item_selected.connect(func(_i): _update_kw_desc())
 	kw_desc = UI.label("", UI.TEXT2, 11)
 	kw_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	kw_desc.custom_minimum_size.x = 400
+	kw_desc.custom_minimum_size.x = 300
 	obj = UI.line_edit("z. B. Mehrfamilienhaus, 3. OG")
 	persons = UI.line_edit("Anzahl / Art")
 	danger = UI.line_edit("z. B. Person eingeschlossen")
@@ -102,12 +102,13 @@ func setup(id: String) -> void:
 		more.text = "Weitere Angaben (optional) ▾" if details.visible else "Weitere Angaben (optional) ▸")
 	dup_label = UI.label("", UI.YELLOW)
 	dup_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	dup_label.custom_minimum_size.x = 400
+	dup_label.custom_minimum_size.x = 300
 	attach = UI.option(["Gehört zu laufendem Einsatz …"], 0)
 	attach.item_selected.connect(_attach)
+	attach.custom_minimum_size.x = 170
 	var create := UI.accent(UI.button("Einsatz anlegen  →  Fahrzeuge wählen", _create), UI.RED)
 	create.custom_minimum_size.y = 30
-	var end := UI.button("Kein Einsatz nötig – auflegen", func(): UI.confirm(self, "Gespräch beenden", "Gespräch ohne Einsatz beenden?\n(Richtig bei Fehlanrufen, Scherzanrufen oder Anfragen ohne Notfall.)", func():
+	var end := UI.button("Kein Einsatz – auflegen", func(): UI.confirm(self, "Gespräch beenden", "Gespräch ohne Einsatz beenden?\n(Richtig bei Fehlanrufen, Scherzanrufen oder Anfragen ohne Notfall.)", func():
 		Game.act({"a": "call_end", "id": call_id})
 		_close()))
 	var s3 := UI.vbox([_step_head("③", "Stichwort wählen und Einsatz anlegen"), hint_lbl,

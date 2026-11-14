@@ -184,6 +184,9 @@ func _first_visit() -> void:
 	if LocalDB.fetch("profile", "seen_intro", false) or Tutorial.active():
 		return
 	LocalDB.put("profile", "seen_intro", true)
+	_first_visit_force()
+
+func _first_visit_force() -> void:
 	UI.message(self, "Dein Arbeitsplatz", "So ist der Leitstellenarbeitsplatz aufgebaut:\n\n• Links oben – Was ist zu tun?  Alle offenen Aufgaben mit einem Knopf für den nächsten Schritt. Hier startest du am besten.\n• Links unten – Laufende Einsätze.\n• Mitte – Karte von Bavaria (ziehen, Mausrad zum Zoomen, Klick auf Fahrzeuge und Einsätze).\n• Rechts – Alle Fahrzeuge mit ihrem Status (Farblegende oben).\n• Unten – Funkprotokoll mit allen Meldungen.\n\nNeu hier? Starte im Hauptmenü die »Einweisung«. Hilfe gibt es jederzeit über den Knopf »Hilfe«.")
 
 func _intro() -> void:
