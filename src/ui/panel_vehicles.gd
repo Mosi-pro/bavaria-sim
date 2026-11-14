@@ -56,6 +56,14 @@ func _ready() -> void:
 		only_free = on
 		_dirty = true)
 	add_child(UI.margin(UI.hbox([se, so, fr]), 3))
+	var legend := HFlowContainer.new()
+	legend.add_theme_constant_override("h_separation", 8)
+	for e in [[2, "frei"], [3, "Anfahrt"], [4, "vor Ort"], [5, "Sprechwunsch"], [7, "Transport"], [6, "außer Dienst"]]:
+		var chip := UI.label(" %d " % e[0], Color.WHITE, 10)
+		chip.add_theme_stylebox_override("normal", UI.box(Data.fms_color(e[0]).darkened(0.15), Color(0, 0, 0, 0), 0, 2))
+		legend.add_child(UI.hbox([chip, UI.label(e[1], UI.TEXT2, 10)], 3))
+	legend.tooltip_text = "FMS-Status: 1/2 einsatzbereit, 3 Einsatz übernommen, 4 an der Einsatzstelle, 5 Sprechwunsch, 6 nicht einsatzbereit, 7 Patient aufgenommen, 8 am Krankenhaus"
+	add_child(UI.margin(legend, 4))
 	tree = UI.tree([{"title": "St", "width": 24}, {"title": "Funkrufname", "width": 150}, {"title": "Typ", "width": 62}, {"title": "Standort / Auftrag"}])
 	tree.item_selected.connect(func():
 		var it := tree.get_selected()

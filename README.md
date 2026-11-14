@@ -25,6 +25,14 @@ Alle Orte, Straßen, Wachen, Funkrufnamen, Personen und Telefonnummern sind frei
 | Mehrspieler | Peer-to-Peer mit Host-Autorität über ENet, LAN-Suche (UDP-Broadcast) und Direkt-IP, Ping, Passwortschutz per Challenge-Response, Rollen, Lobby, Chat, Synchronisierung, Wiederverbindung, Host-Verlassen, optional UPnP |
 | Weiteres | Speichern/Laden/Autosave/Löschen, Einstellungen, eigene synthetische Audiosignale, Wachen- und Standortverwaltung, Statistik, Einsatzarchiv |
 
+## Einstieg für neue Spieler
+
+* **Einweisung** (Hauptmenü, grüner Knopf): geführte erste Schicht in 12 Schritten – vom ersten Notruf bis zur Nachalarmierung.
+* **„Was ist zu tun?“** (links oben): listet jederzeit die offenen Aufgaben nach Dringlichkeit, jeweils mit einem Knopf für den nächsten Schritt.
+* **Notruffenster in drei Schritten:** ① Wo? ② Was? ③ Einsatzart → Stichwort → Einsatz anlegen.
+* **Einsatzakte:** zeigt zuerst nur den Vorschlag des Systems und den Bedarf in Klartext (✓ vor Ort · … unterwegs · ✗ fehlt).
+* **Schwierigkeit:** Leicht schlägt das Stichwort vor, Mittel nennt nur die Einsatzart, Schwer und Experte geben keine Hinweise.
+
 ## Bedienung (Kurzfassung)
 
 * **F2** Notruf annehmen → Rückfragen → Stichwort wählen → *Einsatz anlegen und disponieren*
@@ -77,7 +85,7 @@ installer/        Inno-Setup-Skript
 ## Tests
 
 ```bash
-godot --headless --path . res://tests/run_tests.tscn     # 81 Kerntests
+godot --headless --path . res://tests/run_tests.tscn     # 86 Kerntests inkl. Einweisung
 tools/test_multiplayer.sh                                # Host + 2 Clients als getrennte Prozesse
 LEITSTELLE112.exe --headless --selbsttest                # Selbsttest der fertigen Anwendung
 ```

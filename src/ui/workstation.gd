@@ -5,6 +5,8 @@ extends Control
 const UI = preload("res://src/ui/kit.gd")
 const MapView = preload("res://src/map/map_view.gd")
 const PanelIncidents = preload("res://src/ui/panel_incidents.gd")
+const PanelTasks = preload("res://src/ui/panel_tasks.gd")
+const Tutorial = preload("res://src/simulation/tutorial.gd")
 const PanelVehicles = preload("res://src/ui/panel_vehicles.gd")
 const PanelComms = preload("res://src/ui/panel_comms.gd")
 const WinCall = preload("res://src/ui/win_call.gd")
@@ -19,6 +21,11 @@ const SaveSystem = preload("res://src/save/save_system.gd")
 const Modes = preload("res://src/simulation/modes.gd")
 
 var map: Control
+var tasks: VBoxContainer
+var _tut_panel: PanelContainer
+var _tut_title: Label
+var _tut_text: Label
+var _tut_step := -2
 var left: VBoxContainer
 var right: VBoxContainer
 var comms: VBoxContainer
@@ -70,9 +77,18 @@ func _ready() -> void:
 	inner.split_offset = -150
 	inner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var outer := HSplitContainer.new()
-	outer.add_child(left)
+	tasks = VBoxContainer.new()
+	tasks.set_script(PanelTasks)
+	tasks.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	var left_split := VSplitContainer.new()
+	left_split.custom_minimum_size.x = 250
+	left_split.add_child(tasks)
+	left_split.add_child(left)
+	left_split.split_offset = 60
+	outer.add_child(left_split)
 	outer.add_child(inner)
-	outer.split_offset = 390
+	outer.split_offset = 360
 	outer.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	outer.name = "Split"
 	root.add_child(outer)
@@ -128,9 +144,50 @@ func _ready() -> void:
 			set_status("Verbindung zum Host wiederhergestellt.", UI.GREEN))
 	State.meta_changed.connect(_update_speed_buttons)
 	_update_speed_buttons()
+	_build_tutorial_panel()
 	call_deferred("_intro")
 
+func _build_tutorial_panel() -> void:
+	_tut_panel = PanelContainer.new()
+	_tut_panel.add_theme_stylebox_override("panel", UI.box(Color(0.13, 0.14, 0.15, 0.96), UI.YELLOW, 2, 12))
+	_tut_title = UI.label("", UI.YELLOW, 14)
+	_tut_title.add_theme_font_override("font", UI.bold())
+	_tut_text = UI.label("", UI.TEXT, 13)
+	_tut_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_tut_text.custom_minimum_size.x = 380
+	var close := UI.button("Einweisung ausblenden", func(): _tut_panel.visible = false)
+	_tut_panel.add_child(UI.vbox([UI.label("EINWEISUNG", UI.TEXT2, 10), _tut_title, _tut_text, UI.hbox([UI.spacer(), close])], 6))
+	_tut_panel.visible = false
+	map.add_child(_tut_panel)
+	_tut_panel.position = Vector2(12, 12)
+
+func _update_tutorial() -> void:
+	if not Tutorial.active():
+		_tut_panel.visible = false
+		return
+	var step := int(State.meta["tutorial"]["step"])
+	if step == _tut_step:
+		return
+	_tut_step = step
+	var d: Array = Tutorial.STEPS[clampi(step, 0, Tutorial.STEPS.size() - 1)]
+	_tut_title.text = "%s   (%d/%d)" % [d[0], min(step, Tutorial.LAST), Tutorial.LAST] if step > 0 else d[0]
+	_tut_text.text = d[1]
+	_tut_panel.visible = true
+	_tut_panel.reset_size()
+	Audio.play("system")
+	if step == 7 or step == 6:
+		var inc_id: String = State.meta["tutorial"].get("inc", "")
+		if State.incidents.has(inc_id):
+			show_incident(inc_id)
+
+func _first_visit() -> void:
+	if LocalDB.fetch("profile", "seen_intro", false) or Tutorial.active():
+		return
+	LocalDB.put("profile", "seen_intro", true)
+	UI.message(self, "Dein Arbeitsplatz", "So ist der Leitstellenarbeitsplatz aufgebaut:\n\n• Links oben – Was ist zu tun?  Alle offenen Aufgaben mit einem Knopf für den nächsten Schritt. Hier startest du am besten.\n• Links unten – Laufende Einsätze.\n• Mitte – Karte von Bavaria (ziehen, Mausrad zum Zoomen, Klick auf Fahrzeuge und Einsätze).\n• Rechts – Alle Fahrzeuge mit ihrem Status (Farblegende oben).\n• Unten – Funkprotokoll mit allen Meldungen.\n\nNeu hier? Starte im Hauptmenü die »Einweisung«. Hilfe gibt es jederzeit über den Knopf »Hilfe«.")
+
 func _intro() -> void:
+	_first_visit()
 	var ils := Vector2(-850, -1750)
 	map.zoom_fit()
 	if State.meta["mode"] == "szenario":
@@ -209,21 +266,18 @@ func _build_toolbar() -> Control:
 	var bar := PanelContainer.new()
 	bar.add_theme_stylebox_override("panel", UI.box(UI.SEC, UI.BORDER, 1, 4))
 	var h := UI.hbox([], 3)
-	h.add_child(UI.accent(UI.button("Notruf annehmen", func(): _menu_action("call_take"), "Nächsten wartenden Notruf annehmen (F2)"), UI.RED))
-	h.add_child(UI.button("Neuer Einsatz", func(): _menu_action("inc_new"), "Einsatz ohne Notruf anlegen"))
-	h.add_child(UI.button("Disponieren", func(): _menu_action("dispatch"), "Markierten Einsatz disponieren (F3)"))
-	h.add_child(UI.button("Sprechwunsch", func(): _menu_action("talk"), "Sprechaufforderung an das nächste Fahrzeug mit Status 5 (F6)"))
+	h.add_child(UI.accent(UI.button("Notruf annehmen  (F2)", func(): _menu_action("call_take"), "Nächsten wartenden Notruf annehmen"), UI.RED))
+	h.add_child(UI.button("Sprechwunsch  (F6)", func(): _menu_action("talk"), "Sprechaufforderung an das nächste Fahrzeug mit Status 5"))
+	h.add_child(UI.button("Neuer Einsatz", func(): _menu_action("inc_new"), "Einsatz ohne Notruf anlegen (z. B. nach Meldung über Funk)"))
 	h.add_child(VSeparator.new())
-	h.add_child(UI.button("Wachen", func(): _menu_action("stations"), "Wachen- und Standortverwaltung"))
-	h.add_child(UI.button("Personal", func(): _menu_action("personnel"), "Personalübersicht"))
-	h.add_child(UI.button("Lage", func(): _menu_action("situation"), "Wetter- und Lageinformation"))
-	h.add_child(VSeparator.new())
+	h.add_child(UI.button("Wachen und Fahrzeuge", func(): _menu_action("stations"), "Wachen verwalten, Fahrzeuge beschaffen und verlegen"))
 	h.add_child(UI.button("Gesamtansicht", func(): map.zoom_fit(), "Gesamtes Stadtgebiet anzeigen (Pos1)"))
-	h.add_child(UI.button("Sperrung", func(): _menu_action("closure"), "Straßensperrung per Klick auf die Karte setzen oder aufheben"))
+	h.add_child(VSeparator.new())
+	h.add_child(UI.button("Hilfe", func(): WinMisc.help(self, "anleitung"), "Kurzanleitung"))
 	h.add_child(UI.spacer())
 	_pause_btn = UI.button("Pause", func(): _menu_action("pause"), "Simulation anhalten/fortsetzen (nur Schichtführung)")
 	_pause_btn.toggle_mode = true
-	h.add_child(UI.label("Zeitraffer", UI.TEXT2))
+	h.add_child(UI.label("Zeitraffer:", UI.TEXT2))
 	h.add_child(_pause_btn)
 	for s in [1, 2, 4, 8]:
 		var b := UI.button("%d×" % s, func(): Game.act({"a": "set_speed", "speed": float(s)}))
@@ -422,7 +476,7 @@ func _open_call(id: String) -> void:
 	var w := VBoxContainer.new()
 	w.set_script(WinCall)
 	w.setup(id)
-	var win := UI.window(self, "Notrufabfrage – Leitung %s" % State.calls[id]["line"], Vector2i(880, 600), w, "call_" + id)
+	var win := UI.window(self, "Notrufabfrage – Leitung %s" % State.calls[id]["line"], Vector2i(900, 640), w, "call_" + id)
 	if win != null:
 		win.close_requested.disconnect(win.queue_free)
 		win.close_requested.connect(func(): set_status("Das Gespräch läuft noch. Bitte Einsatz anlegen oder das Gespräch beenden.", UI.YELLOW))
@@ -618,6 +672,7 @@ func _process(delta: float) -> void:
 	if _t < 0.25 or not State.active:
 		return
 	_t = 0.0
+	_update_tutorial()
 	var ringing := 0
 	for id in State.calls:
 		if State.calls[id]["state"] == "ringing":

@@ -10,6 +10,7 @@ var stations: Array = []
 var hospitals: Array = []
 var incident_types: Dictionary = {}
 var keywords: Dictionary = {}
+var categories: Dictionary = {}
 var call_scripts: Dictionary = {}
 var fms: Dictionary = {}
 var scenarios: Array = []
@@ -35,6 +36,7 @@ func reload() -> void:
 	var it: Dictionary = load_json("incident_types.json")
 	incident_types = it.get("types", {})
 	keywords = it.get("keywords", {})
+	categories = it.get("categories", {})
 	call_scripts = load_json("call_scripts.json")
 	fms = load_json("fms_status.json")
 	scenarios = load_json("scenarios.json").get("scenarios", [])
@@ -82,3 +84,14 @@ func keyword_list() -> Array:
 	var ks := keywords.keys()
 	ks.sort()
 	return ks
+
+## Stichwörter einer Kategorie (brand, thl, rd, abc, pol, sonst), sortiert.
+func keywords_in(cat: String) -> Array:
+	var out: Array = []
+	for k in keyword_list():
+		if keywords[k].get("cat", "") == cat:
+			out.append(k)
+	return out
+
+func category_name(cat: String) -> String:
+	return categories.get(cat, {}).get("name", cat)

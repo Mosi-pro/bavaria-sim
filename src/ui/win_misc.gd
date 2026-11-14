@@ -129,23 +129,33 @@ static func help(host: Node, topic: String) -> void:
 	match topic:
 		"anleitung":
 			title = "Kurzanleitung"
-			r.text = """[b]Arbeitsablauf am Leitstellenplatz[/b]
+			r.text = """[b]So funktioniert die Leitstelle[/b]
 
-[b]1. Notruf annehmen[/b]  –  Eingehende Notrufe erscheinen links oben (Telefonklingeln). Mit [b]F2[/b] oder Doppelklick annehmen. Wird ein Notruf zu lange nicht angenommen, legt der Anrufer auf und meldet sich später erneut.
+Am einfachsten lernst du das Spiel mit der [b]Einweisung[/b] im Hauptmenü.
 
-[b]2. Abfragen[/b]  –  Über die Rückfragen klären Sie Ort, Ereignis, Zahl der Betroffenen, Gefahren und den Zustand von Patienten. Anrufer sind teils aufgeregt und machen ungenaue Angaben; mehrfaches Nachfragen, Beruhigen oder die Standortabfrage (AML) helfen. Die Ortungsqualität wird auf der Karte als Kreis dargestellt.
+[b]Der wichtigste Bereich: »Was ist zu tun?« (links oben)[/b]
+Dort steht immer, was als Nächstes erledigt werden muss – mit einem Knopf für genau diesen Schritt. Arbeite die Liste von oben nach unten ab.
 
-[b]3. Einsatz anlegen[/b]  –  Stichwort wählen und Angaben erfassen. Liegt ein laufender Einsatz in der Nähe, weist das System auf eine mögliche Mehrfachmeldung hin; der Anruf kann dann dem Einsatz zugeordnet werden.
+[b]Der Ablauf eines Einsatzes[/b]
+1. [b]Notruf annehmen[/b] (F2). Wartet ein Anrufer zu lange, legt er auf und ruft später verärgert wieder an.
+2. [b]① Wo?[/b] – Ort klären. Grün = Adresse vollständig, gelb = Hausnummer fehlt, rot = nur Stadtteil. Nachfragen oder »Standort orten«.
+3. [b]② Was?[/b] – Lage klären. Weitere Fragen (Wie viele? Gefahr? Zustand?) helfen bei schwierigen Anrufen.
+4. [b]③ Stichwort[/b] – erst die Einsatzart (Brand, Technische Hilfe, Rettungsdienst …), dann das Stichwort. Danach »Einsatz anlegen«.
+5. [b]Alarmieren[/b] – Das System hakt passende, schnelle Fahrzeuge an. Prüfen und ALARMIEREN.
+6. [b]Rückmeldungen[/b] – Die erste Einheit meldet die tatsächliche Lage. Ist sie schlimmer als gemeldet, kommt ein [b]Sprechwunsch[/b] (Status 5, lila). Sprechaufforderung geben (F6) und fehlende Kräfte nachalarmieren.
+7. [b]Abschließen[/b] – Ist der Einsatz beendet, in der Aufgabenliste »Abschließen«.
 
-[b]4. Disponieren[/b]  –  Das Dispositionsfenster schlägt anhand von Stichwort, realer Fahrzeit, Verfügbarkeit und Besatzung Einsatzmittel vor. Die Auswahl liegt bei Ihnen. Mit ALARMIEREN rücken die Fahrzeuge aus.
+[b]Fahrzeugstatus (Farben in der rechten Liste)[/b]
+1/2 frei · 3 auf der Anfahrt · 4 an der Einsatzstelle · 5 Sprechwunsch · 7/8 Patiententransport · 6 außer Dienst
 
-[b]5. Einsatz begleiten[/b]  –  Die ersteintreffende Einheit gibt eine Lagemeldung. Die tatsächliche Lage kann von der Meldung abweichen und sich verändern. Nachforderungen kommen als [b]Sprechwunsch (Status 5)[/b] – mit [b]F6[/b] die Sprechaufforderung geben. Fehlende Kräfte verlängern den Einsatz und können die Lage verschärfen.
+[b]Schwierigkeit[/b]
+Leicht: Das passende Stichwort wird vorgeschlagen.  Mittel: Nur die Einsatzart wird angedeutet.  Schwer/Experte: keine Hinweise, mehr und hektischere Notrufe.
 
-[b]6. Abschließen[/b]  –  Nach der Meldung „Einsatz beendet“ rücken die Kräfte ein; der Einsatz wird in der Einsatzakte abgeschlossen (spätestens nach 15 Minuten automatisch).
+[b]Karte[/b]
+Ziehen = verschieben, Mausrad = zoomen, Klick auf Fahrzeug/Einsatz/Wache = Details, Rechtsklick = Kontextmenü.
 
-[b]Karte[/b]  –  Ziehen zum Verschieben, Mausrad zum Zoomen, Klick auf Fahrzeuge, Einsätze und Wachen für Details, Rechtsklick für Kontextmenü. Unter „Leitstelle“ können Straßensperrungen eingetragen werden.
-
-[b]Tastatur[/b]  –  F2 Notruf annehmen · F3 Einsatz disponieren · F4 Texteingabe · F5 Schnellspeichern · F6 Sprechwunsch · F11 Vollbild · Pause-Taste Pause · Num +/− Spielgeschwindigkeit · Pos1 Gesamtansicht. Die Belegung ist in den Einstellungen änderbar."""
+[b]Tasten[/b]
+F2 Notruf annehmen · F6 Sprechwunsch · F5 Speichern · Pause · Num +/− Zeitraffer · Pos1 Gesamtansicht · F11 Vollbild (änderbar in den Einstellungen)"""
 		"stichworte":
 			title = "Einsatzstichwörter und Alarmierungsvorschlag"
 			var t := "[b]Einsatzstichwörter (Alarm- und Ausrückeordnung der ILS Bavaria)[/b]\n\n[table=3]"

@@ -45,6 +45,8 @@ func _ready() -> void:
 	test_personnel_roles()
 	print("== Wachenverwaltung und Karriere ==")
 	test_management()
+	print("== Einweisung ==")
+	test_tutorial()
 	print("== Szenarien ==")
 	test_scenarios()
 	print("== Speichern und Laden ==")
@@ -306,6 +308,58 @@ func test_management() -> void:
 	for i in 12:
 		Modes.reward(inc, {"x": 1})
 	check(int(State.meta["level"]) > lvl, "Erfahrung führt zu Stufenaufstieg")
+
+func test_tutorial() -> void:
+	const Tutorial = preload("res://src/simulation/tutorial.gd")
+	Sim.new_game({"mode": "einweisung", "seed": 8})
+	Sim.running = false
+	var tut: Dictionary = State.meta["tutorial"]
+	var seen := {}
+	var step_of := func(): return int(State.meta["tutorial"]["step"])
+	var ok: bool = run(5 * 3600.0, func():
+		seen[step_of.call()] = true
+		var cid: String = tut.get("call", "")
+		if State.calls.has(cid):
+			var c: Dictionary = State.calls[cid]
+			match step_of.call():
+				1: Sim.act({"a": "call_take", "id": cid}, me)
+				2: Sim.act({"a": "call_ask", "id": cid, "q": "q_wo"}, me)
+				3:
+					if c["pending"].is_empty():
+						Sim.act({"a": "call_ask", "id": cid, "q": "q_was"}, me)
+				4, 9, 10:
+					if c["state"] == "ringing":
+						Sim.act({"a": "call_take", "id": cid}, me)
+					elif c["incident"] == "" and c["pending"].is_empty():
+						if step_of.call() == 4:
+							check(c.get("hint", {}).get("keyword", "") == "RD 1", "Einweisung: Stichworthinweis wird angezeigt")
+						var kw: String = {4: "RD 1", 9: "B 1", 10: "B 3"}[step_of.call()]
+						var r: Dictionary = Sim.act({"a": "call_create", "id": cid, "form": {"keyword": kw, "x": c["loc"]["x"], "y": c["loc"]["y"]}}, me)
+						if r.get("ok", false):
+							Sim.act({"a": "inc_alarm", "id": r["id"], "vehicles": Advisor.suggest(State.incidents[r["id"]])["suggested"]}, me)
+							Sim.act({"a": "call_end", "id": cid}, me)
+		for vid in State.vehicles:
+			if State.vehicles[vid]["talk"] != "":
+				Sim.act({"a": "veh_talk", "id": vid}, me)
+		var iid: String = tut.get("inc", "")
+		if State.incidents.has(iid):
+			var inc: Dictionary = State.incidents[iid]
+			if step_of.call() == 8 and inc["done"]:
+				Sim.act({"a": "inc_close", "id": iid}, me)
+			if step_of.call() == 11 and inc["revealed"] and int(State.clock) % 20 == 0:
+				var sg: Array = Advisor.suggest(inc)["suggested"]
+				if not sg.is_empty():
+					Sim.act({"a": "inc_alarm", "id": iid, "vehicles": sg}, me)
+		return step_of.call() >= Tutorial.LAST)
+	var all := true
+	for i in range(1, Tutorial.LAST + 1):
+		if not seen.has(i):
+			all = false
+			print("    Schritt nicht erreicht: ", i)
+	check(ok and all, "Einweisung: alle %d Schritte nacheinander durchlaufen" % Tutorial.LAST)
+	check(seen.has(11), "Einweisung: Nachforderung tritt auf (Schritt 11)")
+	check(float(State.meta["next_call"]) < 1e11, "Nach der Einweisung startet der reguläre Notrufbetrieb")
+	check(Tutorial.STEPS.size() == Tutorial.LAST + 1, "Einweisung: Text für jeden Schritt vorhanden")
 
 func test_scenarios() -> void:
 	for sc in Data.scenarios:

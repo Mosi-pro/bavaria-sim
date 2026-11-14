@@ -69,6 +69,10 @@ func new_game(opts: Dictionary) -> void:
 		m["background_rate"] = float(sc.get("background_rate", 0.5))
 		m["weather_lock"] = sc.get("weather_lock", false)
 		State.env["weather"] = sc.get("weather", "klar")
+	if mode == "einweisung":
+		m["difficulty"] = "leicht"
+		start_hour = 10
+		State.env["weather"] = "klar"
 	if mode == "karriere":
 		m["zones"] = [1]
 		m["orgs"] = Modes.orgs_for_level(1)
@@ -90,6 +94,8 @@ func new_game(opts: Dictionary) -> void:
 			for p in World.pois:
 				if p["id"] == sc["city_event"]["poi"]:
 					Env.add_event(sc["city_event"]["name"], p, float(sc["city_event"].get("factor", 3.0)), float(sc.get("duration", 7200)))
+	if mode == "einweisung":
+		Modes.Tutorial.start()
 	State.active = true
 	running = true
 	_autosave_t = 0.0

@@ -195,7 +195,7 @@ static func spawn_event(type_id: String, opts: Dictionary = {}) -> String:
 	var tid := IL.make_truth(type_id, loc, int(opts.get("variant", -1)))
 	var tr: Dictionary = State.truths[tid]
 	tr["next_call"] = State.clock + Sim.rng.randf_range(35.0, 90.0)
-	return make_call(tid, false)
+	return make_call(tid, false, int(opts.get("loc_level", -1)))
 
 # ---------------------------------------------------------------- Notruf
 static func _caller(persona_forced: String) -> Dictionary:
@@ -238,7 +238,7 @@ static func _new_call(caller: Dictionary) -> Dictionary:
 	State.meta["stats"]["calls"] = int(State.meta["stats"]["calls"]) + 1
 	return c
 
-static func make_call(tid: String, recall: bool) -> String:
+static func make_call(tid: String, recall: bool, force_level := -1) -> String:
 	var tr: Dictionary = State.truths[tid]
 	var t: Dictionary = Data.incident_types[tr["type"]]
 	var script: Dictionary = scripts().get("scripts", {}).get(t.get("call", ""), {})
@@ -257,6 +257,8 @@ static func make_call(tid: String, recall: bool) -> String:
 			level = 0
 		elif roll < vague:
 			level = 1
+	if force_level >= 0:
+		level = force_level
 	c["true_pos"] = [tr["x"], tr["y"]]
 	_set_loc_level(c, tr, level)
 	var prefix := _pick(persona.get("prefix", [""]))
@@ -370,6 +372,7 @@ static func ask(c: Dictionary, q: String) -> String:
 			"q_was":
 				answer = _fmt(_pick(script.get("what", ["Das habe ich doch gesagt!"])), c, tr)
 				c["known"]["what"] = answer
+				_set_hint(c, tr)
 			"q_personen":
 				if Sim.rng.randf() < unsure * 0.6:
 					answer = _pick(g.get("dontknow", ["Weiß ich nicht."]))
@@ -484,3 +487,16 @@ static func real_tick(delta: float) -> void:
 					if line["who"] == "A":
 						Sim.sound("voice")
 					State.touch_call(cid)
+
+## Hinweis für den Disponenten je nach Schwierigkeit: Stichwort (leicht), Kategorie (mittel), keiner (schwer).
+static func _set_hint(c: Dictionary, tr: Dictionary) -> void:
+	var level: String = IL.difficulty().get("hint", "none")
+	if State.meta.get("mode", "") == "einweisung":
+		level = "keyword"
+	var kw := IL.correct_keyword(tr)
+	var cat: String = Data.keywords.get(kw, {}).get("cat", "")
+	match level:
+		"keyword":
+			c["hint"] = {"cat": cat, "keyword": kw, "text": "Empfehlung: %s – %s" % [kw, Data.keywords.get(kw, {}).get("name", "")]}
+		"category":
+			c["hint"] = {"cat": cat, "keyword": "", "text": "Das klingt nach: %s" % Data.category_name(cat)}

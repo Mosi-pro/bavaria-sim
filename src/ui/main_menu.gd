@@ -40,6 +40,9 @@ func _ready() -> void:
 	var gap := Control.new()
 	gap.custom_minimum_size.y = 18
 	v.add_child(gap)
+	v.add_child(UI.caption("Neu hier?"))
+	var tut := UI.accent(_btn("Einweisung – geführte erste Schicht", _start_tutorial, "Schritt für Schritt vom ersten Notruf bis zur Nachalarmierung (ca. 15 Minuten)"), UI.GREEN)
+	v.add_child(tut)
 	v.add_child(UI.caption("Einzelspieler"))
 	v.add_child(_btn("Freies Spiel", func(): _new_game("frei"), "Unbegrenztes Spielen mit dynamisch erzeugten Einsätzen"))
 	v.add_child(_btn("Karriere", func(): _new_game("karriere"), "Aufbau der Leitstelle: Regionen, Wachen, Fahrzeuge, Organisationen"))
@@ -70,6 +73,9 @@ func _btn(text: String, cb: Callable, tip := "") -> Button:
 	b.custom_minimum_size.y = 30
 	return b
 
+func _start_tutorial() -> void:
+	Game.start_new({"mode": "einweisung", "name": "Einweisung", "speed": 1.0})
+
 func _new_game(mode: String) -> void:
 	var md: Dictionary = Data.modes["modes"][mode]
 	var name := UI.line_edit("", "%s %s" % [md["name"], Time.get_date_string_from_system()])
@@ -79,14 +85,19 @@ func _new_game(mode: String) -> void:
 	var hour := UI.option(hours.map(func(h): return h[1]), 0)
 	var desc := UI.label(md["desc"], UI.TEXT2)
 	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	var box := UI.vbox([desc, UI.form([["Name der Schicht", name], ["Schwierigkeit", diff], ["Dienstbeginn", hour]])])
+	var ddesc := UI.label("", UI.TEXT2, 11)
+	ddesc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	var upd := func(i): ddesc.text = Data.modes["difficulties"][diffs[i]].get("desc", "")
+	diff.item_selected.connect(upd)
+	upd.call(diff.selected)
+	var box := UI.vbox([desc, UI.form([["Name der Schicht", name], ["Schwierigkeit", diff], ["", ddesc], ["Dienstbeginn", hour]])])
 	var sp := Control.new()
 	sp.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box.add_child(sp)
 	box.add_child(UI.hbox([UI.spacer(), UI.accent(UI.button("Schicht beginnen", func():
 		Game.start_new({"mode": mode, "difficulty": diffs[diff.selected], "name": name.text.strip_edges() if name.text.strip_edges() != "" else md["name"], "start_hour": hours[hour.selected][0], "speed": float(md.get("speed", Settings.get_v("game", "speed"))) if mode == "realismus" else float(Settings.get_v("game", "speed"))})), UI.BLUE),
 		UI.button("Abbrechen", func(): box.get_window().queue_free())]))
-	UI.window(self, md["name"], Vector2i(520, 260), box, "newgame")
+	UI.window(self, md["name"], Vector2i(540, 300), box, "newgame")
 
 func _scenarios() -> void:
 	var tree := UI.tree([{"title": "Szenario"}], false)

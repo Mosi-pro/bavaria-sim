@@ -4,6 +4,7 @@ extends RefCounted
 const StationLogic = preload("res://src/stations/station_logic.gd")
 const CallGen = preload("res://src/incidents/call_generator.gd")
 const Env = preload("res://src/simulation/environment.gd")
+const Tutorial = preload("res://src/simulation/tutorial.gd")
 
 static func career() -> Dictionary:
 	return Data.modes.get("career", {})
@@ -86,6 +87,7 @@ static func scenario() -> Dictionary:
 	return {}
 
 static func tick(_h: float) -> void:
+	Tutorial.tick(_h)
 	if State.meta["mode"] != "szenario" or State.meta.get("scenario_over", false):
 		return
 	var sc := scenario()

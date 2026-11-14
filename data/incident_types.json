@@ -1,5 +1,13 @@
 {
   "_comment": "keywords = wählbare Einsatzstichwörter mit Alarmierungsvorschlag (aao). types = tatsächliche Lagen mit eigener Einsatzlogik: reqs (taktischer Bedarf), work (Arbeitszeit in s bei vollem Kräfteansatz), variants (Lage beim Eintreffen), developments (dynamische Lageänderungen), strain (Folgen bei Kräftemangel), gate (Anteil der technischen Rettung, ab dem Patienten versorgt werden können).",
+  "categories": {
+    "brand": {"name": "Brand", "desc": "Feuer, Rauch, Brandmeldeanlage"},
+    "thl": {"name": "Technische Hilfe", "desc": "Person eingeklemmt/eingeschlossen, Baum, Wasser, Unwetter"},
+    "rd": {"name": "Rettungsdienst / Verletzte", "desc": "Krankheit, Verletzung, Verkehrsunfall mit Verletzten"},
+    "abc": {"name": "Gefahrstoff", "desc": "Austretende Chemikalien, Gas, Gefahrgut"},
+    "pol": {"name": "Polizei", "desc": "Streit, Einbruch, Gewalt"},
+    "sonst": {"name": "Sonstiges", "desc": "Betreuung, sonstige Hilfe"}
+  },
   "keywords": {
     "B 1":   {"name": "Brand klein (Müll, Fläche, Kleinbrand)", "cat": "brand", "prio": 3, "aao": {"loeschen": 1}},
     "B 2":   {"name": "Brand mittel (Fahrzeug, Garage, Nebengebäude)", "cat": "brand", "prio": 2, "aao": {"loeschen": 2, "fuehrung_fw": 1, "polizei": 1}},

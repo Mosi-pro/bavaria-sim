@@ -26,13 +26,14 @@ var _checked := {}
 var _suggested: Array = []
 var _sugg_sig := ""
 var _orgs: Array = []
+var _details := ""
 
 func setup(id: String) -> void:
 	inc_id = id
 	Game.act({"a": "inc_open", "id": id})
 	info = UI.rich(false)
 	info.scroll_following = false
-	info.custom_minimum_size.y = 168
+	info.custom_minimum_size.y = 130
 	info.size_flags_vertical = Control.SIZE_FILL
 	add_child(info)
 	progress = ProgressBar.new()
@@ -52,10 +53,14 @@ func setup(id: String) -> void:
 	org_filter = UI.option(names, 0)
 	org_filter.item_selected.connect(func(_i): _fill_disposition(false))
 	only_free = CheckBox.new()
-	only_free.text = "nur verfügbare"
-	only_free.button_pressed = true
+	only_free.text = "Alle verfügbaren Fahrzeuge zeigen"
+	only_free.tooltip_text = "Aus: nur der Vorschlag des Systems.  Ein: alle einsatzbereiten Fahrzeuge, sortiert nach Ankunftszeit."
+	only_free.button_pressed = false
 	only_free.focus_mode = Control.FOCUS_NONE
-	only_free.toggled.connect(func(_on): _fill_disposition(false))
+	only_free.toggled.connect(func(on):
+		org_filter.visible = on
+		_fill_disposition(false))
+	org_filter.visible = false
 	sugg_label = UI.label("", UI.TEXT2)
 	sugg_label.clip_text = true
 	sugg_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -70,13 +75,14 @@ func setup(id: String) -> void:
 	alarm_btn = UI.accent(UI.button("ALARMIEREN", _alarm), UI.RED)
 	alarm_btn.custom_minimum_size.x = 170
 	var dv := UI.vbox([
-		UI.hbox([org_filter, only_free, UI.button("Vorschlag übernehmen", func(): _fill_disposition(true), "Dispositionsvorschlag nach Alarm- und Ausrückeordnung neu berechnen und auswählen"), UI.button("Auswahl leeren", func():
+		sugg_label,
+		UI.hbox([only_free, org_filter, UI.spacer(), UI.button("Vorschlag neu berechnen", func(): _fill_disposition(true), "Vorschlag nach Stichwort bzw. aktuellem Bedarf neu berechnen und anhaken"), UI.button("Alle Haken entfernen", func():
 			_checked = {}
-			_fill_disposition(false)), sugg_label]),
+			_fill_disposition(false))]),
 		disp_tree,
-		UI.hbox([UI.label("Auswahl per Kontrollkästchen oder Doppelklick. Die Entscheidung liegt beim Disponenten.", UI.TEXT2), UI.spacer(), alarm_btn]),
+		UI.hbox([UI.label("Haken = wird alarmiert. ETA = voraussichtliche Ankunft.", UI.TEXT2), UI.spacer(), alarm_btn]),
 	])
-	dv.name = "Disposition"
+	dv.name = "Fahrzeuge alarmieren"
 	tabs.add_child(dv)
 	# --- Kräfte
 	force_tree = UI.tree([{"title": "St", "width": 24}, {"title": "Funkrufname", "width": 180}, {"title": "Typ", "width": 70}, {"title": "Zustand"}, {"title": "Besatzung", "width": 150}])
@@ -91,7 +97,7 @@ func setup(id: String) -> void:
 			if it != null:
 				Game.ui.open_vehicle(it.get_metadata(0))),
 		UI.spacer()])])
-	fv.name = "Kräfte am Einsatz"
+	fv.name = "Am Einsatz"
 	tabs.add_child(fv)
 	# --- Notizen
 	notes = UI.rich(false)
@@ -100,7 +106,7 @@ func setup(id: String) -> void:
 	var nv := UI.vbox([notes, UI.hbox([note_edit, UI.button("Notiz speichern", _add_note)])])
 	nv.name = "Notizen"
 	tabs.add_child(nv)
-	tabs.set_tab_title(2, "Notizen / Verlauf")
+	tabs.set_tab_title(2, "Verlauf und Notizen")
 	close_btn = UI.button("Einsatz abschließen", _close_incident)
 	add_child(UI.hbox([
 		UI.button("Auf Karte zeigen", func():
@@ -129,17 +135,11 @@ func _refresh() -> void:
 	var inc: Dictionary = State.incidents[inc_id]
 	var kd: Dictionary = Data.keywords.get(inc["keyword"], {})
 	var t := func(x): return State.time_str(float(x)) if float(x) >= 0.0 else "–"
-	var txt := "[b]Einsatz %s[/b]    [color=#d6a83b][b]%s[/b][/color] – %s    [color=#a4adb5]Priorität[/color] %d    [color=#a4adb5]Status[/color] [b]%s[/b]\n" % [inc["nr"], inc["keyword"], kd.get("name", ""), int(inc["prio"]), IL.STATUS_NAMES.get(inc["status"], inc["status"])]
-	txt += "[color=#a4adb5]Einsatzort[/color]  %s%s\n" % [inc["address"], "   [color=#d6a83b](Ortsangabe ungenau, ±%d m)[/color]" % int(inc["radius"]) if float(inc["radius"]) > 0.0 else ""]
-	var meld: Array = []
-	for pair in [["object", "Objekt"], ["persons", "Betroffene"], ["danger", "Gefahr"], ["info", "Bemerkung"]]:
-		if String(inc[pair[0]]) != "":
-			meld.append("%s: %s" % [pair[1], String(inc[pair[0]]).replace("[", "[lb]")])
-	txt += "[color=#a4adb5]Meldung[/color]  %s\n" % ("  ·  ".join(meld) if meld.size() > 0 else "–")
-	txt += "[color=#a4adb5]Anrufer[/color]  %s    [color=#a4adb5]angelegt von[/color] %s\n" % [inc["caller"] if inc["caller"] != "" else "–", inc["by"]]
-	txt += "[color=#a4adb5]Zeiten[/color]  Notruf %s  ·  Einsatz %s  ·  Alarm %s  ·  Eintreffen %s  ·  Ende %s\n" % [t.call(inc["t_call"]), t.call(inc["t_created"]), t.call(inc["t_alarm"]), t.call(inc["t_arrival"]), t.call(inc["t_done"])]
+	var txt := "[font_size=15][b][color=#d6a83b]%s[/color]  %s[/b][/font_size]    [color=#6b737b]Einsatz %s · Priorität %d[/color]\n" % [inc["keyword"], kd.get("name", ""), inc["nr"], int(inc["prio"])]
+	txt += "[color=#a4adb5]Ort:[/color]  %s%s\n" % [inc["address"], "   [color=#d6a83b](ungenau – Kräfte müssen suchen)[/color]" if float(inc["radius"]) > 0.0 else ""]
+	txt += "[color=#a4adb5]Stand:[/color]  [b]%s[/b]\n" % _plain_status(inc)
 	if inc["revealed"]:
-		txt += "[color=#a4adb5]Lage[/color]  %s\n" % String(inc["lage"]).replace("[", "[lb]")
+		txt += "[color=#a4adb5]Lage:[/color]  %s\n" % String(inc["lage"]).replace("[", "[lb]").replace("\n", "  ")
 		var need: Dictionary = inc.get("need", {})
 		var have: Dictionary = inc.get("have", {})
 		var assigned := IL.caps_assigned(inc_id)
@@ -148,25 +148,33 @@ func _refresh() -> void:
 			var n := int(need[k])
 			var h := int(have.get(k, 0))
 			var a := int(assigned.get(k, 0))
-			var col := "#4c9868" if h >= n else ("#d6a83b" if a >= n else "#c83d3d")
-			parts.append("[color=%s]%d× %s (vor Ort %d, zugeteilt %d)[/color]" % [col, n, Data.capabilities.get(k, k), h, a])
-		txt += "[color=#a4adb5]Kräftebedarf[/color]  %s\n" % ("  ·  ".join(parts) if parts.size() > 0 else "kein weiterer Bedarf")
+			if k == "ktw":
+				h += int(have.get("rtw", 0))
+				a += int(assigned.get("rtw", 0))
+			var mark := "[color=#4c9868]✓[/color]" if h >= n else ("[color=#d6a83b]…[/color]" if a >= n else "[color=#c83d3d]✗[/color]")
+			parts.append("%s %d× %s" % [mark, n, Data.capabilities.get(k, k)])
+		txt += "[color=#a4adb5]Bedarf:[/color]  %s\n" % ("   ".join(parts) if parts.size() > 0 else "kein weiterer Bedarf")
+		if parts.size() > 0:
+			txt += "[color=#6b737b]✓ vor Ort   … unterwegs   ✗ fehlt noch – nachalarmieren[/color]\n"
 		var pat: Dictionary = inc.get("pat", {})
 		if int(pat.get("total", 0)) > 0:
-			txt += "[color=#a4adb5]Patienten[/color]  %d gesamt  ·  %d warten  ·  %d in Behandlung  ·  %d transportiert  ·  %d ambulant%s\n" % [int(pat["total"]), int(pat.get("wait", 0)), int(pat.get("care", 0)), int(pat.get("transport", 0)), int(pat.get("ambulant", 0)), ("  ·  [color=#c83d3d]%d verstorben[/color]" % int(pat["dead"])) if int(pat.get("dead", 0)) > 0 else ""]
-	else:
-		txt += "[color=#a4adb5]Lage[/color]  [color=#6b737b]Noch keine Rückmeldung von der Einsatzstelle.[/color]\n"
+			txt += "[color=#a4adb5]Patienten:[/color]  %d gesamt · %d warten · %d in Behandlung · %d transportiert%s\n" % [int(pat["total"]), int(pat.get("wait", 0)), int(pat.get("care", 0)), int(pat.get("transport", 0)) + int(pat.get("ambulant", 0)), ("  ·  [color=#c83d3d]%d verstorben[/color]" % int(pat["dead"])) if int(pat.get("dead", 0)) > 0 else ""]
 	if inc["done"]:
-		txt += "[color=#4c9868][b]Einsatz beendet – Bewertung %d %%. Der Einsatz kann abgeschlossen werden.[/b][/color]\n" % int(inc["score"])
+		txt += "[color=#4c9868][b]Bewertung: %d %%[/b][/color]\n" % int(inc["score"])
 	if inc["dup_of"] != "":
-		txt += "[color=#d6a83b]Hinweis: mögliche Doppelalarmierung zu Einsatz %s.[/color]\n" % inc["dup_of"]
+		txt += "[color=#d6a83b]Hinweis: wahrscheinlich derselbe Notfall wie Einsatz %s.[/color]\n" % inc["dup_of"]
+	var meld: Array = []
+	for pair in [["object", "Objekt"], ["persons", "Betroffene"], ["danger", "Gefahr"], ["info", "Bemerkung"]]:
+		if String(inc[pair[0]]) != "":
+			meld.append("%s: %s" % [pair[1], String(inc[pair[0]]).replace("[", "[lb]")])
+	_details = "[b]Einsatzdaten[/b]\n[color=#a4adb5]Meldung[/color]  %s\n[color=#a4adb5]Anrufer[/color]  %s    [color=#a4adb5]angelegt von[/color] %s\n[color=#a4adb5]Zeiten[/color]  Notruf %s · Einsatz %s · Alarm %s · Eintreffen %s · Ende %s\n\n[b]Verlauf[/b]\n" % ["  ·  ".join(meld) if meld.size() > 0 else "–", inc["caller"] if inc["caller"] != "" else "–", inc["by"], t.call(inc["t_call"]), t.call(inc["t_created"]), t.call(inc["t_alarm"]), t.call(inc["t_arrival"]), t.call(inc["t_done"])]
 	info.text = txt
 	progress.value = float(inc.get("progress", 0.0))
 	progress.visible = inc["revealed"]
 	close_btn.text = "Einsatz abschließen" if inc["done"] else "Einsatz stornieren"
 	alarm_btn.disabled = inc["done"]
 	_fill_forces()
-	var ntext := ""
+	var ntext := _details
 	for n in inc["notes"]:
 		ntext += "[color=#6b737b]%s[/color]  [color=#d6a83b]%s:[/color]  %s\n" % [State.time_str(float(n["t"])), n["who"], String(n["text"]).replace("[", "[lb]")]
 	for e in State.radio:
@@ -179,6 +187,27 @@ func _refresh() -> void:
 	var sig := "%s|%s|%d" % [inc["keyword"], str(inc.get("need", {})), State.incident_vehicles(inc_id).size()]
 	if sig != _sugg_sig:
 		_fill_disposition(false)
+
+func _plain_status(inc: Dictionary) -> String:
+	match inc["status"]:
+		"neu", "in_bearbeitung":
+			return "Noch keine Fahrzeuge alarmiert – unten auswählen und ALARMIEREN."
+		"alarmiert":
+			return "Fahrzeuge alarmiert, sie rücken gerade aus."
+		"anfahrt":
+			var eta := INF
+			for vid in State.incident_vehicles(inc_id):
+				var v: Dictionary = State.vehicles[vid]
+				if v["state"] == "enroute":
+					eta = min(eta, float(v["eta"]) - State.clock)
+			return "Fahrzeuge auf der Anfahrt – erstes Eintreffen in ca. %s." % State.dur_str(eta) if eta < INF else "Fahrzeuge auf der Anfahrt."
+		"vor_ort":
+			return "Erste Kräfte vor Ort, sie erkunden die Lage."
+		"laeuft":
+			return "Einsatz läuft – %d %% erledigt." % int(float(inc.get("progress", 0.0)) * 100.0)
+		"rueckfahrt":
+			return "Einsatz beendet. Fahrzeuge fahren zurück – Einsatz jetzt abschließen."
+	return String(inc["status"])
 
 func _fill_forces() -> void:
 	var sel := ""
@@ -206,7 +235,7 @@ func _fill_forces() -> void:
 		it.set_text(4, Sim.Personnel.crew_text(v))
 		if vid == sel:
 			it.select(1)
-	tabs.set_tab_title(1, "Kräfte am Einsatz (%d)" % ids.size())
+	tabs.set_tab_title(1, "Am Einsatz (%d)" % ids.size())
 
 func _fill_disposition(apply_suggestion: bool) -> void:
 	if not State.incidents.has(inc_id):
@@ -230,7 +259,9 @@ func _fill_disposition(apply_suggestion: bool) -> void:
 		if org != "" and v["org"] != org:
 			continue
 		var free: bool = r["reason"] == ""
-		if only_free.button_pressed and not free:
+		if not free:
+			continue
+		if not only_free.button_pressed and not _suggested.has(r["id"]) and not _checked.get(r["id"], false):
 			continue
 		shown += 1
 		if shown > 140:
@@ -253,9 +284,11 @@ func _fill_disposition(apply_suggestion: bool) -> void:
 		if _suggested.has(r["id"]):
 			it.set_custom_bg_color(1, Color(0.29, 0.5, 0.66, 0.4))
 			it.set_tooltip_text(1, "Vom System vorgeschlagen")
-	var st := "Vorschlag: %d Fahrzeug(e)" % _suggested.size()
+	var st := "Das System schlägt %d Fahrzeug(e) vor (schnellste passende Einheiten)." % _suggested.size()
+	if _suggested.is_empty():
+		st = "Laut Stichwort bzw. Lage sind keine weiteren Fahrzeuge nötig."
 	if not res["missing"].is_empty():
-		st += "   –   nicht verfügbar: " + IL.need_text(res["missing"])
+		st += "   Derzeit nicht verfügbar: " + IL.need_text(res["missing"])
 	sugg_label.text = st
 	sugg_label.add_theme_color_override("font_color", UI.YELLOW if not res["missing"].is_empty() else UI.TEXT2)
 	_update_alarm_btn()
