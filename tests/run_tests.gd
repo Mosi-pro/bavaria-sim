@@ -45,6 +45,8 @@ func _ready() -> void:
 	test_personnel_roles()
 	print("== Wachenverwaltung und Karriere ==")
 	test_management()
+	print("== Alle Einsatzarten ==")
+	test_all_types()
 	print("== Einweisung ==")
 	test_tutorial()
 	print("== Szenarien ==")
@@ -308,6 +310,60 @@ func test_management() -> void:
 	for i in 12:
 		Modes.reward(inc, {"x": 1})
 	check(int(State.meta["level"]) > lvl, "Erfahrung führt zu Stufenaufstieg")
+
+func run_fast(max_sim: float, until: Callable) -> bool:
+	var t := 0.0
+	while t < max_sim:
+		Sim.step(2.0)
+		CallGen.real_tick(1.0)
+		t += 2.0
+		if until.call():
+			return true
+	return false
+
+func test_all_types() -> void:
+	var failed_types: Array = []
+	var ids: Array = Data.incident_types.keys()
+	for tid in ids:
+		if Data.incident_types[tid].get("weight", 1.0) == 0 and not tid in ["hochwasser", "veranstaltung"]:
+			continue
+		for vi in Data.incident_types[tid]["variants"].size():
+			Sim.new_game({"mode": "frei", "seed": 31 + vi})
+			Sim.running = false
+			State.meta["next_call"] = 1e12
+			var cid := CallGen.spawn_event(tid, {"variant": vi})
+			if not State.calls.has(cid):
+				failed_types.append("%s/%d: kein Notruf" % [tid, vi])
+				continue
+			var c: Dictionary = State.calls[cid]
+			var tr: Dictionary = State.truths[c["truth"]]
+			Sim.act({"a": "call_take", "id": cid}, me)
+			CallGen._set_loc_level(c, tr, 2)
+			var kw := IL.correct_keyword(tr)
+			if not Data.keywords.has(kw):
+				failed_types.append("%s/%d: Stichwort %s unbekannt" % [tid, vi, kw])
+				continue
+			var r: Dictionary = Sim.act({"a": "call_create", "id": cid, "form": {"keyword": kw, "x": c["loc"]["x"], "y": c["loc"]["y"]}}, me)
+			Sim.act({"a": "call_end", "id": cid}, me)
+			var inc: Dictionary = State.incidents[r["id"]]
+			Sim.act({"a": "inc_alarm", "id": inc["id"], "vehicles": Advisor.suggest(inc)["suggested"]}, me)
+			var done: bool = run_fast(4 * 3600.0, func():
+				for vid in State.vehicles:
+					if State.vehicles[vid]["talk"] != "":
+						Sim.act({"a": "veh_talk", "id": vid}, me)
+				if inc["revealed"] and not inc["done"] and int(State.clock) % 60 < 2:
+					var sg: Array = Advisor.suggest(inc)["suggested"]
+					if not sg.is_empty():
+						Sim.act({"a": "inc_alarm", "id": inc["id"], "vehicles": sg}, me)
+				return inc["done"])
+			if not done:
+				failed_types.append("%s/%d: nicht beendet (need %s, prog %.2f)" % [tid, vi, str(inc.get("need", {})), float(inc.get("progress", 0))])
+			elif int(inc["score"]) < 50:
+				failed_types.append("%s/%d: Bewertung nur %d" % [tid, vi, int(inc["score"])])
+			Sim.act({"a": "inc_close", "id": inc["id"]}, me)
+	for f in failed_types:
+		print("    ", f)
+	check(failed_types.is_empty(), "Alle Einsatzarten und Lagevarianten spielbar (Notruf → Alarm → Einsatzende)")
 
 func test_tutorial() -> void:
 	const Tutorial = preload("res://src/simulation/tutorial.gd")

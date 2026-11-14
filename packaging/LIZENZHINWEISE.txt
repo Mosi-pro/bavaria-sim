@@ -7,6 +7,11 @@ Spielwelt
   Einrichtungen oder Personen sind zufällig. Es wurden keine realen Einsatz-,
   Personal- oder Schichtpläne verwendet.
 
+Einsatzstichwörter
+  Die Systematik der Einsatzstichwörter und Mindestanforderungen ist an die
+  öffentlich bekanntgemachte bayerische Alarmierungsbekanntmachung angelehnt
+  und für das Spiel vereinfacht. Sie ist keine verbindliche Alarmierungsregel.
+
 Grafik und Audio
   Karte, Symbole und sämtliche Töne werden vom Programm bzw. von den
   mitgelieferten Werkzeugen (tools/) selbst erzeugt. Es werden keine

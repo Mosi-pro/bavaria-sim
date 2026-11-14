@@ -147,7 +147,14 @@ func _update_kw_desc() -> void:
 	if k == "":
 		kw_desc.text = Data.categories.get(CATS[cat_opt.selected - 1], {}).get("desc", "") if cat_opt.selected > 0 else ""
 		return
-	kw_desc.text = "Alarmiert werden typischerweise: %s" % IL.need_text(Data.keywords[k].get("aao", {}))
+	var kd: Dictionary = Data.keywords[k]
+	var lines: Array = []
+	if String(kd.get("schlagworte", "")) != "":
+		lines.append("Typisch: %s" % kd["schlagworte"])
+	if String(kd.get("min", "")) != "":
+		lines.append("Mindestanforderung: %s" % kd["min"])
+	lines.append("Vorschlag des Systems: %s" % IL.need_text(kd.get("aao", {})))
+	kw_desc.text = "\n".join(lines)
 
 func _keyword() -> String:
 	if kw_opt.disabled or kw_opt.selected <= 0 or kw_opt.selected - 1 >= _kws.size():

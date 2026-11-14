@@ -1,404 +1,4507 @@
 {
-  "_comment": "keywords = wählbare Einsatzstichwörter mit Alarmierungsvorschlag (aao). types = tatsächliche Lagen mit eigener Einsatzlogik: reqs (taktischer Bedarf), work (Arbeitszeit in s bei vollem Kräfteansatz), variants (Lage beim Eintreffen), developments (dynamische Lageänderungen), strain (Folgen bei Kräftemangel), gate (Anteil der technischen Rettung, ab dem Patienten versorgt werden können).",
-  "categories": {
-    "brand": {"name": "Brand", "desc": "Feuer, Rauch, Brandmeldeanlage"},
-    "thl": {"name": "Technische Hilfe", "desc": "Person eingeklemmt/eingeschlossen, Baum, Wasser, Unwetter"},
-    "rd": {"name": "Rettungsdienst / Verletzte", "desc": "Krankheit, Verletzung, Verkehrsunfall mit Verletzten"},
-    "abc": {"name": "Gefahrstoff", "desc": "Austretende Chemikalien, Gas, Gefahrgut"},
-    "pol": {"name": "Polizei", "desc": "Streit, Einbruch, Gewalt"},
-    "sonst": {"name": "Sonstiges", "desc": "Betreuung, sonstige Hilfe"}
+ "_comment": "keywords = wählbare Einsatzstichwörter mit Alarmierungsvorschlag (aao). types = tatsächliche Lagen mit eigener Einsatzlogik: reqs (taktischer Bedarf), work (Arbeitszeit in s bei vollem Kräfteansatz), variants (Lage beim Eintreffen), developments (dynamische Lageänderungen), strain (Folgen bei Kräftemangel), gate (Anteil der technischen Rettung, ab dem Patienten versorgt werden können).",
+ "categories": {
+  "brand": {
+   "name": "Brand",
+   "desc": "Feuer, Rauch, Brandmeldeanlage"
   },
-  "keywords": {
-    "B 1":   {"name": "Brand klein (Müll, Fläche, Kleinbrand)", "cat": "brand", "prio": 3, "aao": {"loeschen": 1}},
-    "B 2":   {"name": "Brand mittel (Fahrzeug, Garage, Nebengebäude)", "cat": "brand", "prio": 2, "aao": {"loeschen": 2, "fuehrung_fw": 1, "polizei": 1}},
-    "B 3":   {"name": "Brand Wohngebäude / Zimmerbrand", "cat": "brand", "prio": 1, "aao": {"fuehrung_fw": 1, "loeschen": 2, "dlk": 1, "rtw": 1, "polizei": 1}},
-    "B 4":   {"name": "Brand mit Personen in Gefahr / Gewerbe", "cat": "brand", "prio": 1, "aao": {"fuehrung_fw": 1, "loeschen": 3, "dlk": 1, "atemschutz": 1, "rtw": 1, "notarzt": 1, "polizei": 1}},
-    "B 5":   {"name": "Großbrand", "cat": "brand", "prio": 1, "aao": {"fuehrung_fw": 2, "elw2": 1, "loeschen": 5, "dlk": 2, "wasser": 2, "atemschutz": 1, "logistik": 1, "rtw": 2, "notarzt": 1, "elrd": 1, "polizei": 2}},
-    "B BMA": {"name": "Brandmeldeanlage", "cat": "brand", "prio": 2, "aao": {"fuehrung_fw": 1, "loeschen": 2, "dlk": 1}},
-    "THL 1": {"name": "Technische Hilfe klein (Baum, Ölspur, Tür, Tier)", "cat": "thl", "prio": 3, "aao": {"thl": 1}},
-    "THL 2": {"name": "Technische Hilfe mittel (Verkehrsunfall, Person in Notlage)", "cat": "thl", "prio": 2, "aao": {"thl": 1, "loeschen": 1, "fuehrung_fw": 1, "rtw": 1, "polizei": 1}},
-    "THL 3": {"name": "Person eingeklemmt", "cat": "thl", "prio": 1, "aao": {"fuehrung_fw": 1, "thl": 2, "rw": 1, "loeschen": 1, "rtw": 1, "notarzt": 1, "polizei": 1}},
-    "THL Tür": {"name": "Wohnungsöffnung akut (Person hinter Tür)", "cat": "thl", "prio": 1, "aao": {"thl": 1, "rtw": 1, "polizei": 1}},
-    "THL Wasser": {"name": "Wasserrettung / Person im Wasser", "cat": "thl", "prio": 1, "aao": {"wasserrettung": 2, "loeschen": 1, "fuehrung_fw": 1, "rtw": 1, "notarzt": 1, "polizei": 1}},
-    "THL Unwetter": {"name": "Unwetterschaden (Keller, Dach, Astbruch)", "cat": "thl", "prio": 3, "aao": {"loeschen": 1}},
-    "ABC 1": {"name": "Gefahrstoff klein (Auslaufen, Geruch)", "cat": "abc", "prio": 2, "aao": {"loeschen": 1, "fuehrung_fw": 1}},
-    "ABC 2": {"name": "Gefahrgutunfall", "cat": "abc", "prio": 1, "aao": {"fuehrung_fw": 1, "gefahrgut": 1, "loeschen": 2, "atemschutz": 1, "rtw": 1, "notarzt": 1, "polizei": 2}},
-    "RD 1":  {"name": "Notfall ohne Notarzt", "cat": "rd", "prio": 2, "aao": {"rtw": 1}},
-    "RD 2":  {"name": "Notfall mit Notarzt", "cat": "rd", "prio": 1, "aao": {"rtw": 1, "notarzt": 1}},
-    "RD KTP": {"name": "Krankentransport", "cat": "rd", "prio": 3, "aao": {"ktw": 1}},
-    "VU 1":  {"name": "Verkehrsunfall mit Verletzten", "cat": "rd", "prio": 2, "aao": {"rtw": 1, "polizei": 1, "loeschen": 1}},
-    "MANV 1": {"name": "Massenanfall von Verletzten (5–10)", "cat": "rd", "prio": 1, "aao": {"rtw": 4, "notarzt": 2, "elrd": 1, "fuehrung_fw": 1, "thl": 2, "loeschen": 1, "polizei": 2}},
-    "MANV 2": {"name": "Massenanfall von Verletzten (über 10)", "cat": "rd", "prio": 1, "aao": {"rtw": 6, "notarzt": 3, "elrd": 1, "seg": 2, "fuehrung_fw": 2, "elw2": 1, "thl": 2, "rw": 1, "loeschen": 2, "polizei": 3, "pol_fuehrung": 1}},
-    "POL 1": {"name": "Polizeieinsatz allgemein", "cat": "pol", "prio": 3, "aao": {"polizei": 1}},
-    "POL 2": {"name": "Polizeieinsatz dringend (Gefahr für Personen)", "cat": "pol", "prio": 1, "aao": {"polizei": 2}},
-    "POL 3": {"name": "Polizeiliche Sonderlage", "cat": "pol", "prio": 1, "aao": {"polizei": 4, "pol_fuehrung": 1, "pol_gruppe": 1, "sek": 1, "rtw": 1}},
-    "SONST": {"name": "Sonstige Hilfeleistung / Betreuung", "cat": "sonst", "prio": 3, "aao": {"betreuung": 1}}
+  "thl": {
+   "name": "Technische Hilfe",
+   "desc": "Person eingeklemmt/eingeschlossen, Baum, Wasser, Unwetter"
   },
-  "types": {
-    "brand_muell": {
-      "name": "Brennender Müllcontainer", "keyword": "B 1", "weight": 5, "cat": "brand", "call": "brand_klein",
-      "loc": {"mode": "road", "classes": [3, 4, 5, 8]},
-      "objects": ["Müllcontainer am Straßenrand", "Papiercontainer vor einem Supermarkt", "Altkleidercontainer", "Gelbe Tonnen in einem Hinterhof"],
-      "reqs": {"loeschen": 1}, "work": 420, "patients": [0, 0], "sev": [1, 1],
-      "variants": [
-        {"p": 0.75, "name": "Containerbrand", "lage": "Ein Container in Vollbrand, ein C-Rohr im Einsatz."},
-        {"p": 0.15, "name": "Brand greift über", "lage": "Containerbrand hat auf einen Carport übergegriffen. Benötigen ein weiteres Löschfahrzeug.", "reqs": {"loeschen": 2, "polizei": 1}, "work": 900},
-        {"p": 0.10, "name": "Bereits erloschen", "lage": "Feuer durch Anwohner gelöscht, Nachkontrolle mit Wärmebildkamera.", "work": 150}
-      ],
-      "reports": {"p50": "Feuer aus, Nachlöscharbeiten.", "done": "Einsatz beendet, Einsatzstelle an Eigentümer übergeben."}
-    },
-    "brand_pkw": {
-      "name": "PKW-Brand", "keyword": "B 2", "weight": 3.5, "cat": "brand", "call": "brand_pkw",
-      "loc": {"mode": "road", "classes": [0, 2, 3, 4, 5, 6]},
-      "objects": ["PKW am Fahrbahnrand", "Kleintransporter auf einem Parkplatz", "PKW in einer Parkbucht", "Lieferwagen"],
-      "reqs": {"loeschen": 1, "polizei": 1}, "work": 600, "patients": [0, 1], "sev": [1, 2],
-      "variants": [
-        {"p": 0.6, "name": "Motorraumbrand", "lage": "PKW brennt im Motorraum, ein Trupp unter Atemschutz mit Schnellangriff."},
-        {"p": 0.3, "name": "Vollbrand", "lage": "PKW in Vollbrand, Betriebsstoffe laufen aus. Zweites Löschfahrzeug erforderlich.", "reqs": {"loeschen": 2, "polizei": 1}, "work": 900},
-        {"p": 0.1, "name": "Elektrofahrzeug", "lage": "Elektrofahrzeug brennt, Hochvoltbatterie betroffen. Großer Wasserbedarf.", "reqs": {"loeschen": 2, "wasser": 1, "fuehrung_fw": 1, "polizei": 1}, "work": 2100}
-      ],
-      "reports": {"p50": "Feuer in Gewalt.", "done": "Feuer aus. Fahrzeug an Polizei übergeben."}
-    },
-    "brand_wohnung": {
-      "name": "Zimmerbrand im Mehrfamilienhaus", "keyword": "B 3", "weight": 4, "cat": "brand", "call": "brand_wohnung", "multi_calls": 0.5,
-      "loc": {"mode": "road", "classes": [3, 4, 5], "styles": ["altstadt", "zentrum", "wohn_dicht", "wohn", "vorstadt"]},
-      "objects": ["Mehrfamilienhaus, 2. Obergeschoss", "Mehrfamilienhaus, 4. Obergeschoss", "Wohnblock, Erdgeschoss", "Altbau, Dachgeschosswohnung", "Hochhaus, 7. Obergeschoss"],
-      "reqs": {"fuehrung_fw": 1, "loeschen": 2, "dlk": 1, "polizei": 1}, "work": 1500, "patients": [0, 2], "sev": [1, 2],
-      "variants": [
-        {"p": 0.22, "name": "Angebranntes Essen", "lage": "Angebranntes Essen auf dem Herd. Wohnung wird belüftet, keine Verletzten.", "reqs": {"loeschen": 1}, "work": 420, "patients": [0, 0]},
-        {"p": 0.48, "name": "Zimmerbrand", "lage": "Bestätigter Zimmerbrand, Rauch aus zwei Fenstern. Ein Trupp unter Atemschutz zur Brandbekämpfung im Innenangriff."},
-        {"p": 0.22, "name": "Wohnung in Vollbrand", "lage": "Wohnung in Vollbrand, Personen an den Fenstern im Obergeschoss! Menschenrettung über Drehleiter eingeleitet.", "reqs": {"fuehrung_fw": 1, "loeschen": 3, "dlk": 1, "atemschutz": 1, "polizei": 1}, "work": 2400, "patients": [1, 4], "sev": [1, 3]},
-        {"p": 0.08, "name": "Treppenraum verraucht", "lage": "Treppenraum stark verraucht, mehrere Bewohner eingeschlossen. Erhöhen auf B 4.", "reqs": {"fuehrung_fw": 1, "loeschen": 3, "dlk": 2, "atemschutz": 1, "elrd": 1, "polizei": 2}, "work": 2700, "patients": [2, 6], "sev": [1, 3]}
-      ],
-      "developments": [
-        {"at": [0.15, 0.5], "p": 0.18, "text": "Durchzündung! Feuer greift auf das Dachgeschoss über. Benötigen dringend weitere Kräfte.", "add": {"loeschen": 2, "dlk": 1, "atemschutz": 1}, "work": 1200, "patients": [0, 1], "sev": [2, 3]},
-        {"at": [0.3, 0.7], "p": 0.12, "text": "Bei der Kontrolle der Nachbarwohnungen eine weitere verletzte Person aufgefunden.", "add": {}, "work": 120, "patients": [1, 1], "sev": [1, 2]}
-      ],
-      "strain": [
-        {"after": 360, "text": "Lage spitzt sich zu: Feuer breitet sich auf weitere Wohnungen aus, Kräfte vor Ort nicht ausreichend!", "add": {"loeschen": 1}, "work": 900, "patients": [0, 1], "sev": [2, 3]}
-      ],
-      "reports": {"p35": "Feuer in Gewalt, Menschenrettung abgeschlossen.", "p75": "Feuer aus. Nachlöscharbeiten und Belüftung.", "done": "Einsatz beendet. Einsatzstelle an Polizei übergeben."}
-    },
-    "brand_efh": {
-      "name": "Brand in einem Einfamilienhaus", "keyword": "B 3", "weight": 2.5, "cat": "brand", "call": "brand_efh", "multi_calls": 0.4,
-      "loc": {"mode": "road", "classes": [4, 5], "styles": ["wohn", "vorstadt", "wald", "dorf"]},
-      "objects": ["Einfamilienhaus", "Doppelhaushälfte", "Reihenmittelhaus", "freistehendes Einfamilienhaus mit Garage"],
-      "reqs": {"fuehrung_fw": 1, "loeschen": 2, "dlk": 1, "polizei": 1}, "work": 1800, "patients": [0, 2], "sev": [1, 2],
-      "variants": [
-        {"p": 0.3, "name": "Kellerbrand", "lage": "Rauch aus dem Kellergeschoss, Bewohner haben das Haus verlassen. Innenangriff unter Atemschutz."},
-        {"p": 0.35, "name": "Küchenbrand", "lage": "Küche im Erdgeschoss brennt, Flammen schlagen aus dem Fenster. Ein Bewohner mit Verdacht auf Rauchgasvergiftung.", "patients": [1, 2]},
-        {"p": 0.25, "name": "Dachstuhlbrand", "lage": "Dachstuhl in Vollbrand, Riegelstellung zum Nachbargebäude wird aufgebaut. Weitere Löschfahrzeuge erforderlich.", "reqs": {"fuehrung_fw": 1, "loeschen": 4, "dlk": 1, "wasser": 1, "atemschutz": 1, "polizei": 1}, "work": 3000},
-        {"p": 0.10, "name": "Kaminbrand", "lage": "Kaminbrand, Kamin wird gekehrt. Kaminkehrer verständigt.", "reqs": {"loeschen": 1, "dlk": 1}, "work": 1500, "patients": [0, 0]}
-      ],
-      "developments": [
-        {"at": [0.2, 0.6], "p": 0.15, "text": "Person im Obergeschoss vermisst gemeldet! Zusätzlicher Trupp zur Menschenrettung, benötigen Notarzt.", "add": {"loeschen": 1, "notarzt": 1}, "work": 600, "patients": [1, 1], "sev": [3, 3]}
-      ],
-      "strain": [
-        {"after": 420, "text": "Feuer greift auf Garage und Nachbargebäude über!", "add": {"loeschen": 2}, "work": 1200}
-      ],
-      "reports": {"p35": "Feuer in Gewalt.", "p75": "Feuer aus, Nachlöscharbeiten, Brandwache wird gestellt.", "done": "Einsatz beendet."}
-    },
-    "bma": {
-      "name": "Auslösung Brandmeldeanlage", "keyword": "B BMA", "weight": 5, "cat": "brand", "call": "bma",
-      "loc": {"mode": "poi", "poi_kinds": ["einkauf", "uni", "hochhaus", "hotel", "pflege", "schule", "messe", "veranstaltung", "industrie", "flughafen", "bahnhof", "oeffentlich", "klinik"]},
-      "objects": ["Meldergruppe 12, Technikraum", "Melder 3/14, Küche", "Meldergruppe 7, Lager", "Melder 21/2, Flur 3. OG", "Handdruckmelder Foyer"],
-      "reqs": {"fuehrung_fw": 1, "loeschen": 1}, "work": 480, "patients": [0, 0], "sev": [1, 1],
-      "variants": [
-        {"p": 0.55, "name": "Fehlalarm", "lage": "Erkundung negativ. Auslösung durch Wasserdampf / Staub. Anlage zurückgestellt.", "work": 360},
-        {"p": 0.2, "name": "Böswillige Auslösung", "lage": "Handdruckmelder eingeschlagen, kein Schadenfeuer. Polizei zur Anzeigenaufnahme erbeten.", "reqs": {"fuehrung_fw": 1, "loeschen": 1, "polizei": 1}, "work": 480},
-        {"p": 0.17, "name": "Kleinbrand", "lage": "Schmorbrand in einem Elektroverteiler, Kleinlöschgerät im Einsatz. Gebäude wird belüftet.", "reqs": {"fuehrung_fw": 1, "loeschen": 2}, "work": 1200},
-        {"p": 0.08, "name": "Bestätigtes Feuer", "lage": "Bestätigtes Feuer im Gebäude, Räumung läuft! Erhöhen auf B 4.", "reqs": {"fuehrung_fw": 1, "loeschen": 3, "dlk": 1, "atemschutz": 1, "rtw": 1, "polizei": 1}, "work": 2400, "patients": [0, 3], "sev": [1, 2]}
-      ],
-      "reports": {"done": "Einsatz beendet, Objekt an Betreiber übergeben."}
-    },
-    "brand_industrie": {
-      "name": "Rauchentwicklung in einem Industriegebäude", "keyword": "B 4", "weight": 1.6, "cat": "brand", "call": "brand_industrie", "multi_calls": 0.5,
-      "loc": {"mode": "road", "classes": [3, 4, 8], "styles": ["industrie", "gewerbe"]},
-      "objects": ["Produktionshalle eines Metallbetriebs", "Lagerhalle einer Spedition", "Kfz-Werkstatt", "Schreinerei", "Recyclingbetrieb", "Lackiererei"],
-      "reqs": {"fuehrung_fw": 1, "loeschen": 3, "dlk": 1, "atemschutz": 1, "polizei": 1}, "work": 2400, "patients": [0, 2], "sev": [1, 3],
-      "variants": [
-        {"p": 0.3, "name": "Maschinenbrand", "lage": "Brand einer Maschine in der Halle, Sprinkleranlage hat ausgelöst. Halle verraucht.", "reqs": {"fuehrung_fw": 1, "loeschen": 2, "atemschutz": 1}, "work": 1500},
-        {"p": 0.45, "name": "Hallenbrand", "lage": "Starke Rauchentwicklung aus dem Hallendach, Brandbekämpfung im Innen- und Außenangriff."},
-        {"p": 0.25, "name": "Ausgedehnter Brand", "lage": "Halle auf 30 x 40 Meter in Brand, Ausbreitung auf Nachbarhalle droht. Erhöhen auf B 5!", "reqs": {"fuehrung_fw": 2, "elw2": 1, "loeschen": 5, "dlk": 2, "wasser": 2, "atemschutz": 1, "logistik": 1, "rtw": 1, "polizei": 2}, "work": 5400, "patients": [0, 3]}
-      ],
-      "developments": [
-        {"at": [0.2, 0.6], "p": 0.2, "text": "Gasflaschen im Brandbereich! Gefahrenbereich wird erweitert, benötigen Polizei zur Absperrung.", "add": {"polizei": 1, "wasser": 1}, "work": 900},
-        {"at": [0.3, 0.7], "p": 0.12, "text": "Ein Feuerwehrangehöriger verletzt, benötigen RTW an die Einsatzstelle.", "add": {"rtw": 1}, "work": 0, "patients": [1, 1], "sev": [2, 2]}
-      ],
-      "strain": [
-        {"after": 480, "text": "Feuer breitet sich auf die gesamte Halle aus – Kräfteansatz unzureichend!", "add": {"loeschen": 2, "dlk": 1, "wasser": 1}, "work": 2400}
-      ],
-      "reports": {"p35": "Feuer unter Kontrolle.", "p75": "Feuer aus, umfangreiche Nachlöscharbeiten.", "done": "Einsatz beendet, Brandwache durch Betreiber."}
-    },
-    "grossbrand": {
-      "name": "Großbrand einer Lagerhalle", "keyword": "B 5", "weight": 0.35, "cat": "brand", "call": "grossbrand", "multi_calls": 1.0,
-      "loc": {"mode": "road", "classes": [3, 4, 8], "styles": ["industrie", "gewerbe"]},
-      "objects": ["Lagerhalle für Kunststoffgranulat", "Hochregallager eines Logistikunternehmens", "Reifenlager", "Möbelhaus", "Holzverarbeitender Betrieb"],
-      "reqs": {"fuehrung_fw": 2, "elw2": 1, "loeschen": 6, "dlk": 2, "wasser": 2, "atemschutz": 1, "logistik": 1, "rtw": 1, "elrd": 1, "polizei": 3}, "work": 7200, "patients": [0, 4], "sev": [1, 3],
-      "variants": [
-        {"p": 0.7, "name": "Vollbrand", "lage": "Lagerhalle in Vollbrand, Flammen schlagen meterhoch aus dem Dach. Massive Rauchentwicklung in Richtung Wohngebiet. Bevölkerungswarnung veranlassen!"},
-        {"p": 0.3, "name": "Vollbrand mit Einsturzgefahr", "lage": "Halle in Vollbrand, Einsturzgefahr! Nur Außenangriff möglich. Benötigen THW mit Radlader/Kran und Betreuung für evakuierte Anwohner.", "reqs": {"fuehrung_fw": 2, "elw2": 1, "loeschen": 7, "dlk": 3, "wasser": 3, "atemschutz": 1, "logistik": 1, "thw": 1, "betreuung": 1, "rtw": 2, "elrd": 1, "polizei": 3}, "work": 9000}
-      ],
-      "developments": [
-        {"at": [0.1, 0.4], "p": 0.4, "text": "Löschwasserversorgung nicht ausreichend, benötigen weitere Tanklöschfahrzeuge und Schlauchmaterial.", "add": {"wasser": 1, "logistik": 1}, "work": 600},
-        {"at": [0.3, 0.6], "p": 0.3, "text": "Rauchgase ziehen in ein Wohngebiet, 40 Anwohner werden evakuiert. Betreuungseinheit erforderlich.", "add": {"betreuung": 1, "polizei": 1}, "work": 600, "patients": [0, 2], "sev": [1, 1]}
-      ],
-      "strain": [
-        {"after": 600, "text": "Feuer greift auf das Nachbargebäude über!", "add": {"loeschen": 3, "dlk": 1}, "work": 3000}
-      ],
-      "reports": {"p35": "Feuer unter Kontrolle, Riegelstellung hält.", "p75": "Feuer aus, Nachlöscharbeiten werden noch Stunden andauern.", "done": "Einsatz beendet, Einsatzstelle an Betreiber und Kriminalpolizei übergeben."}
-    },
-    "vu_leicht": {
-      "name": "Verkehrsunfall mit zwei Fahrzeugen", "keyword": "VU 1", "weight": 6, "cat": "vu", "call": "vu",
-      "loc": {"mode": "road", "classes": [2, 3, 4, 6]},
-      "objects": ["zwei PKW im Kreuzungsbereich", "PKW gegen Kleintransporter", "Auffahrunfall zweier PKW", "PKW gegen Linienbus"],
-      "reqs": {"polizei": 1, "loeschen": 1}, "work": 900, "patients": [1, 2], "sev": [1, 2],
-      "variants": [
-        {"p": 0.45, "name": "Leichtverletzte", "lage": "Zwei beteiligte Fahrzeuge, Fahrbahn teilweise blockiert. Verletzte werden rettungsdienstlich versorgt, Betriebsstoffe werden gebunden."},
-        {"p": 0.25, "name": "Nur Sachschaden", "lage": "Zwei Fahrzeuge, nur Blechschaden, keine Verletzten. Polizei nimmt den Unfall auf.", "reqs": {"polizei": 1}, "work": 600, "patients": [0, 0]},
-        {"p": 0.18, "name": "Person eingeschlossen", "lage": "Fahrer nach Unfall im Fahrzeug eingeschlossen, Tür lässt sich nicht öffnen. Technische Rettung erforderlich!", "reqs": {"polizei": 1, "thl": 1, "loeschen": 1, "fuehrung_fw": 1, "notarzt": 1}, "work": 1500, "patients": [1, 3], "sev": [2, 3], "gate": 0.5},
-        {"p": 0.12, "name": "Mehrere Verletzte", "lage": "Vier Verletzte, davon einer schwer. Benötigen weitere Rettungsmittel und einen Notarzt.", "reqs": {"polizei": 2, "loeschen": 1, "notarzt": 1}, "work": 1500, "patients": [3, 4], "sev": [1, 3]}
-      ],
-      "reports": {"p50": "Unfallstelle abgesichert, Fahrbahn wird gereinigt.", "done": "Einsatzstelle an Polizei übergeben, Fahrbahn wieder frei."},
-      "closure": 0.35
-    },
-    "vu_eingeklemmt": {
-      "name": "Verkehrsunfall, Person eingeklemmt", "keyword": "THL 3", "weight": 1.6, "cat": "vu", "call": "vu_eingeklemmt", "multi_calls": 0.6,
-      "loc": {"mode": "road", "classes": [0, 2, 3, 6]},
-      "objects": ["PKW gegen Baum", "PKW frontal gegen LKW", "PKW auf dem Dach liegend", "PKW unter LKW-Auflieger"],
-      "reqs": {"fuehrung_fw": 1, "thl": 2, "loeschen": 1, "polizei": 2}, "work": 2100, "patients": [1, 3], "sev": [2, 3], "gate": 0.55,
-      "variants": [
-        {"p": 0.6, "name": "Eine Person eingeklemmt", "lage": "Eine Person im Fahrzeug eingeklemmt, ansprechbar. Technische Rettung mit hydraulischem Rettungssatz läuft."},
-        {"p": 0.25, "name": "Schwer eingeklemmt", "lage": "Fahrer massiv eingeklemmt, nicht ansprechbar. Rüstwagen und Notarzt dringend erforderlich!", "reqs": {"fuehrung_fw": 1, "thl": 2, "rw": 1, "loeschen": 1, "notarzt": 1, "polizei": 2}, "work": 2700, "sev": [3, 3]},
-        {"p": 0.15, "name": "Nicht eingeklemmt", "lage": "Person entgegen Erstmeldung nicht eingeklemmt, konnte selbstständig befreit werden.", "reqs": {"loeschen": 1, "polizei": 1}, "work": 900, "sev": [1, 2], "gate": 0}
-      ],
-      "developments": [
-        {"at": [0.1, 0.4], "p": 0.2, "text": "Fahrzeug beginnt zu brennen! Löschangriff eingeleitet.", "add": {"loeschen": 1}, "work": 300}
-      ],
-      "strain": [
-        {"after": 300, "text": "Zustand der eingeklemmten Person verschlechtert sich, Rettung verzögert sich mangels Gerät!", "add": {"notarzt": 1}, "work": 300}
-      ],
-      "reports": {"p35": "Zugang zum Patienten geschaffen.", "p75": "Person befreit und an Rettungsdienst übergeben.", "done": "Einsatz beendet, Unfallstelle an Polizei übergeben."},
-      "closure": 0.9
-    },
-    "vu_massen": {
-      "name": "Verkehrsunfall mit mehreren Verletzten", "keyword": "MANV 1", "weight": 0.5, "cat": "vu", "call": "vu_massen", "multi_calls": 1.0,
-      "loc": {"mode": "road", "classes": [0, 2, 6]},
-      "objects": ["Linienbus gegen LKW", "Auffahrunfall mit sechs Fahrzeugen", "Reisebus von der Fahrbahn abgekommen", "Kleinbus überschlagen"],
-      "reqs": {"fuehrung_fw": 1, "thl": 2, "loeschen": 1, "elrd": 1, "polizei": 3}, "work": 3000, "patients": [5, 9], "sev": [1, 3], "gate": 0.3,
-      "variants": [
-        {"p": 0.7, "name": "MANV", "lage": "Mehrere Fahrzeuge beteiligt, mindestens sechs Verletzte, zwei davon eingeklemmt. Patientenablage wird eingerichtet. Benötigen Einsatzleitung Rettungsdienst!"},
-        {"p": 0.3, "name": "MANV groß", "lage": "Bus und mehrere PKW beteiligt, über zehn Verletzte! Erhöhen auf MANV 2, SEG erforderlich.", "reqs": {"fuehrung_fw": 2, "thl": 2, "rw": 1, "loeschen": 2, "elrd": 1, "seg": 1, "polizei": 3}, "work": 4200, "patients": [10, 14]}
-      ],
-      "reports": {"p35": "Alle Eingeklemmten befreit, Sichtung abgeschlossen.", "p75": "Letzter Patient abtransportiert, Unfallaufnahme läuft.", "done": "Einsatz beendet."},
-      "closure": 1.0
-    },
-    "med_notfall": {
-      "name": "Medizinischer Notfall", "keyword": "RD 1", "weight": 26, "cat": "rd", "call": "med_notfall",
-      "loc": {"mode": "road", "classes": [3, 4, 5, 7]},
-      "objects": ["Wohnung, 1. Obergeschoss", "Wohnung, Erdgeschoss", "auf dem Gehweg", "in einem Supermarkt", "an einer Bushaltestelle", "Arztpraxis", "Büro, 3. Obergeschoss", "Seniorenwohnung"],
-      "reqs": {}, "work": 0, "patients": [1, 1], "sev": [1, 2],
-      "variants": [
-        {"p": 0.8, "name": "Stabil", "lage": "Patient ansprechbar und stabil, wird versorgt."},
-        {"p": 0.2, "name": "Kritischer als gemeldet", "lage": "Patient kritischer als gemeldet – benötigen Notarzt zur Einsatzstelle!", "sev": [3, 3]}
-      ],
-      "reports": {"done": "Einsatz beendet."}
-    },
-    "med_bewusstlos": {
-      "name": "Bewusstlose Person", "keyword": "RD 2", "weight": 8, "cat": "rd", "call": "med_bewusstlos",
-      "loc": {"mode": "road", "classes": [3, 4, 5, 7]},
-      "objects": ["Wohnung, 2. Obergeschoss", "auf offener Straße", "in einer Gaststätte", "am Arbeitsplatz", "Bahnsteig", "Fitnessstudio"],
-      "reqs": {}, "work": 0, "patients": [1, 1], "sev": [3, 3],
-      "variants": [
-        {"p": 0.6, "name": "Bewusstlos", "lage": "Patient bewusstlos, Atmung vorhanden. Notärztliche Versorgung läuft."},
-        {"p": 0.25, "name": "Reanimation", "lage": "Patient reanimationspflichtig, Reanimation läuft!", "sev": [4, 4]},
-        {"p": 0.15, "name": "Wieder ansprechbar", "lage": "Patient wieder ansprechbar, vermutlich Kreislaufkollaps.", "sev": [2, 2]}
-      ],
-      "reports": {"done": "Einsatz beendet."}
-    },
-    "med_herz": {
-      "name": "Akuter Brustschmerz / Atemnot", "keyword": "RD 2", "weight": 9, "cat": "rd", "call": "med_herz",
-      "loc": {"mode": "road", "classes": [3, 4, 5]},
-      "objects": ["Wohnung, 3. Obergeschoss", "Wohnung, Erdgeschoss", "Einfamilienhaus", "Büro", "Pflegeheim, Zimmer 12"],
-      "reqs": {}, "work": 0, "patients": [1, 1], "sev": [3, 3],
-      "variants": [
-        {"p": 0.75, "name": "Akutes Koronarsyndrom", "lage": "Verdacht auf Herzinfarkt, Patient wird notärztlich versorgt und mit Voranmeldung transportiert."},
-        {"p": 0.25, "name": "Entwarnung", "lage": "Patient stabil, Verdacht hat sich nicht bestätigt. Transport zur Abklärung.", "sev": [2, 2]}
-      ],
-      "reports": {"done": "Einsatz beendet."}
-    },
-    "wohnungsoeffnung": {
-      "name": "Wohnungsöffnung – Person hinter Tür", "keyword": "THL Tür", "weight": 3, "cat": "thl", "call": "wohnungsoeffnung",
-      "loc": {"mode": "road", "classes": [3, 4, 5], "styles": ["altstadt", "zentrum", "wohn_dicht", "wohn", "vorstadt"]},
-      "objects": ["Wohnung im 3. Obergeschoss", "Erdgeschosswohnung", "Seniorenwohnung, 1. Obergeschoss", "Dachgeschosswohnung"],
-      "reqs": {"thl": 1, "polizei": 1}, "work": 480, "patients": [1, 1], "sev": [2, 3], "gate": 0.9,
-      "variants": [
-        {"p": 0.55, "name": "Hilflose Person", "lage": "Tür geöffnet, Person liegt gestürzt im Flur, ansprechbar. Übergabe an Rettungsdienst."},
-        {"p": 0.2, "name": "Leblose Person", "lage": "Tür geöffnet, Person leblos aufgefunden. Benötigen Notarzt!", "sev": [4, 4]},
-        {"p": 0.25, "name": "Niemand angetroffen", "lage": "Wohnung geöffnet, niemand angetroffen. Wohnung an Polizei übergeben.", "patients": [0, 0]}
-      ],
-      "reports": {"done": "Einsatz beendet, Wohnung gesichert."}
-    },
-    "baum": {
-      "name": "Baum auf Fahrbahn", "keyword": "THL 1", "weight": 2.2, "cat": "thl", "call": "baum", "weather": {"sturm": 9, "starkregen": 3, "schnee": 3},
-      "loc": {"mode": "road", "classes": [3, 4, 5, 6], "styles": ["wald", "vorstadt", "wohn", "land", "dorf"]},
-      "objects": ["umgestürzter Baum quer über beide Fahrspuren", "großer Ast auf der Fahrbahn", "Baum auf geparktem PKW", "Baum droht auf die Straße zu stürzen"],
-      "reqs": {"thl": 1}, "work": 900, "patients": [0, 0], "sev": [1, 1],
-      "variants": [
-        {"p": 0.75, "name": "Baum beseitigen", "lage": "Baum blockiert die Fahrbahn, wird mit Motorkettensäge zerkleinert."},
-        {"p": 0.17, "name": "Baum auf PKW", "lage": "Baum auf fahrenden PKW gestürzt, Fahrer verletzt im Fahrzeug. Benötigen RTW und Polizei.", "reqs": {"thl": 1, "loeschen": 1, "polizei": 1}, "work": 1500, "patients": [1, 1], "sev": [2, 3], "gate": 0.4},
-        {"p": 0.08, "name": "Oberleitung betroffen", "lage": "Baum in Stromleitung gefallen. Netzbetreiber verständigen, Straße bleibt gesperrt. Drehleiter erforderlich.", "reqs": {"thl": 1, "dlk": 1, "polizei": 1}, "work": 2400}
-      ],
-      "reports": {"p50": "Fahrbahn einspurig wieder befahrbar.", "done": "Fahrbahn frei, Einsatz beendet."},
-      "closure": 1.0
-    },
-    "oelspur": {
-      "name": "Ölspur / auslaufende Betriebsstoffe", "keyword": "THL 1", "weight": 2.5, "cat": "thl", "call": "oelspur",
-      "loc": {"mode": "road", "classes": [2, 3, 4]},
-      "objects": ["Ölspur über etwa 200 Meter", "Dieselspur im Kreisverkehr", "auslaufendes Hydrauliköl eines LKW"],
-      "reqs": {"thl": 1}, "work": 900, "patients": [0, 0], "sev": [1, 1],
-      "variants": [
-        {"p": 0.85, "name": "Ölspur", "lage": "Ölspur wird mit Bindemittel abgestreut, Verkehrsabsicherung steht."},
-        {"p": 0.15, "name": "Motorradfahrer gestürzt", "lage": "Motorradfahrer auf Ölspur gestürzt, verletzt. Benötigen RTW und Polizei.", "reqs": {"thl": 1, "polizei": 1}, "patients": [1, 1], "sev": [2, 2], "work": 1200}
-      ],
-      "reports": {"done": "Fahrbahn gereinigt, Einsatz beendet."}
-    },
-    "gefahrgut": {
-      "name": "Gefahrgutunfall", "keyword": "ABC 2", "weight": 0.5, "cat": "abc", "call": "gefahrgut", "multi_calls": 0.4,
-      "loc": {"mode": "road", "classes": [0, 2, 3, 8], "styles": ["industrie", "gewerbe", "land", "sonder", "wohn"]},
-      "objects": ["Tanklastzug mit Leckage am Auflieger", "umgestürzter Gefahrgut-LKW", "Leckage an einem IBC-Container im Lager", "undichtes Fass auf der Laderampe", "Kesselwagen im Güterbahnhof"],
-      "reqs": {"fuehrung_fw": 1, "gefahrgut": 1, "loeschen": 2, "atemschutz": 1, "polizei": 2}, "work": 3600, "patients": [0, 3], "sev": [1, 3],
-      "variants": [
-        {"p": 0.5, "name": "Leckage", "lage": "Unbekannte Flüssigkeit tritt aus, UN-Nummer wird ermittelt. Gefahrenbereich 50 Meter, Trupp unter CSA wird ausgerüstet."},
-        {"p": 0.3, "name": "Ätzender Stoff", "lage": "Stoff identifiziert: ätzend, Salzsäure. Zwei Personen mit Atemwegsreizungen. Dekon-Platz wird aufgebaut.", "patients": [2, 4], "sev": [1, 2]},
-        {"p": 0.2, "name": "Brennbares Gas", "lage": "Austritt von brennbarem Gas, Explosionsgefahr! Räumung im Umkreis von 300 Metern. Benötigen weitere Kräfte und Betreuung.", "reqs": {"fuehrung_fw": 2, "elw2": 1, "gefahrgut": 1, "loeschen": 3, "wasser": 1, "atemschutz": 1, "betreuung": 1, "rtw": 1, "polizei": 3}, "work": 4800}
-      ],
-      "developments": [
-        {"at": [0.2, 0.6], "p": 0.25, "text": "Messungen zeigen Ausbreitung der Schadstoffwolke. Warnung der Bevölkerung, Fenster und Türen geschlossen halten.", "add": {"polizei": 1}, "work": 600}
-      ],
-      "strain": [
-        {"after": 480, "text": "Stoffaustritt kann nicht gestoppt werden, Kanalisation betroffen!", "add": {"loeschen": 1, "logistik": 1}, "work": 1200}
-      ],
-      "reports": {"p35": "Leckage abgedichtet.", "p75": "Stoff umgepumpt, Dekontamination der Einsatzkräfte läuft.", "done": "Einsatz beendet, Einsatzstelle an Fachfirma übergeben."},
-      "closure": 1.0
-    },
-    "wasserrettung": {
-      "name": "Person im Wasser", "keyword": "THL Wasser", "weight": 0.7, "cat": "thl", "call": "wasserrettung", "multi_calls": 0.4,
-      "loc": {"mode": "water"},
-      "objects": ["Schwimmer in Not, etwa 50 Meter vom Ufer", "gekentertes Ruderboot", "Person von der Brücke gestürzt", "Kind ins Wasser gefallen", "Eis eingebrochen"],
-      "reqs": {"wasserrettung": 1, "loeschen": 1, "polizei": 1}, "work": 900, "patients": [1, 2], "sev": [2, 3], "gate": 0.7,
-      "variants": [
-        {"p": 0.55, "name": "Person im Wasser", "lage": "Person im Wasser gesichtet, Boot wird zu Wasser gelassen."},
-        {"p": 0.25, "name": "Person untergegangen", "lage": "Person untergegangen! Suche mit Boot und Tauchern eingeleitet, Notarzt erforderlich.", "reqs": {"wasserrettung": 2, "taucher": 1, "loeschen": 1, "fuehrung_fw": 1, "notarzt": 1, "polizei": 1}, "work": 1800, "sev": [4, 4]},
-        {"p": 0.2, "name": "Selbst gerettet", "lage": "Person hat das Ufer selbstständig erreicht, unterkühlt.", "reqs": {"polizei": 1}, "work": 300, "sev": [1, 2], "gate": 0}
-      ],
-      "reports": {"p75": "Person aus dem Wasser gerettet und an Rettungsdienst übergeben.", "done": "Einsatz beendet."}
-    },
-    "unwetter_keller": {
-      "name": "Wasser im Keller", "keyword": "THL Unwetter", "weight": 0.2, "cat": "thl", "call": "unwetter_keller", "weather": {"starkregen": 60, "sturm": 25, "regen": 4},
-      "loc": {"mode": "road", "classes": [4, 5]},
-      "objects": ["Keller eines Einfamilienhauses, 30 cm Wasser", "Tiefgarage unter Wasser", "Keller eines Mehrfamilienhauses", "Unterführung überflutet"],
-      "reqs": {"loeschen": 1}, "work": 1200, "patients": [0, 0], "sev": [1, 1],
-      "variants": [
-        {"p": 0.85, "name": "Keller auspumpen", "lage": "Keller steht unter Wasser, Tauchpumpe im Einsatz."},
-        {"p": 0.15, "name": "Tiefgarage geflutet", "lage": "Tiefgarage auf 300 m² einen halben Meter überflutet, Hochleistungspumpen des THW erforderlich.", "reqs": {"loeschen": 1, "pumpen": 1}, "work": 3000}
-      ],
-      "reports": {"done": "Wasser abgepumpt, Einsatz beendet."}
-    },
-    "unwetter_dach": {
-      "name": "Sturmschaden an Gebäude", "keyword": "THL Unwetter", "weight": 0.1, "cat": "thl", "call": "unwetter_dach", "weather": {"sturm": 50, "starkregen": 8},
-      "loc": {"mode": "road", "classes": [3, 4, 5]},
-      "objects": ["lose Dachziegel drohen auf den Gehweg zu fallen", "Baugerüst droht umzustürzen", "abgedecktes Hallendach", "Werbetafel hängt lose an der Fassade"],
-      "reqs": {"loeschen": 1, "dlk": 1}, "work": 1200, "patients": [0, 0], "sev": [1, 1],
-      "variants": [
-        {"p": 0.8, "name": "Sicherung", "lage": "Lose Teile werden über die Drehleiter gesichert, Gehweg abgesperrt."},
-        {"p": 0.2, "name": "Passant verletzt", "lage": "Passant von herabfallenden Teilen getroffen, Kopfverletzung. RTW und Polizei erforderlich.", "reqs": {"loeschen": 1, "dlk": 1, "polizei": 1}, "patients": [1, 1], "sev": [2, 3]}
-      ],
-      "reports": {"done": "Gefahrenstelle beseitigt, Einsatz beendet."}
-    },
-    "aufzug": {
-      "name": "Person in Aufzug eingeschlossen", "keyword": "THL 1", "weight": 1.8, "cat": "thl", "call": "aufzug",
-      "loc": {"mode": "road", "classes": [3, 4], "styles": ["altstadt", "zentrum", "wohn_dicht"]},
-      "objects": ["Aufzug zwischen 3. und 4. Obergeschoss", "Personenaufzug im Parkhaus", "Aufzug in einem Bürogebäude"],
-      "reqs": {"thl": 1}, "work": 600, "patients": [0, 0], "sev": [1, 1],
-      "variants": [{"p": 1.0, "name": "Aufzug", "lage": "Aufzug steckt fest, zwei Personen eingeschlossen, wohlauf. Notbefreiung wird durchgeführt."}],
-      "reports": {"done": "Personen befreit, Aufzug außer Betrieb genommen."}
-    },
-    "tier": {
-      "name": "Tier in Notlage", "keyword": "THL 1", "weight": 1.2, "cat": "thl", "call": "tier",
-      "loc": {"mode": "road", "classes": [4, 5, 6]},
-      "objects": ["Katze auf einem Baum", "Schwan auf der Fahrbahn", "Hund in einem Kanalschacht", "Pferd in einem Graben"],
-      "reqs": {"thl": 1}, "work": 900, "patients": [0, 0], "sev": [1, 1],
-      "variants": [
-        {"p": 0.8, "name": "Tierrettung", "lage": "Tier wird gerettet und an den Besitzer übergeben."},
-        {"p": 0.2, "name": "Großtier", "lage": "Großtierrettung erforderlich, benötigen Rüstwagen mit Hebegeschirr.", "reqs": {"thl": 1, "rw": 1}, "work": 1800}
-      ],
-      "reports": {"done": "Tier gerettet, Einsatz beendet."}
-    },
-    "pol_ruhe": {
-      "name": "Ruhestörung / Streitigkeit", "keyword": "POL 1", "weight": 6, "cat": "pol", "call": "pol_ruhe", "night": 2.5,
-      "loc": {"mode": "road", "classes": [3, 4, 5, 7]},
-      "objects": ["Wohnung im 2. Obergeschoss", "vor einer Gaststätte", "in einem Hinterhof", "Parkanlage"],
-      "reqs": {"polizei": 1}, "work": 600, "patients": [0, 0], "sev": [1, 1],
-      "variants": [
-        {"p": 0.8, "name": "Ruhestörung", "lage": "Verursacher angetroffen und ermahnt, Ruhe hergestellt."},
-        {"p": 0.2, "name": "Körperverletzung", "lage": "Streit eskaliert, eine Person leicht verletzt. Zweite Streife und RTW erbeten.", "reqs": {"polizei": 2}, "patients": [1, 1], "sev": [1, 2], "work": 1200}
-      ],
-      "reports": {"done": "Einsatz beendet."}
-    },
-    "pol_einbruch": {
-      "name": "Einbruch – Täter vor Ort", "keyword": "POL 2", "weight": 2.2, "cat": "pol", "call": "pol_einbruch", "night": 2.0,
-      "loc": {"mode": "road", "classes": [3, 4, 5, 8]},
-      "objects": ["Juweliergeschäft", "Einfamilienhaus", "Bürogebäude", "Lagerhalle", "Kiosk"],
-      "reqs": {"polizei": 2}, "work": 1200, "patients": [0, 0], "sev": [1, 1],
-      "variants": [
-        {"p": 0.5, "name": "Täter flüchtig", "lage": "Täter bei Eintreffen flüchtig, Fahndung im Nahbereich. Kriminaldauerdienst zur Spurensicherung erbeten.", "reqs": {"polizei": 2, "kripo": 1}, "work": 1800},
-        {"p": 0.35, "name": "Festnahme", "lage": "Ein Täter im Objekt festgenommen."},
-        {"p": 0.15, "name": "Fehlalarm", "lage": "Objekt überprüft, kein Einbruch feststellbar.", "reqs": {"polizei": 1}, "work": 480}
-      ],
-      "reports": {"done": "Einsatz beendet."}
-    },
-    "pol_schlaegerei": {
-      "name": "Schlägerei mit mehreren Beteiligten", "keyword": "POL 2", "weight": 2.5, "cat": "pol", "call": "pol_schlaegerei", "night": 3.0,
-      "loc": {"mode": "road", "classes": [3, 4, 7], "styles": ["altstadt", "zentrum", "wohn_dicht", "wohn"]},
-      "objects": ["vor einer Diskothek", "am Bahnhofsvorplatz", "in einer Gaststätte", "an einer U-Bahn-Station", "auf einem Volksfest"],
-      "reqs": {"polizei": 2}, "work": 1200, "patients": [1, 2], "sev": [1, 2],
-      "variants": [
-        {"p": 0.65, "name": "Schlägerei", "lage": "Lage beruhigt, mehrere Beteiligte getrennt. Verletzte werden versorgt."},
-        {"p": 0.25, "name": "Größere Gruppe", "lage": "Etwa 20 Beteiligte, Lage unübersichtlich! Unterstützungskräfte dringend erforderlich.", "reqs": {"polizei": 4, "pol_gruppe": 1}, "work": 2100, "patients": [2, 4]},
-        {"p": 0.10, "name": "Messerangriff", "lage": "Person mit Stichverletzung am Boden, Täter flüchtig! Notarzt erforderlich.", "reqs": {"polizei": 3, "kripo": 1}, "work": 2400, "patients": [1, 1], "sev": [3, 3]}
-      ],
-      "reports": {"done": "Einsatz beendet."}
-    },
-    "ktp": {
-      "name": "Krankentransport", "keyword": "RD KTP", "weight": 9, "cat": "rd", "call": "ktp",
-      "loc": {"mode": "road", "classes": [3, 4, 5]},
-      "objects": ["Wohnung, 1. Obergeschoss", "Pflegeheim", "Arztpraxis", "Dialysezentrum", "Seniorenwohnung, Erdgeschoss"],
-      "reqs": {}, "work": 0, "patients": [1, 1], "sev": [0, 0],
-      "variants": [{"p": 1.0, "name": "Transport", "lage": "Patient übernommen."}],
-      "reports": {"done": "Transport durchgeführt."}
-    },
-    "hochwasser": {
-      "name": "Hochwasser – Deichverteidigung", "keyword": "THL Unwetter", "weight": 0, "cat": "thl", "call": "unwetter_keller",
-      "loc": {"mode": "water"},
-      "objects": ["Uferbereich droht überflutet zu werden", "Sickerstelle am Damm", "überflutete Uferstraße"],
-      "reqs": {"fuehrung_fw": 1, "loeschen": 2, "logistik": 1, "pumpen": 1, "thw": 1}, "work": 5400, "patients": [0, 0], "sev": [1, 1],
-      "variants": [
-        {"p": 0.6, "name": "Sandsackverbau", "lage": "Wasser steigt weiter. Sandsackverbau auf 150 Meter erforderlich, benötigen Logistik, THW und Pumpen."},
-        {"p": 0.4, "name": "Evakuierung", "lage": "Wohnhäuser am Ufer nicht mehr zu halten, 60 Anwohner werden evakuiert. Betreuung und Wasserrettung erforderlich!", "reqs": {"fuehrung_fw": 1, "loeschen": 2, "logistik": 1, "pumpen": 1, "thw": 1, "wasserrettung": 1, "betreuung": 1, "polizei": 2}, "work": 7200, "patients": [0, 2]}
-      ],
-      "reports": {"p50": "Damm gesichert, Pumpen laufen.", "done": "Pegel fällt, Einsatz beendet."}
-    },
-    "veranstaltung": {
-      "name": "Zwischenfall bei Großveranstaltung", "keyword": "MANV 1", "weight": 0, "cat": "rd", "call": "veranstaltung",
-      "loc": {"mode": "poi", "poi_kinds": ["stadion", "messe", "veranstaltung"]},
-      "objects": ["Gedränge am Eingangsbereich", "Tribüne Block C", "Pyrotechnik im Zuschauerbereich", "Reizgas in einer Halle"],
-      "reqs": {"elrd": 1, "polizei": 3, "pol_gruppe": 1, "fuehrung_fw": 1, "loeschen": 1}, "work": 2400, "patients": [5, 10], "sev": [1, 3],
-      "variants": [
-        {"p": 0.6, "name": "Mehrere Verletzte", "lage": "Mehrere Verletzte nach Gedränge, Patientenablage am Sanitätsstützpunkt. Benötigen Transportkapazität und SEG.", "reqs": {"elrd": 1, "seg": 1, "polizei": 3, "pol_gruppe": 1, "fuehrung_fw": 1, "loeschen": 1}},
-        {"p": 0.4, "name": "Massenpanik", "lage": "Panik im Zuschauerbereich, über zehn Verletzte! MANV 2.", "reqs": {"elrd": 1, "seg": 2, "polizei": 4, "pol_gruppe": 2, "pol_fuehrung": 1, "fuehrung_fw": 2, "loeschen": 2, "betreuung": 1}, "patients": [10, 16], "work": 3600}
-      ],
-      "reports": {"p50": "Lage unter Kontrolle, Sichtung abgeschlossen.", "done": "Einsatz beendet."}
-    }
+  "rd": {
+   "name": "Rettungsdienst / Verletzte",
+   "desc": "Krankheit, Verletzung, Verkehrsunfall mit Verletzten"
+  },
+  "abc": {
+   "name": "Gefahrstoff",
+   "desc": "Austretende Chemikalien, Gas, Gefahrgut"
+  },
+  "pol": {
+   "name": "Polizei",
+   "desc": "Streit, Einbruch, Gewalt"
+  },
+  "sonst": {
+   "name": "Sonstiges",
+   "desc": "Betreuung, sonstige Hilfe"
   }
+ },
+ "keywords": {
+  "B 1": {
+   "name": "Brand klein im Freien",
+   "cat": "brand",
+   "prio": 3,
+   "aao": {
+    "loeschen": 1
+   },
+   "min": "1 Trupp",
+   "schlagworte": "Müll-/Papiercontainer, Kleinbrand, Brandgeruch, Rauchentwicklung im Freien, Motorrad"
+  },
+  "B 2": {
+   "name": "Brand mittel",
+   "cat": "brand",
+   "prio": 2,
+   "aao": {
+    "loeschen": 1,
+    "polizei": 1
+   },
+   "min": "1 Staffel, 1.000 l Löschwasser, 4 Atemschutzgeräte",
+   "schlagworte": "PKW, Gartenhütte/Schuppen, Kamin, Wald klein, Freifläche groß, Bauwagen"
+  },
+  "B 2 PERSON": {
+   "name": "Brand mittel – Person in Gefahr",
+   "cat": "brand",
+   "prio": 1,
+   "aao": {
+    "loeschen": 1,
+    "fuehrung_fw": 1,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 1
+   },
+   "min": "1 Gruppe, 1.000 l Löschwasser, 4 Atemschutzgeräte",
+   "schlagworte": "PKW mit Person, Gartenhütte mit Person, brennende Person"
+  },
+  "B 3": {
+   "name": "Brand Gebäude",
+   "cat": "brand",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "loeschen": 2,
+    "dlk": 1,
+    "rtw": 1,
+    "polizei": 1
+   },
+   "min": "2 Staffeln, 1.600 l Löschwasser, 6 Atemschutzgeräte",
+   "schlagworte": "Zimmer, Küche, Keller, Dachstuhl, Garage, LKW/Bus"
+  },
+  "B 3 PERSON": {
+   "name": "Brand Gebäude – Person in Gefahr",
+   "cat": "brand",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "loeschen": 2,
+    "dlk": 1,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 1
+   },
+   "min": "2 Gruppen, 1.600 l Löschwasser, 8 Atemschutzgeräte, Wärmebildkamera",
+   "schlagworte": "Zimmer/Dachstuhl/Keller mit Person in Gefahr"
+  },
+  "B 4": {
+   "name": "Brand groß / Gebäude mit hoher Personenzahl",
+   "cat": "brand",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "loeschen": 4,
+    "dlk": 1,
+    "atemschutz": 1,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 1
+   },
+   "min": "4 Gruppen, 3.200 l Löschwasser, 12 Atemschutzgeräte, Drehleiter, Einsatzleitung",
+   "schlagworte": "Hochhaus, Tiefgarage, Industrie, Lagerhalle, Schule, Hotel, Kino, Supermarkt"
+  },
+  "B 5": {
+   "name": "Großbrand / Gebäude mit hilfsbedürftigen Personen",
+   "cat": "brand",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 2,
+    "elw2": 1,
+    "loeschen": 6,
+    "dlk": 2,
+    "wasser": 2,
+    "atemschutz": 1,
+    "logistik": 1,
+    "rtw": 3,
+    "notarzt": 2,
+    "elrd": 1,
+    "polizei": 2
+   },
+   "min": "6 Gruppen, 5.000 l Löschwasser, 16 Atemschutzgeräte, Drehleiter, Einsatzleitung",
+   "schlagworte": "Pflege-/Altenheim, Krankenhaus, Kaufhaus, Alarmstufenerhöhung"
+  },
+  "B BMA": {
+   "name": "Brandmeldeanlage",
+   "cat": "brand",
+   "prio": 2,
+   "aao": {
+    "fuehrung_fw": 1,
+    "loeschen": 1,
+    "dlk": 1
+   },
+   "min": "1 Staffel, 500 l Löschwasser, 4 Atemschutzgeräte",
+   "schlagworte": "Brandmeldeanlage, Rauchwarnmelder über Hausnotruf"
+  },
+  "B ELEKTROANLAGE": {
+   "name": "Brand Elektroanlage / Trafo",
+   "cat": "brand",
+   "prio": 2,
+   "aao": {
+    "fuehrung_fw": 1,
+    "loeschen": 2,
+    "polizei": 1
+   },
+   "min": "2 Staffeln, 1.600 l Löschwasser, 6 Atemschutzgeräte",
+   "schlagworte": "Trafostation, Elektroverteiler, Photovoltaik"
+  },
+  "B WALD": {
+   "name": "Waldbrand",
+   "cat": "brand",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "loeschen": 3,
+    "wasser": 2,
+    "logistik": 1,
+    "polizei": 1
+   },
+   "min": "4 Gruppen, 6.000 l Löschwasser, Schlauchmaterial, Einsatzleitung",
+   "schlagworte": "Wald groß (über 1.000 m²)"
+  },
+  "B ZUG": {
+   "name": "Brand Zug / Bahn",
+   "cat": "brand",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "loeschen": 3,
+    "wasser": 1,
+    "atemschutz": 1,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 1
+   },
+   "min": "3 Gruppen, 5.000 l Löschwasser, 8 Atemschutzgeräte, Wärmebildkamera, Einsatzleitung",
+   "schlagworte": "Personenzug, Güterzug, S-Bahn, Straßenbahn"
+  },
+  "B BOOT": {
+   "name": "Brand Boot",
+   "cat": "brand",
+   "prio": 2,
+   "aao": {
+    "loeschen": 1,
+    "wasserrettung": 1,
+    "polizei": 1
+   },
+   "min": "1 Gruppe, 4 Atemschutzgeräte, 1 Boot",
+   "schlagworte": "Boot, Yacht, Floß"
+  },
+  "THL 1": {
+   "name": "Technische Hilfe klein",
+   "cat": "thl",
+   "prio": 3,
+   "aao": {
+    "thl_klein": 1
+   },
+   "min": "1 Trupp, Einsatzleitung",
+   "schlagworte": "Baum auf Straße, Ölspur/Straße reinigen, Wasser im Keller, Tier, Gegenstand sichern"
+  },
+  "THL 2": {
+   "name": "Verkehrsunfall ohne Eingeklemmte",
+   "cat": "thl",
+   "prio": 2,
+   "aao": {
+    "thl": 1,
+    "rtw": 1,
+    "polizei": 1
+   },
+   "min": "1 Staffel, 1 hydraulischer Rettungssatz, 500 l Löschwasser",
+   "schlagworte": "mehrere PKW, LKW/Bus ohne eingeklemmte Personen"
+  },
+  "THL 3": {
+   "name": "Person eingeklemmt",
+   "cat": "thl",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "thl": 2,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 1
+   },
+   "min": "2 Staffeln, 2 hydraulische Rettungssätze, Einsatzleitung",
+   "schlagworte": "1–2 PKW mit eingeklemmter Person, Gerüst/Kran umgestürzt"
+  },
+  "THL 4": {
+   "name": "Mehrere Eingeklemmte",
+   "cat": "thl",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "thl": 3,
+    "rw": 1,
+    "rtw": 3,
+    "notarzt": 2,
+    "elrd": 1,
+    "polizei": 2
+   },
+   "min": "3 Gruppen, 3 hydraulische Rettungssätze, 2.000 l Löschwasser",
+   "schlagworte": "mehrere PKW mit Eingeklemmten, LKW/Bus mit eingeklemmter Person"
+  },
+  "THL 5": {
+   "name": "Massenkarambolage / Bus mit Eingeklemmten",
+   "cat": "thl",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 2,
+    "elw2": 1,
+    "thl": 4,
+    "rw": 1,
+    "rtw": 5,
+    "notarzt": 3,
+    "elrd": 1,
+    "seg": 1,
+    "polizei": 3
+   },
+   "min": "4 Gruppen, 4 hydraulische Rettungssätze, 4.000 l Löschwasser",
+   "schlagworte": "Massenkarambolage, besetzter Bus mit Eingeklemmten"
+  },
+  "THL P EINGESCHLOSSEN": {
+   "name": "Person eingeschlossen (Wohnung/Fahrzeug)",
+   "cat": "thl",
+   "prio": 1,
+   "aao": {
+    "thl_klein": 1,
+    "rtw": 1,
+    "polizei": 1
+   },
+   "min": "1 Trupp",
+   "schlagworte": "Wohnung öffnen akut, Fahrzeug öffnen akut (Kind/Tier im Auto)"
+  },
+  "THL P AUFZUG": {
+   "name": "Person in Aufzug",
+   "cat": "thl",
+   "prio": 2,
+   "aao": {
+    "thl_klein": 1
+   },
+   "min": "1 Trupp",
+   "schlagworte": "Aufzug öffnen akut"
+  },
+  "THL P RETTUNG H/T": {
+   "name": "Rettung aus Höhe / Tiefe",
+   "cat": "thl",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "thl": 1,
+    "dlk": 1,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 1
+   },
+   "min": "1 Gruppe, Absturzsicherung, Einsatzleitung",
+   "schlagworte": "Person droht zu springen, Person in Höhe/Schacht, Arbeiter auf Kran"
+  },
+  "THL P STRAßENBAHN": {
+   "name": "Person unter Straßenbahn",
+   "cat": "thl",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "thl": 2,
+    "rw": 1,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 2
+   },
+   "min": "2 Gruppen, 2 hydraulische Rettungssätze, Hebekissen",
+   "schlagworte": "Person unter Straßenbahn"
+  },
+  "THL P STROM": {
+   "name": "Person Stromunfall",
+   "cat": "thl",
+   "prio": 1,
+   "aao": {
+    "thl_klein": 1,
+    "rtw": 1,
+    "notarzt": 1
+   },
+   "min": "1 Trupp",
+   "schlagworte": "Stromunfall"
+  },
+  "THL WASSER": {
+   "name": "Wasserrettung",
+   "cat": "thl",
+   "prio": 1,
+   "aao": {
+    "wasserrettung": 1,
+    "loeschen": 1,
+    "fuehrung_fw": 1,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 1
+   },
+   "min": "1 Trupp, 1 Boot",
+   "schlagworte": "Person im Wasser, Tier im Wasser, Bergung"
+  },
+  "THL UNWETTER": {
+   "name": "Unwetterschaden",
+   "cat": "thl",
+   "prio": 3,
+   "aao": {
+    "thl_klein": 1
+   },
+   "min": "Einsatzleitung",
+   "schlagworte": "Baum/Ast droht zu fallen, Keller unter Wasser, Dach/Bauteil gefährdet, Fahrbahn überschwemmt"
+  },
+  "THL GROßTIERRETTUNG": {
+   "name": "Großtierrettung",
+   "cat": "thl",
+   "prio": 2,
+   "aao": {
+    "thl": 1,
+    "rw": 1
+   },
+   "min": "1 Staffel",
+   "schlagworte": "Pferd/Kuh in Graben, Gülle- oder Jauchegrube"
+  },
+  "THL TRAGEHILFE": {
+   "name": "Tragehilfe für den Rettungsdienst",
+   "cat": "thl",
+   "prio": 2,
+   "aao": {
+    "loeschen": 1
+   },
+   "min": "1 Staffel",
+   "schlagworte": "Schwergewichtiger Patient, enges Treppenhaus, Drehleiterrettung"
+  },
+  "THL GEBÄUDEEINSTURZ": {
+   "name": "Gebäudeeinsturz",
+   "cat": "thl",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 2,
+    "elw2": 1,
+    "thl": 3,
+    "rw": 1,
+    "thw": 1,
+    "rtw": 2,
+    "notarzt": 1,
+    "elrd": 1,
+    "polizei": 2
+   },
+   "min": "3 Gruppen, 3 Rettungssätze, Abstützmaterial, THW",
+   "schlagworte": "Gebäude eingestürzt, Gasexplosion mit Teileinsturz"
+  },
+  "ABC 1": {
+   "name": "Gefahrstoff – Geruch",
+   "cat": "abc",
+   "prio": 2,
+   "aao": {
+    "fuehrung_fw": 1,
+    "loeschen": 1
+   },
+   "min": "1 Staffel, 4 Atemschutzgeräte, Ex-Warngerät, 500 l Löschwasser",
+   "schlagworte": "Gasgeruch/Erdgas, Ammoniak, undefinierbarer Geruch, CO-Warner"
+  },
+  "ABC 2": {
+   "name": "Gefahrstoff – Austritt klein",
+   "cat": "abc",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "loeschen": 1,
+    "gefahrgut": 1,
+    "polizei": 1
+   },
+   "min": "1 Staffel, 4 Atemschutzgeräte, Ex-Warngerät",
+   "schlagworte": "verdächtiger Stoff, undefinierbare Flüssigkeit, kleine Menge, Gasaustritt im Freien"
+  },
+  "ABC 3": {
+   "name": "Gefahrstoff – Austritt groß",
+   "cat": "abc",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "gefahrgut": 1,
+    "loeschen": 2,
+    "atemschutz": 1,
+    "dekon": 1,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 2
+   },
+   "min": "2 Gruppen, 8 Atemschutzgeräte, Ex-Warngerät, 1.800 l Löschwasser",
+   "schlagworte": "große Menge, Gasaustritt brennbar, Gasaustritt im Gebäude, Tankzug"
+  },
+  "ABC EXPLOSION": {
+   "name": "Explosion / Verpuffung",
+   "cat": "abc",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "loeschen": 2,
+    "gefahrgut": 1,
+    "atemschutz": 1,
+    "rtw": 2,
+    "notarzt": 1,
+    "polizei": 2
+   },
+   "min": "2 Gruppen, 8 Atemschutzgeräte, Ex-Warngerät, Wärmebildkamera, Fachberater",
+   "schlagworte": "Explosion, Verpuffung"
+  },
+  "ABC GEFAHRSTOFF-MELDEANLAGE": {
+   "name": "Gefahrstoff-Meldeanlage",
+   "cat": "abc",
+   "prio": 2,
+   "aao": {
+    "fuehrung_fw": 1,
+    "loeschen": 1
+   },
+   "min": "1 Staffel, 4 Atemschutzgeräte, 500 l Löschwasser",
+   "schlagworte": "Meldeanlage Ammoniak, Chlor, CO₂, Propan, undefiniert"
+  },
+  "ABC KRAFTSTOFF": {
+   "name": "Auslaufender Kraftstoff",
+   "cat": "abc",
+   "prio": 3,
+   "aao": {
+    "thl_klein": 1
+   },
+   "min": "1 Trupp",
+   "schlagworte": "auslaufendes Benzin/Diesel"
+  },
+  "ABC ÖL WASSER": {
+   "name": "Öl auf Gewässer",
+   "cat": "abc",
+   "prio": 2,
+   "aao": {
+    "thl_klein": 1,
+    "wasserrettung": 1
+   },
+   "min": "1 Trupp",
+   "schlagworte": "Öl auf fließendem/stehendem Gewässer"
+  },
+  "RD 1": {
+   "name": "Notfall ohne Notarzt",
+   "cat": "rd",
+   "prio": 2,
+   "aao": {
+    "rtw": 1
+   },
+   "min": "1 Rettungswagen",
+   "schlagworte": "Bewusstsein, Atmung, Herz/Kreislauf, Schmerzen, Neuro, Trauma ohne vitale Bedrohung"
+  },
+  "RD 2": {
+   "name": "Notfall mit Notarzt (vitale Bedrohung)",
+   "cat": "rd",
+   "prio": 1,
+   "aao": {
+    "rtw": 1,
+    "notarzt": 1
+   },
+   "min": "1 Rettungswagen, 1 Notarzt",
+   "schlagworte": "Bewusstlosigkeit, Atemnot, akuter Brustschmerz, Reanimation, starke Blutung, Geburt akut"
+  },
+  "RD 2-KIND": {
+   "name": "Notfall Kind mit Notarzt",
+   "cat": "rd",
+   "prio": 1,
+   "aao": {
+    "rtw": 1,
+    "notarzt": 1
+   },
+   "min": "1 Rettungswagen, 1 Notarzt",
+   "schlagworte": "Kind bis 12 Jahre: Krampfanfall, Atemnot, Reanimation, schweres Trauma"
+  },
+  "RD 3": {
+   "name": "2–3 Verletzte / Erkrankte",
+   "cat": "rd",
+   "prio": 1,
+   "aao": {
+    "rtw": 2,
+    "notarzt": 1
+   },
+   "min": "mind. 2 Rettungswagen, 1 Notarzt",
+   "schlagworte": "2 oder 3 verletzte/erkrankte Personen"
+  },
+  "RD 4": {
+   "name": "4–5 Verletzte / Erkrankte",
+   "cat": "rd",
+   "prio": 1,
+   "aao": {
+    "rtw": 4,
+    "notarzt": 1,
+    "elrd": 1
+   },
+   "min": "mind. 4 Rettungswagen, 1 Notarzt, Einsatzleitung RD",
+   "schlagworte": "4 oder 5 verletzte/erkrankte Personen"
+  },
+  "RD 5": {
+   "name": "6–9 Verletzte / Erkrankte",
+   "cat": "rd",
+   "prio": 1,
+   "aao": {
+    "rtw": 5,
+    "notarzt": 3,
+    "elrd": 1
+   },
+   "min": "mind. 5 Rettungswagen, 3 Notärzte, Einsatzleitung RD",
+   "schlagworte": "6 bis 9 verletzte/erkrankte Personen"
+  },
+  "RD MANV 10–15": {
+   "name": "Massenanfall 10–15 Verletzte",
+   "cat": "rd",
+   "prio": 1,
+   "aao": {
+    "rtw": 6,
+    "notarzt": 3,
+    "elrd": 1,
+    "seg": 2,
+    "grtw": 1,
+    "fuehrung_fw": 1,
+    "polizei": 2
+   },
+   "min": "Einsatzleitung RD, SEG, Großraum-RTW",
+   "schlagworte": "10 bis 15 Verletzte"
+  },
+  "RD MANV 16–25": {
+   "name": "Massenanfall 16–25 Verletzte",
+   "cat": "rd",
+   "prio": 1,
+   "aao": {
+    "rtw": 8,
+    "notarzt": 4,
+    "elrd": 2,
+    "seg": 3,
+    "grtw": 1,
+    "elw2": 1,
+    "fuehrung_fw": 2,
+    "polizei": 3,
+    "pol_fuehrung": 1
+   },
+   "min": "Einsatzleitung RD, mehrere SEG, Großraum-RTW",
+   "schlagworte": "16 bis 25 Verletzte"
+  },
+  "RD KTP": {
+   "name": "Krankentransport",
+   "cat": "rd",
+   "prio": 3,
+   "aao": {
+    "ktw": 1
+   },
+   "min": "1 Krankentransportwagen",
+   "schlagworte": "Transport, Verlegung, Heimfahrt, Dialyse"
+  },
+  "RD KTP/RTW": {
+   "name": "Transport mit RTW / schwergewichtiger Patient",
+   "cat": "rd",
+   "prio": 3,
+   "aao": {
+    "srtw": 1
+   },
+   "min": "1 (Schwerlast-)Rettungswagen",
+   "schlagworte": "Patient über 150 kg, Transport mit Monitoring"
+  },
+  "RD WASSERNOT 3": {
+   "name": "Person in Wassernot",
+   "cat": "rd",
+   "prio": 1,
+   "aao": {
+    "wasserrettung": 1,
+    "rtw": 1,
+    "notarzt": 1
+   },
+   "min": "Wasserrettung, Rettungswagen, Notarzt",
+   "schlagworte": "beobachteter Untergang, Person droht zu ertrinken"
+  },
+  "RD EISUNFALL 2": {
+   "name": "Person im Eis eingebrochen",
+   "cat": "rd",
+   "prio": 1,
+   "aao": {
+    "wasserrettung": 1,
+    "loeschen": 1,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 1
+   },
+   "min": "Wasserrettung, Rettungswagen, Notarzt",
+   "schlagworte": "1–2 Personen im Eis eingebrochen"
+  },
+  "POL 1": {
+   "name": "Polizeieinsatz allgemein",
+   "cat": "pol",
+   "prio": 3,
+   "aao": {
+    "polizei": 1
+   },
+   "min": "1 Streife",
+   "schlagworte": "Ruhestörung, Streitigkeit, Verkehrsbehinderung"
+  },
+  "POL 2": {
+   "name": "Polizeieinsatz dringend",
+   "cat": "pol",
+   "prio": 1,
+   "aao": {
+    "polizei": 2
+   },
+   "min": "2 Streifen",
+   "schlagworte": "Einbruch – Täter vor Ort, Schlägerei, Bedrohung"
+  },
+  "POL 3": {
+   "name": "Polizeiliche Sonderlage",
+   "cat": "pol",
+   "prio": 1,
+   "aao": {
+    "polizei": 4,
+    "pol_fuehrung": 1,
+    "pol_gruppe": 1,
+    "sek": 1,
+    "rtw": 1
+   },
+   "min": "Führung, Einsatzhundertschaft, Spezialeinheit",
+   "schlagworte": "Geiselnahme, bewaffnete Person, Amoklage"
+  },
+  "SON PSNV (B)": {
+   "name": "Psychosoziale Notfallversorgung Betroffene",
+   "cat": "sonst",
+   "prio": 3,
+   "aao": {
+    "betreuung_psnv": 1
+   },
+   "min": "Kriseninterventionsteam",
+   "schlagworte": "Betreuung von Angehörigen und Augenzeugen"
+  },
+  "SON BETREUUNG": {
+   "name": "Betreuung / Evakuierung",
+   "cat": "sonst",
+   "prio": 2,
+   "aao": {
+    "betreuung": 1
+   },
+   "min": "Betreuungseinheit",
+   "schlagworte": "Evakuierte Anwohner, Betreuung von Personen"
+  }
+ },
+ "types": {
+  "brand_muell": {
+   "name": "Brennender Müllcontainer",
+   "keyword": "B 1",
+   "weight": 5,
+   "cat": "brand",
+   "call": "brand_klein",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5,
+     8
+    ]
+   },
+   "objects": [
+    "Müllcontainer am Straßenrand",
+    "Papiercontainer vor einem Supermarkt",
+    "Altkleidercontainer",
+    "Gelbe Tonnen in einem Hinterhof"
+   ],
+   "reqs": {
+    "loeschen": 1
+   },
+   "work": 420,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.75,
+     "name": "Containerbrand",
+     "lage": "Ein Container in Vollbrand, ein C-Rohr im Einsatz."
+    },
+    {
+     "p": 0.15,
+     "name": "Brand greift über",
+     "lage": "Containerbrand hat auf einen Carport übergegriffen. Benötigen ein weiteres Löschfahrzeug.",
+     "reqs": {
+      "loeschen": 2,
+      "polizei": 1
+     },
+     "work": 900
+    },
+    {
+     "p": 0.1,
+     "name": "Bereits erloschen",
+     "lage": "Feuer durch Anwohner gelöscht, Nachkontrolle mit Wärmebildkamera.",
+     "work": 150
+    }
+   ],
+   "reports": {
+    "p50": "Feuer aus, Nachlöscharbeiten.",
+    "done": "Einsatz beendet, Einsatzstelle an Eigentümer übergeben."
+   },
+   "kw_ok": []
+  },
+  "brand_pkw": {
+   "name": "PKW-Brand",
+   "keyword": "B 2",
+   "weight": 3.5,
+   "cat": "brand",
+   "call": "brand_pkw",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     0,
+     2,
+     3,
+     4,
+     5,
+     6
+    ]
+   },
+   "objects": [
+    "PKW am Fahrbahnrand",
+    "Kleintransporter auf einem Parkplatz",
+    "PKW in einer Parkbucht",
+    "Lieferwagen"
+   ],
+   "reqs": {
+    "loeschen": 1,
+    "polizei": 1
+   },
+   "work": 600,
+   "patients": [
+    0,
+    1
+   ],
+   "sev": [
+    1,
+    2
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Motorraumbrand",
+     "lage": "PKW brennt im Motorraum, ein Trupp unter Atemschutz mit Schnellangriff."
+    },
+    {
+     "p": 0.3,
+     "name": "Vollbrand",
+     "lage": "PKW in Vollbrand, Betriebsstoffe laufen aus. Zweites Löschfahrzeug erforderlich.",
+     "reqs": {
+      "loeschen": 2,
+      "polizei": 1
+     },
+     "work": 900
+    },
+    {
+     "p": 0.1,
+     "name": "Elektrofahrzeug",
+     "lage": "Elektrofahrzeug brennt, Hochvoltbatterie betroffen. Großer Wasserbedarf.",
+     "reqs": {
+      "loeschen": 2,
+      "wasser": 1,
+      "fuehrung_fw": 1,
+      "polizei": 1
+     },
+     "work": 2100,
+     "keyword": "B 2"
+    }
+   ],
+   "reports": {
+    "p50": "Feuer in Gewalt.",
+    "done": "Feuer aus. Fahrzeug an Polizei übergeben."
+   },
+   "kw_ok": [
+    "B 2 PERSON"
+   ]
+  },
+  "brand_wohnung": {
+   "name": "Zimmerbrand im Mehrfamilienhaus",
+   "keyword": "B 3",
+   "weight": 4,
+   "cat": "brand",
+   "call": "brand_wohnung",
+   "multi_calls": 0.5,
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5
+    ],
+    "styles": [
+     "altstadt",
+     "zentrum",
+     "wohn_dicht",
+     "wohn",
+     "vorstadt"
+    ]
+   },
+   "objects": [
+    "Mehrfamilienhaus, 2. Obergeschoss",
+    "Mehrfamilienhaus, 4. Obergeschoss",
+    "Wohnblock, Erdgeschoss",
+    "Altbau, Dachgeschosswohnung",
+    "Hochhaus, 7. Obergeschoss"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "loeschen": 2,
+    "dlk": 1,
+    "polizei": 1
+   },
+   "work": 1500,
+   "patients": [
+    0,
+    2
+   ],
+   "sev": [
+    1,
+    2
+   ],
+   "variants": [
+    {
+     "p": 0.22,
+     "name": "Angebranntes Essen",
+     "lage": "Angebranntes Essen auf dem Herd. Wohnung wird belüftet, keine Verletzten.",
+     "reqs": {
+      "loeschen": 1
+     },
+     "work": 420,
+     "patients": [
+      0,
+      0
+     ],
+     "keyword": "B 2"
+    },
+    {
+     "p": 0.48,
+     "name": "Zimmerbrand",
+     "lage": "Bestätigter Zimmerbrand, Rauch aus zwei Fenstern. Ein Trupp unter Atemschutz zur Brandbekämpfung im Innenangriff."
+    },
+    {
+     "p": 0.22,
+     "name": "Wohnung in Vollbrand",
+     "lage": "Wohnung in Vollbrand, Personen an den Fenstern im Obergeschoss! Menschenrettung über Drehleiter eingeleitet.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 3,
+      "dlk": 1,
+      "atemschutz": 1,
+      "polizei": 1
+     },
+     "work": 2400,
+     "patients": [
+      1,
+      4
+     ],
+     "sev": [
+      1,
+      3
+     ],
+     "keyword": "B 3 PERSON"
+    },
+    {
+     "p": 0.08,
+     "name": "Treppenraum verraucht",
+     "lage": "Treppenraum stark verraucht, mehrere Bewohner eingeschlossen. Erhöhen auf B 4.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 3,
+      "dlk": 2,
+      "atemschutz": 1,
+      "elrd": 1,
+      "polizei": 2
+     },
+     "work": 2700,
+     "patients": [
+      2,
+      6
+     ],
+     "sev": [
+      1,
+      3
+     ],
+     "keyword": "B 4"
+    }
+   ],
+   "developments": [
+    {
+     "at": [
+      0.15,
+      0.5
+     ],
+     "p": 0.18,
+     "text": "Durchzündung! Feuer greift auf das Dachgeschoss über. Benötigen dringend weitere Kräfte.",
+     "add": {
+      "loeschen": 2,
+      "dlk": 1,
+      "atemschutz": 1
+     },
+     "work": 1200,
+     "patients": [
+      0,
+      1
+     ],
+     "sev": [
+      2,
+      3
+     ]
+    },
+    {
+     "at": [
+      0.3,
+      0.7
+     ],
+     "p": 0.12,
+     "text": "Bei der Kontrolle der Nachbarwohnungen eine weitere verletzte Person aufgefunden.",
+     "add": {},
+     "work": 120,
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      1,
+      2
+     ]
+    }
+   ],
+   "strain": [
+    {
+     "after": 360,
+     "text": "Lage spitzt sich zu: Feuer breitet sich auf weitere Wohnungen aus, Kräfte vor Ort nicht ausreichend!",
+     "add": {
+      "loeschen": 1
+     },
+     "work": 900,
+     "patients": [
+      0,
+      1
+     ],
+     "sev": [
+      2,
+      3
+     ]
+    }
+   ],
+   "reports": {
+    "p35": "Feuer in Gewalt, Menschenrettung abgeschlossen.",
+    "p75": "Feuer aus. Nachlöscharbeiten und Belüftung.",
+    "done": "Einsatz beendet. Einsatzstelle an Polizei übergeben."
+   },
+   "kw_ok": [
+    "B 3 PERSON"
+   ]
+  },
+  "brand_efh": {
+   "name": "Brand in einem Einfamilienhaus",
+   "keyword": "B 3",
+   "weight": 2.5,
+   "cat": "brand",
+   "call": "brand_efh",
+   "multi_calls": 0.4,
+   "loc": {
+    "mode": "road",
+    "classes": [
+     4,
+     5
+    ],
+    "styles": [
+     "wohn",
+     "vorstadt",
+     "wald",
+     "dorf"
+    ]
+   },
+   "objects": [
+    "Einfamilienhaus",
+    "Doppelhaushälfte",
+    "Reihenmittelhaus",
+    "freistehendes Einfamilienhaus mit Garage"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "loeschen": 2,
+    "dlk": 1,
+    "polizei": 1
+   },
+   "work": 1800,
+   "patients": [
+    0,
+    2
+   ],
+   "sev": [
+    1,
+    2
+   ],
+   "variants": [
+    {
+     "p": 0.3,
+     "name": "Kellerbrand",
+     "lage": "Rauch aus dem Kellergeschoss, Bewohner haben das Haus verlassen. Innenangriff unter Atemschutz."
+    },
+    {
+     "p": 0.35,
+     "name": "Küchenbrand",
+     "lage": "Küche im Erdgeschoss brennt, Flammen schlagen aus dem Fenster. Ein Bewohner mit Verdacht auf Rauchgasvergiftung.",
+     "patients": [
+      1,
+      2
+     ]
+    },
+    {
+     "p": 0.25,
+     "name": "Dachstuhlbrand",
+     "lage": "Dachstuhl in Vollbrand, Riegelstellung zum Nachbargebäude wird aufgebaut. Weitere Löschfahrzeuge erforderlich.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 4,
+      "dlk": 1,
+      "wasser": 1,
+      "atemschutz": 1,
+      "polizei": 1
+     },
+     "work": 3000,
+     "keyword": "B 3"
+    },
+    {
+     "p": 0.1,
+     "name": "Kaminbrand",
+     "lage": "Kaminbrand, Kamin wird gekehrt. Kaminkehrer verständigt.",
+     "reqs": {
+      "loeschen": 1,
+      "dlk": 1
+     },
+     "work": 1500,
+     "patients": [
+      0,
+      0
+     ],
+     "keyword": "B 2"
+    }
+   ],
+   "developments": [
+    {
+     "at": [
+      0.2,
+      0.6
+     ],
+     "p": 0.15,
+     "text": "Person im Obergeschoss vermisst gemeldet! Zusätzlicher Trupp zur Menschenrettung, benötigen Notarzt.",
+     "add": {
+      "loeschen": 1,
+      "notarzt": 1
+     },
+     "work": 600,
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      3,
+      3
+     ]
+    }
+   ],
+   "strain": [
+    {
+     "after": 420,
+     "text": "Feuer greift auf Garage und Nachbargebäude über!",
+     "add": {
+      "loeschen": 2
+     },
+     "work": 1200
+    }
+   ],
+   "reports": {
+    "p35": "Feuer in Gewalt.",
+    "p75": "Feuer aus, Nachlöscharbeiten, Brandwache wird gestellt.",
+    "done": "Einsatz beendet."
+   },
+   "kw_ok": [
+    "B 3 PERSON"
+   ]
+  },
+  "bma": {
+   "name": "Auslösung Brandmeldeanlage",
+   "keyword": "B BMA",
+   "weight": 5,
+   "cat": "brand",
+   "call": "bma",
+   "loc": {
+    "mode": "poi",
+    "poi_kinds": [
+     "einkauf",
+     "uni",
+     "hochhaus",
+     "hotel",
+     "pflege",
+     "schule",
+     "messe",
+     "veranstaltung",
+     "industrie",
+     "flughafen",
+     "bahnhof",
+     "oeffentlich",
+     "klinik"
+    ]
+   },
+   "objects": [
+    "Meldergruppe 12, Technikraum",
+    "Melder 3/14, Küche",
+    "Meldergruppe 7, Lager",
+    "Melder 21/2, Flur 3. OG",
+    "Handdruckmelder Foyer"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "loeschen": 1
+   },
+   "work": 480,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.55,
+     "name": "Fehlalarm",
+     "lage": "Erkundung negativ. Auslösung durch Wasserdampf / Staub. Anlage zurückgestellt.",
+     "work": 360
+    },
+    {
+     "p": 0.2,
+     "name": "Böswillige Auslösung",
+     "lage": "Handdruckmelder eingeschlagen, kein Schadenfeuer. Polizei zur Anzeigenaufnahme erbeten.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 1,
+      "polizei": 1
+     },
+     "work": 480
+    },
+    {
+     "p": 0.17,
+     "name": "Kleinbrand",
+     "lage": "Schmorbrand in einem Elektroverteiler, Kleinlöschgerät im Einsatz. Gebäude wird belüftet.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 2
+     },
+     "work": 1200
+    },
+    {
+     "p": 0.08,
+     "name": "Bestätigtes Feuer",
+     "lage": "Bestätigtes Feuer im Gebäude, Räumung läuft! Erhöhen auf B 4.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 3,
+      "dlk": 1,
+      "atemschutz": 1,
+      "rtw": 1,
+      "polizei": 1
+     },
+     "work": 2400,
+     "patients": [
+      0,
+      3
+     ],
+     "sev": [
+      1,
+      2
+     ],
+     "keyword": "B 4"
+    }
+   ],
+   "reports": {
+    "done": "Einsatz beendet, Objekt an Betreiber übergeben."
+   },
+   "kw_ok": []
+  },
+  "brand_industrie": {
+   "name": "Rauchentwicklung in einem Industriegebäude",
+   "keyword": "B 4",
+   "weight": 1.6,
+   "cat": "brand",
+   "call": "brand_industrie",
+   "multi_calls": 0.5,
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     8
+    ],
+    "styles": [
+     "industrie",
+     "gewerbe"
+    ]
+   },
+   "objects": [
+    "Produktionshalle eines Metallbetriebs",
+    "Lagerhalle einer Spedition",
+    "Kfz-Werkstatt",
+    "Schreinerei",
+    "Recyclingbetrieb",
+    "Lackiererei"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "loeschen": 3,
+    "dlk": 1,
+    "atemschutz": 1,
+    "polizei": 1
+   },
+   "work": 2400,
+   "patients": [
+    0,
+    2
+   ],
+   "sev": [
+    1,
+    3
+   ],
+   "variants": [
+    {
+     "p": 0.3,
+     "name": "Maschinenbrand",
+     "lage": "Brand einer Maschine in der Halle, Sprinkleranlage hat ausgelöst. Halle verraucht.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 2,
+      "atemschutz": 1
+     },
+     "work": 1500
+    },
+    {
+     "p": 0.45,
+     "name": "Hallenbrand",
+     "lage": "Starke Rauchentwicklung aus dem Hallendach, Brandbekämpfung im Innen- und Außenangriff."
+    },
+    {
+     "p": 0.25,
+     "name": "Ausgedehnter Brand",
+     "lage": "Halle auf 30 x 40 Meter in Brand, Ausbreitung auf Nachbarhalle droht. Erhöhen auf B 5!",
+     "reqs": {
+      "fuehrung_fw": 2,
+      "elw2": 1,
+      "loeschen": 5,
+      "dlk": 2,
+      "wasser": 2,
+      "atemschutz": 1,
+      "logistik": 1,
+      "rtw": 1,
+      "polizei": 2
+     },
+     "work": 5400,
+     "patients": [
+      0,
+      3
+     ],
+     "keyword": "B 5"
+    }
+   ],
+   "developments": [
+    {
+     "at": [
+      0.2,
+      0.6
+     ],
+     "p": 0.2,
+     "text": "Gasflaschen im Brandbereich! Gefahrenbereich wird erweitert, benötigen Polizei zur Absperrung.",
+     "add": {
+      "polizei": 1,
+      "wasser": 1
+     },
+     "work": 900
+    },
+    {
+     "at": [
+      0.3,
+      0.7
+     ],
+     "p": 0.12,
+     "text": "Ein Feuerwehrangehöriger verletzt, benötigen RTW an die Einsatzstelle.",
+     "add": {
+      "rtw": 1
+     },
+     "work": 0,
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      2,
+      2
+     ]
+    }
+   ],
+   "strain": [
+    {
+     "after": 480,
+     "text": "Feuer breitet sich auf die gesamte Halle aus – Kräfteansatz unzureichend!",
+     "add": {
+      "loeschen": 2,
+      "dlk": 1,
+      "wasser": 1
+     },
+     "work": 2400
+    }
+   ],
+   "reports": {
+    "p35": "Feuer unter Kontrolle.",
+    "p75": "Feuer aus, umfangreiche Nachlöscharbeiten.",
+    "done": "Einsatz beendet, Brandwache durch Betreiber."
+   },
+   "kw_ok": [
+    "B 3"
+   ]
+  },
+  "grossbrand": {
+   "name": "Großbrand einer Lagerhalle",
+   "keyword": "B 5",
+   "weight": 0.35,
+   "cat": "brand",
+   "call": "grossbrand",
+   "multi_calls": 1.0,
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     8
+    ],
+    "styles": [
+     "industrie",
+     "gewerbe"
+    ]
+   },
+   "objects": [
+    "Lagerhalle für Kunststoffgranulat",
+    "Hochregallager eines Logistikunternehmens",
+    "Reifenlager",
+    "Möbelhaus",
+    "Holzverarbeitender Betrieb"
+   ],
+   "reqs": {
+    "fuehrung_fw": 2,
+    "elw2": 1,
+    "loeschen": 6,
+    "dlk": 2,
+    "wasser": 2,
+    "atemschutz": 1,
+    "logistik": 1,
+    "rtw": 1,
+    "elrd": 1,
+    "polizei": 3
+   },
+   "work": 7200,
+   "patients": [
+    0,
+    4
+   ],
+   "sev": [
+    1,
+    3
+   ],
+   "variants": [
+    {
+     "p": 0.7,
+     "name": "Vollbrand",
+     "lage": "Lagerhalle in Vollbrand, Flammen schlagen meterhoch aus dem Dach. Massive Rauchentwicklung in Richtung Wohngebiet. Bevölkerungswarnung veranlassen!"
+    },
+    {
+     "p": 0.3,
+     "name": "Vollbrand mit Einsturzgefahr",
+     "lage": "Halle in Vollbrand, Einsturzgefahr! Nur Außenangriff möglich. Benötigen THW mit Radlader/Kran und Betreuung für evakuierte Anwohner.",
+     "reqs": {
+      "fuehrung_fw": 2,
+      "elw2": 1,
+      "loeschen": 7,
+      "dlk": 3,
+      "wasser": 3,
+      "atemschutz": 1,
+      "logistik": 1,
+      "thw": 1,
+      "betreuung": 1,
+      "rtw": 2,
+      "elrd": 1,
+      "polizei": 3
+     },
+     "work": 9000
+    }
+   ],
+   "developments": [
+    {
+     "at": [
+      0.1,
+      0.4
+     ],
+     "p": 0.4,
+     "text": "Löschwasserversorgung nicht ausreichend, benötigen weitere Tanklöschfahrzeuge und Schlauchmaterial.",
+     "add": {
+      "wasser": 1,
+      "logistik": 1
+     },
+     "work": 600
+    },
+    {
+     "at": [
+      0.3,
+      0.6
+     ],
+     "p": 0.3,
+     "text": "Rauchgase ziehen in ein Wohngebiet, 40 Anwohner werden evakuiert. Betreuungseinheit erforderlich.",
+     "add": {
+      "betreuung": 1,
+      "polizei": 1
+     },
+     "work": 600,
+     "patients": [
+      0,
+      2
+     ],
+     "sev": [
+      1,
+      1
+     ]
+    }
+   ],
+   "strain": [
+    {
+     "after": 600,
+     "text": "Feuer greift auf das Nachbargebäude über!",
+     "add": {
+      "loeschen": 3,
+      "dlk": 1
+     },
+     "work": 3000
+    }
+   ],
+   "reports": {
+    "p35": "Feuer unter Kontrolle, Riegelstellung hält.",
+    "p75": "Feuer aus, Nachlöscharbeiten werden noch Stunden andauern.",
+    "done": "Einsatz beendet, Einsatzstelle an Betreiber und Kriminalpolizei übergeben."
+   },
+   "kw_ok": [
+    "B 4"
+   ]
+  },
+  "vu_leicht": {
+   "name": "Verkehrsunfall mit zwei Fahrzeugen",
+   "keyword": "THL 2",
+   "weight": 6,
+   "cat": "vu",
+   "call": "vu",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     2,
+     3,
+     4,
+     6
+    ]
+   },
+   "objects": [
+    "zwei PKW im Kreuzungsbereich",
+    "PKW gegen Kleintransporter",
+    "Auffahrunfall zweier PKW",
+    "PKW gegen Linienbus"
+   ],
+   "reqs": {
+    "polizei": 1,
+    "loeschen": 1
+   },
+   "work": 900,
+   "patients": [
+    1,
+    2
+   ],
+   "sev": [
+    1,
+    2
+   ],
+   "variants": [
+    {
+     "p": 0.45,
+     "name": "Leichtverletzte",
+     "lage": "Zwei beteiligte Fahrzeuge, Fahrbahn teilweise blockiert. Verletzte werden rettungsdienstlich versorgt, Betriebsstoffe werden gebunden."
+    },
+    {
+     "p": 0.25,
+     "name": "Nur Sachschaden",
+     "lage": "Zwei Fahrzeuge, nur Blechschaden, keine Verletzten. Polizei nimmt den Unfall auf.",
+     "reqs": {
+      "polizei": 1
+     },
+     "work": 600,
+     "patients": [
+      0,
+      0
+     ],
+     "keyword": "POL 1"
+    },
+    {
+     "p": 0.18,
+     "name": "Person eingeschlossen",
+     "lage": "Fahrer nach Unfall im Fahrzeug eingeschlossen, Tür lässt sich nicht öffnen. Technische Rettung erforderlich!",
+     "reqs": {
+      "polizei": 1,
+      "thl": 1,
+      "loeschen": 1,
+      "fuehrung_fw": 1,
+      "notarzt": 1
+     },
+     "work": 1500,
+     "patients": [
+      1,
+      3
+     ],
+     "sev": [
+      2,
+      3
+     ],
+     "gate": 0.5,
+     "keyword": "THL 3"
+    },
+    {
+     "p": 0.12,
+     "name": "Mehrere Verletzte",
+     "lage": "Vier Verletzte, davon einer schwer. Benötigen weitere Rettungsmittel und einen Notarzt.",
+     "reqs": {
+      "polizei": 2,
+      "loeschen": 1,
+      "notarzt": 1
+     },
+     "work": 1500,
+     "patients": [
+      3,
+      4
+     ],
+     "sev": [
+      1,
+      3
+     ],
+     "keyword": "RD 3"
+    }
+   ],
+   "reports": {
+    "p50": "Unfallstelle abgesichert, Fahrbahn wird gereinigt.",
+    "done": "Einsatzstelle an Polizei übergeben, Fahrbahn wieder frei."
+   },
+   "closure": 0.35,
+   "kw_ok": [
+    "RD 1",
+    "RD 3"
+   ]
+  },
+  "vu_eingeklemmt": {
+   "name": "Verkehrsunfall, Person eingeklemmt",
+   "keyword": "THL 3",
+   "weight": 1.6,
+   "cat": "vu",
+   "call": "vu_eingeklemmt",
+   "multi_calls": 0.6,
+   "loc": {
+    "mode": "road",
+    "classes": [
+     0,
+     2,
+     3,
+     6
+    ]
+   },
+   "objects": [
+    "PKW gegen Baum",
+    "PKW frontal gegen LKW",
+    "PKW auf dem Dach liegend",
+    "PKW unter LKW-Auflieger"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "thl": 2,
+    "loeschen": 1,
+    "polizei": 2
+   },
+   "work": 2100,
+   "patients": [
+    1,
+    3
+   ],
+   "sev": [
+    2,
+    3
+   ],
+   "gate": 0.55,
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Eine Person eingeklemmt",
+     "lage": "Eine Person im Fahrzeug eingeklemmt, ansprechbar. Technische Rettung mit hydraulischem Rettungssatz läuft."
+    },
+    {
+     "p": 0.25,
+     "name": "Schwer eingeklemmt",
+     "lage": "Fahrer massiv eingeklemmt, nicht ansprechbar. Rüstwagen und Notarzt dringend erforderlich!",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "thl": 2,
+      "rw": 1,
+      "loeschen": 1,
+      "notarzt": 1,
+      "polizei": 2
+     },
+     "work": 2700,
+     "sev": [
+      3,
+      3
+     ]
+    },
+    {
+     "p": 0.15,
+     "name": "Nicht eingeklemmt",
+     "lage": "Person entgegen Erstmeldung nicht eingeklemmt, konnte selbstständig befreit werden.",
+     "reqs": {
+      "loeschen": 1,
+      "polizei": 1
+     },
+     "work": 900,
+     "sev": [
+      1,
+      2
+     ],
+     "gate": 0,
+     "keyword": "THL 2"
+    }
+   ],
+   "developments": [
+    {
+     "at": [
+      0.1,
+      0.4
+     ],
+     "p": 0.2,
+     "text": "Fahrzeug beginnt zu brennen! Löschangriff eingeleitet.",
+     "add": {
+      "loeschen": 1
+     },
+     "work": 300
+    }
+   ],
+   "strain": [
+    {
+     "after": 300,
+     "text": "Zustand der eingeklemmten Person verschlechtert sich, Rettung verzögert sich mangels Gerät!",
+     "add": {
+      "notarzt": 1
+     },
+     "work": 300
+    }
+   ],
+   "reports": {
+    "p35": "Zugang zum Patienten geschaffen.",
+    "p75": "Person befreit und an Rettungsdienst übergeben.",
+    "done": "Einsatz beendet, Unfallstelle an Polizei übergeben."
+   },
+   "closure": 0.9,
+   "kw_ok": [
+    "THL 4"
+   ]
+  },
+  "vu_massen": {
+   "name": "Verkehrsunfall mit mehreren Verletzten",
+   "keyword": "THL 4",
+   "weight": 0.5,
+   "cat": "vu",
+   "call": "vu_massen",
+   "multi_calls": 1.0,
+   "loc": {
+    "mode": "road",
+    "classes": [
+     0,
+     2,
+     6
+    ]
+   },
+   "objects": [
+    "Linienbus gegen LKW",
+    "Auffahrunfall mit sechs Fahrzeugen",
+    "Reisebus von der Fahrbahn abgekommen",
+    "Kleinbus überschlagen"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "thl": 2,
+    "loeschen": 1,
+    "elrd": 1,
+    "polizei": 3
+   },
+   "work": 3000,
+   "patients": [
+    5,
+    9
+   ],
+   "sev": [
+    1,
+    3
+   ],
+   "gate": 0.3,
+   "variants": [
+    {
+     "p": 0.7,
+     "name": "MANV",
+     "lage": "Mehrere Fahrzeuge beteiligt, mindestens sechs Verletzte, zwei davon eingeklemmt. Patientenablage wird eingerichtet. Benötigen Einsatzleitung Rettungsdienst!"
+    },
+    {
+     "p": 0.3,
+     "name": "MANV groß",
+     "lage": "Bus und mehrere PKW beteiligt, über zehn Verletzte! Erhöhen auf MANV 2, SEG erforderlich.",
+     "reqs": {
+      "fuehrung_fw": 2,
+      "thl": 2,
+      "rw": 1,
+      "loeschen": 2,
+      "elrd": 1,
+      "seg": 1,
+      "polizei": 3
+     },
+     "work": 4200,
+     "patients": [
+      10,
+      14
+     ],
+     "keyword": "THL 5"
+    }
+   ],
+   "reports": {
+    "p35": "Alle Eingeklemmten befreit, Sichtung abgeschlossen.",
+    "p75": "Letzter Patient abtransportiert, Unfallaufnahme läuft.",
+    "done": "Einsatz beendet."
+   },
+   "closure": 1.0,
+   "kw_ok": [
+    "THL 5",
+    "RD MANV 10–15",
+    "RD 5"
+   ]
+  },
+  "med_notfall": {
+   "name": "Medizinischer Notfall",
+   "keyword": "RD 1",
+   "weight": 26,
+   "cat": "rd",
+   "call": "med_notfall",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5,
+     7
+    ]
+   },
+   "objects": [
+    "Wohnung, 1. Obergeschoss",
+    "Wohnung, Erdgeschoss",
+    "auf dem Gehweg",
+    "in einem Supermarkt",
+    "an einer Bushaltestelle",
+    "Arztpraxis",
+    "Büro, 3. Obergeschoss",
+    "Seniorenwohnung"
+   ],
+   "reqs": {},
+   "work": 0,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    1,
+    2
+   ],
+   "variants": [
+    {
+     "p": 0.74,
+     "name": "Stabil",
+     "lage": "Patient ansprechbar und stabil, wird versorgt."
+    },
+    {
+     "p": 0.18,
+     "name": "Kritischer als gemeldet",
+     "lage": "Patient kritischer als gemeldet – benötigen Notarzt zur Einsatzstelle!",
+     "sev": [
+      3,
+      3
+     ],
+     "keyword": "RD 2"
+    },
+    {
+     "p": 0.08,
+     "name": "Tragehilfe",
+     "lage": "Patient (ca. 180 kg) kann nicht durch das enge Treppenhaus getragen werden. Benötigen Tragehilfe der Feuerwehr.",
+     "reqs": {
+      "loeschen": 1
+     },
+     "work": 600,
+     "gate": 0.8,
+     "keyword": "THL TRAGEHILFE"
+    }
+   ],
+   "reports": {
+    "done": "Einsatz beendet."
+   },
+   "kw_ok": [
+    "RD 2"
+   ]
+  },
+  "med_bewusstlos": {
+   "name": "Bewusstlose Person",
+   "keyword": "RD 2",
+   "weight": 8,
+   "cat": "rd",
+   "call": "med_bewusstlos",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5,
+     7
+    ]
+   },
+   "objects": [
+    "Wohnung, 2. Obergeschoss",
+    "auf offener Straße",
+    "in einer Gaststätte",
+    "am Arbeitsplatz",
+    "Bahnsteig",
+    "Fitnessstudio"
+   ],
+   "reqs": {},
+   "work": 0,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    3,
+    3
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Bewusstlos",
+     "lage": "Patient bewusstlos, Atmung vorhanden. Notärztliche Versorgung läuft."
+    },
+    {
+     "p": 0.25,
+     "name": "Reanimation",
+     "lage": "Patient reanimationspflichtig, Reanimation läuft!",
+     "sev": [
+      4,
+      4
+     ]
+    },
+    {
+     "p": 0.15,
+     "name": "Wieder ansprechbar",
+     "lage": "Patient wieder ansprechbar, vermutlich Kreislaufkollaps.",
+     "sev": [
+      2,
+      2
+     ],
+     "keyword": "RD 1"
+    }
+   ],
+   "reports": {
+    "done": "Einsatz beendet."
+   },
+   "kw_ok": []
+  },
+  "med_herz": {
+   "name": "Akuter Brustschmerz / Atemnot",
+   "keyword": "RD 2",
+   "weight": 9,
+   "cat": "rd",
+   "call": "med_herz",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5
+    ]
+   },
+   "objects": [
+    "Wohnung, 3. Obergeschoss",
+    "Wohnung, Erdgeschoss",
+    "Einfamilienhaus",
+    "Büro",
+    "Pflegeheim, Zimmer 12"
+   ],
+   "reqs": {},
+   "work": 0,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    3,
+    3
+   ],
+   "variants": [
+    {
+     "p": 0.75,
+     "name": "Akutes Koronarsyndrom",
+     "lage": "Verdacht auf Herzinfarkt, Patient wird notärztlich versorgt und mit Voranmeldung transportiert."
+    },
+    {
+     "p": 0.25,
+     "name": "Entwarnung",
+     "lage": "Patient stabil, Verdacht hat sich nicht bestätigt. Transport zur Abklärung.",
+     "sev": [
+      2,
+      2
+     ],
+     "keyword": "RD 1"
+    }
+   ],
+   "reports": {
+    "done": "Einsatz beendet."
+   },
+   "kw_ok": []
+  },
+  "wohnungsoeffnung": {
+   "name": "Wohnungsöffnung – Person hinter Tür",
+   "keyword": "THL P EINGESCHLOSSEN",
+   "weight": 3,
+   "cat": "thl",
+   "call": "wohnungsoeffnung",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5
+    ],
+    "styles": [
+     "altstadt",
+     "zentrum",
+     "wohn_dicht",
+     "wohn",
+     "vorstadt"
+    ]
+   },
+   "objects": [
+    "Wohnung im 3. Obergeschoss",
+    "Erdgeschosswohnung",
+    "Seniorenwohnung, 1. Obergeschoss",
+    "Dachgeschosswohnung"
+   ],
+   "reqs": {
+    "polizei": 1,
+    "thl_klein": 1
+   },
+   "work": 480,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    2,
+    3
+   ],
+   "gate": 0.9,
+   "variants": [
+    {
+     "p": 0.55,
+     "name": "Hilflose Person",
+     "lage": "Tür geöffnet, Person liegt gestürzt im Flur, ansprechbar. Übergabe an Rettungsdienst."
+    },
+    {
+     "p": 0.2,
+     "name": "Leblose Person",
+     "lage": "Tür geöffnet, Person leblos aufgefunden. Benötigen Notarzt!",
+     "sev": [
+      4,
+      4
+     ]
+    },
+    {
+     "p": 0.25,
+     "name": "Niemand angetroffen",
+     "lage": "Wohnung geöffnet, niemand angetroffen. Wohnung an Polizei übergeben.",
+     "patients": [
+      0,
+      0
+     ]
+    }
+   ],
+   "reports": {
+    "done": "Einsatz beendet, Wohnung gesichert."
+   },
+   "kw_ok": []
+  },
+  "baum": {
+   "name": "Baum auf Fahrbahn",
+   "keyword": "THL 1",
+   "weight": 2.2,
+   "cat": "thl",
+   "call": "baum",
+   "weather": {
+    "sturm": 9,
+    "starkregen": 3,
+    "schnee": 3
+   },
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5,
+     6
+    ],
+    "styles": [
+     "wald",
+     "vorstadt",
+     "wohn",
+     "land",
+     "dorf"
+    ]
+   },
+   "objects": [
+    "umgestürzter Baum quer über beide Fahrspuren",
+    "großer Ast auf der Fahrbahn",
+    "Baum auf geparktem PKW",
+    "Baum droht auf die Straße zu stürzen"
+   ],
+   "reqs": {
+    "thl_klein": 1
+   },
+   "work": 900,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.75,
+     "name": "Baum beseitigen",
+     "lage": "Baum blockiert die Fahrbahn, wird mit Motorkettensäge zerkleinert."
+    },
+    {
+     "p": 0.17,
+     "name": "Baum auf PKW",
+     "lage": "Baum auf fahrenden PKW gestürzt, Fahrer verletzt im Fahrzeug. Benötigen RTW und Polizei.",
+     "reqs": {
+      "loeschen": 1,
+      "polizei": 1,
+      "thl_klein": 1
+     },
+     "work": 1500,
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      2,
+      3
+     ],
+     "gate": 0.4
+    },
+    {
+     "p": 0.08,
+     "name": "Oberleitung betroffen",
+     "lage": "Baum in Stromleitung gefallen. Netzbetreiber verständigen, Straße bleibt gesperrt. Drehleiter erforderlich.",
+     "reqs": {
+      "dlk": 1,
+      "polizei": 1,
+      "thl_klein": 1
+     },
+     "work": 2400
+    }
+   ],
+   "reports": {
+    "p50": "Fahrbahn einspurig wieder befahrbar.",
+    "done": "Fahrbahn frei, Einsatz beendet."
+   },
+   "closure": 1.0,
+   "kw_ok": [
+    "THL UNWETTER"
+   ]
+  },
+  "oelspur": {
+   "name": "Ölspur / auslaufende Betriebsstoffe",
+   "keyword": "ABC KRAFTSTOFF",
+   "weight": 2.5,
+   "cat": "thl",
+   "call": "oelspur",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     2,
+     3,
+     4
+    ]
+   },
+   "objects": [
+    "Ölspur über etwa 200 Meter",
+    "Dieselspur im Kreisverkehr",
+    "auslaufendes Hydrauliköl eines LKW"
+   ],
+   "reqs": {
+    "thl_klein": 1
+   },
+   "work": 900,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.85,
+     "name": "Ölspur",
+     "lage": "Ölspur wird mit Bindemittel abgestreut, Verkehrsabsicherung steht."
+    },
+    {
+     "p": 0.15,
+     "name": "Motorradfahrer gestürzt",
+     "lage": "Motorradfahrer auf Ölspur gestürzt, verletzt. Benötigen RTW und Polizei.",
+     "reqs": {
+      "polizei": 1,
+      "thl_klein": 1
+     },
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      2,
+      2
+     ],
+     "work": 1200
+    }
+   ],
+   "reports": {
+    "done": "Fahrbahn gereinigt, Einsatz beendet."
+   },
+   "kw_ok": [
+    "THL 1"
+   ]
+  },
+  "gefahrgut": {
+   "name": "Gefahrgutunfall",
+   "keyword": "ABC 2",
+   "weight": 0.5,
+   "cat": "abc",
+   "call": "gefahrgut",
+   "multi_calls": 0.4,
+   "loc": {
+    "mode": "road",
+    "classes": [
+     0,
+     2,
+     3,
+     8
+    ],
+    "styles": [
+     "industrie",
+     "gewerbe",
+     "land",
+     "sonder",
+     "wohn"
+    ]
+   },
+   "objects": [
+    "Tanklastzug mit Leckage am Auflieger",
+    "umgestürzter Gefahrgut-LKW",
+    "Leckage an einem IBC-Container im Lager",
+    "undichtes Fass auf der Laderampe",
+    "Kesselwagen im Güterbahnhof"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "gefahrgut": 1,
+    "loeschen": 2,
+    "atemschutz": 1,
+    "polizei": 2
+   },
+   "work": 3600,
+   "patients": [
+    0,
+    3
+   ],
+   "sev": [
+    1,
+    3
+   ],
+   "variants": [
+    {
+     "p": 0.5,
+     "name": "Leckage",
+     "lage": "Unbekannte Flüssigkeit tritt aus, UN-Nummer wird ermittelt. Gefahrenbereich 50 Meter, Trupp unter CSA wird ausgerüstet."
+    },
+    {
+     "p": 0.3,
+     "name": "Ätzender Stoff",
+     "lage": "Stoff identifiziert: ätzend, Salzsäure. Zwei Personen mit Atemwegsreizungen. Dekon-Platz wird aufgebaut.",
+     "patients": [
+      2,
+      4
+     ],
+     "sev": [
+      1,
+      2
+     ],
+     "keyword": "ABC 3"
+    },
+    {
+     "p": 0.2,
+     "name": "Brennbares Gas",
+     "lage": "Austritt von brennbarem Gas, Explosionsgefahr! Räumung im Umkreis von 300 Metern. Benötigen weitere Kräfte und Betreuung.",
+     "reqs": {
+      "fuehrung_fw": 2,
+      "elw2": 1,
+      "gefahrgut": 1,
+      "loeschen": 3,
+      "wasser": 1,
+      "atemschutz": 1,
+      "betreuung": 1,
+      "rtw": 1,
+      "polizei": 3
+     },
+     "work": 4800,
+     "keyword": "ABC 3"
+    }
+   ],
+   "developments": [
+    {
+     "at": [
+      0.2,
+      0.6
+     ],
+     "p": 0.25,
+     "text": "Messungen zeigen Ausbreitung der Schadstoffwolke. Warnung der Bevölkerung, Fenster und Türen geschlossen halten.",
+     "add": {
+      "polizei": 1
+     },
+     "work": 600
+    }
+   ],
+   "strain": [
+    {
+     "after": 480,
+     "text": "Stoffaustritt kann nicht gestoppt werden, Kanalisation betroffen!",
+     "add": {
+      "loeschen": 1,
+      "logistik": 1
+     },
+     "work": 1200
+    }
+   ],
+   "reports": {
+    "p35": "Leckage abgedichtet.",
+    "p75": "Stoff umgepumpt, Dekontamination der Einsatzkräfte läuft.",
+    "done": "Einsatz beendet, Einsatzstelle an Fachfirma übergeben."
+   },
+   "closure": 1.0,
+   "kw_ok": [
+    "ABC 3"
+   ]
+  },
+  "wasserrettung": {
+   "name": "Person im Wasser",
+   "keyword": "THL WASSER",
+   "weight": 0.7,
+   "cat": "thl",
+   "call": "wasserrettung",
+   "multi_calls": 0.4,
+   "loc": {
+    "mode": "water"
+   },
+   "objects": [
+    "Schwimmer in Not, etwa 50 Meter vom Ufer",
+    "gekentertes Ruderboot",
+    "Person von der Brücke gestürzt",
+    "Kind ins Wasser gefallen",
+    "Eis eingebrochen"
+   ],
+   "reqs": {
+    "wasserrettung": 1,
+    "loeschen": 1,
+    "polizei": 1
+   },
+   "work": 900,
+   "patients": [
+    1,
+    2
+   ],
+   "sev": [
+    2,
+    3
+   ],
+   "gate": 0.7,
+   "variants": [
+    {
+     "p": 0.55,
+     "name": "Person im Wasser",
+     "lage": "Person im Wasser gesichtet, Boot wird zu Wasser gelassen."
+    },
+    {
+     "p": 0.25,
+     "name": "Person untergegangen",
+     "lage": "Person untergegangen! Suche mit Boot und Tauchern eingeleitet, Notarzt erforderlich.",
+     "reqs": {
+      "wasserrettung": 2,
+      "taucher": 1,
+      "loeschen": 1,
+      "fuehrung_fw": 1,
+      "notarzt": 1,
+      "polizei": 1
+     },
+     "work": 1800,
+     "sev": [
+      4,
+      4
+     ]
+    },
+    {
+     "p": 0.2,
+     "name": "Selbst gerettet",
+     "lage": "Person hat das Ufer selbstständig erreicht, unterkühlt.",
+     "reqs": {
+      "polizei": 1
+     },
+     "work": 300,
+     "sev": [
+      1,
+      2
+     ],
+     "gate": 0,
+     "keyword": "RD 1"
+    }
+   ],
+   "reports": {
+    "p75": "Person aus dem Wasser gerettet und an Rettungsdienst übergeben.",
+    "done": "Einsatz beendet."
+   },
+   "kw_ok": [
+    "RD WASSERNOT 3"
+   ]
+  },
+  "unwetter_keller": {
+   "name": "Wasser im Keller",
+   "keyword": "THL UNWETTER",
+   "weight": 0.2,
+   "cat": "thl",
+   "call": "unwetter_keller",
+   "weather": {
+    "starkregen": 60,
+    "sturm": 25,
+    "regen": 4
+   },
+   "loc": {
+    "mode": "road",
+    "classes": [
+     4,
+     5
+    ]
+   },
+   "objects": [
+    "Keller eines Einfamilienhauses, 30 cm Wasser",
+    "Tiefgarage unter Wasser",
+    "Keller eines Mehrfamilienhauses",
+    "Unterführung überflutet"
+   ],
+   "reqs": {
+    "loeschen": 1
+   },
+   "work": 1200,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.85,
+     "name": "Keller auspumpen",
+     "lage": "Keller steht unter Wasser, Tauchpumpe im Einsatz."
+    },
+    {
+     "p": 0.15,
+     "name": "Tiefgarage geflutet",
+     "lage": "Tiefgarage auf 300 m² einen halben Meter überflutet, Hochleistungspumpen des THW erforderlich.",
+     "reqs": {
+      "loeschen": 1,
+      "pumpen": 1
+     },
+     "work": 3000
+    }
+   ],
+   "reports": {
+    "done": "Wasser abgepumpt, Einsatz beendet."
+   },
+   "kw_ok": [
+    "THL 1"
+   ]
+  },
+  "unwetter_dach": {
+   "name": "Sturmschaden an Gebäude",
+   "keyword": "THL UNWETTER",
+   "weight": 0.1,
+   "cat": "thl",
+   "call": "unwetter_dach",
+   "weather": {
+    "sturm": 50,
+    "starkregen": 8
+   },
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5
+    ]
+   },
+   "objects": [
+    "lose Dachziegel drohen auf den Gehweg zu fallen",
+    "Baugerüst droht umzustürzen",
+    "abgedecktes Hallendach",
+    "Werbetafel hängt lose an der Fassade"
+   ],
+   "reqs": {
+    "loeschen": 1,
+    "dlk": 1
+   },
+   "work": 1200,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.8,
+     "name": "Sicherung",
+     "lage": "Lose Teile werden über die Drehleiter gesichert, Gehweg abgesperrt."
+    },
+    {
+     "p": 0.2,
+     "name": "Passant verletzt",
+     "lage": "Passant von herabfallenden Teilen getroffen, Kopfverletzung. RTW und Polizei erforderlich.",
+     "reqs": {
+      "loeschen": 1,
+      "dlk": 1,
+      "polizei": 1
+     },
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      2,
+      3
+     ]
+    }
+   ],
+   "reports": {
+    "done": "Gefahrenstelle beseitigt, Einsatz beendet."
+   },
+   "kw_ok": [
+    "THL 1"
+   ]
+  },
+  "aufzug": {
+   "name": "Person in Aufzug eingeschlossen",
+   "keyword": "THL P AUFZUG",
+   "weight": 1.8,
+   "cat": "thl",
+   "call": "aufzug",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4
+    ],
+    "styles": [
+     "altstadt",
+     "zentrum",
+     "wohn_dicht"
+    ]
+   },
+   "objects": [
+    "Aufzug zwischen 3. und 4. Obergeschoss",
+    "Personenaufzug im Parkhaus",
+    "Aufzug in einem Bürogebäude"
+   ],
+   "reqs": {
+    "thl_klein": 1
+   },
+   "work": 600,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 1.0,
+     "name": "Aufzug",
+     "lage": "Aufzug steckt fest, zwei Personen eingeschlossen, wohlauf. Notbefreiung wird durchgeführt."
+    }
+   ],
+   "reports": {
+    "done": "Personen befreit, Aufzug außer Betrieb genommen."
+   },
+   "kw_ok": [
+    "THL 1"
+   ]
+  },
+  "tier": {
+   "name": "Tier in Notlage",
+   "keyword": "THL 1",
+   "weight": 1.2,
+   "cat": "thl",
+   "call": "tier",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     4,
+     5,
+     6
+    ]
+   },
+   "objects": [
+    "Katze auf einem Baum",
+    "Schwan auf der Fahrbahn",
+    "Hund in einem Kanalschacht",
+    "Pferd in einem Graben"
+   ],
+   "reqs": {
+    "thl_klein": 1
+   },
+   "work": 900,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.8,
+     "name": "Tierrettung",
+     "lage": "Tier wird gerettet und an den Besitzer übergeben."
+    },
+    {
+     "p": 0.2,
+     "name": "Großtier",
+     "lage": "Großtierrettung erforderlich, benötigen Rüstwagen mit Hebegeschirr.",
+     "reqs": {
+      "thl": 1,
+      "rw": 1
+     },
+     "work": 1800,
+     "keyword": "THL GROßTIERRETTUNG"
+    }
+   ],
+   "reports": {
+    "done": "Tier gerettet, Einsatz beendet."
+   },
+   "kw_ok": []
+  },
+  "pol_ruhe": {
+   "name": "Ruhestörung / Streitigkeit",
+   "keyword": "POL 1",
+   "weight": 6,
+   "cat": "pol",
+   "call": "pol_ruhe",
+   "night": 2.5,
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5,
+     7
+    ]
+   },
+   "objects": [
+    "Wohnung im 2. Obergeschoss",
+    "vor einer Gaststätte",
+    "in einem Hinterhof",
+    "Parkanlage"
+   ],
+   "reqs": {
+    "polizei": 1
+   },
+   "work": 600,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.8,
+     "name": "Ruhestörung",
+     "lage": "Verursacher angetroffen und ermahnt, Ruhe hergestellt."
+    },
+    {
+     "p": 0.2,
+     "name": "Körperverletzung",
+     "lage": "Streit eskaliert, eine Person leicht verletzt. Zweite Streife und RTW erbeten.",
+     "reqs": {
+      "polizei": 2
+     },
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      1,
+      2
+     ],
+     "work": 1200
+    }
+   ],
+   "reports": {
+    "done": "Einsatz beendet."
+   },
+   "kw_ok": []
+  },
+  "pol_einbruch": {
+   "name": "Einbruch – Täter vor Ort",
+   "keyword": "POL 2",
+   "weight": 2.2,
+   "cat": "pol",
+   "call": "pol_einbruch",
+   "night": 2.0,
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5,
+     8
+    ]
+   },
+   "objects": [
+    "Juweliergeschäft",
+    "Einfamilienhaus",
+    "Bürogebäude",
+    "Lagerhalle",
+    "Kiosk"
+   ],
+   "reqs": {
+    "polizei": 2
+   },
+   "work": 1200,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.5,
+     "name": "Täter flüchtig",
+     "lage": "Täter bei Eintreffen flüchtig, Fahndung im Nahbereich. Kriminaldauerdienst zur Spurensicherung erbeten.",
+     "reqs": {
+      "polizei": 2,
+      "kripo": 1
+     },
+     "work": 1800
+    },
+    {
+     "p": 0.35,
+     "name": "Festnahme",
+     "lage": "Ein Täter im Objekt festgenommen."
+    },
+    {
+     "p": 0.15,
+     "name": "Fehlalarm",
+     "lage": "Objekt überprüft, kein Einbruch feststellbar.",
+     "reqs": {
+      "polizei": 1
+     },
+     "work": 480
+    }
+   ],
+   "reports": {
+    "done": "Einsatz beendet."
+   },
+   "kw_ok": []
+  },
+  "pol_schlaegerei": {
+   "name": "Schlägerei mit mehreren Beteiligten",
+   "keyword": "POL 2",
+   "weight": 2.5,
+   "cat": "pol",
+   "call": "pol_schlaegerei",
+   "night": 3.0,
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     7
+    ],
+    "styles": [
+     "altstadt",
+     "zentrum",
+     "wohn_dicht",
+     "wohn"
+    ]
+   },
+   "objects": [
+    "vor einer Diskothek",
+    "am Bahnhofsvorplatz",
+    "in einer Gaststätte",
+    "an einer U-Bahn-Station",
+    "auf einem Volksfest"
+   ],
+   "reqs": {
+    "polizei": 2
+   },
+   "work": 1200,
+   "patients": [
+    1,
+    2
+   ],
+   "sev": [
+    1,
+    2
+   ],
+   "variants": [
+    {
+     "p": 0.65,
+     "name": "Schlägerei",
+     "lage": "Lage beruhigt, mehrere Beteiligte getrennt. Verletzte werden versorgt."
+    },
+    {
+     "p": 0.25,
+     "name": "Größere Gruppe",
+     "lage": "Etwa 20 Beteiligte, Lage unübersichtlich! Unterstützungskräfte dringend erforderlich.",
+     "reqs": {
+      "polizei": 4,
+      "pol_gruppe": 1
+     },
+     "work": 2100,
+     "patients": [
+      2,
+      4
+     ]
+    },
+    {
+     "p": 0.1,
+     "name": "Messerangriff",
+     "lage": "Person mit Stichverletzung am Boden, Täter flüchtig! Notarzt erforderlich.",
+     "reqs": {
+      "polizei": 3,
+      "kripo": 1
+     },
+     "work": 2400,
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      3,
+      3
+     ],
+     "keyword": "RD 2"
+    }
+   ],
+   "reports": {
+    "done": "Einsatz beendet."
+   },
+   "kw_ok": [
+    "RD 2"
+   ]
+  },
+  "ktp": {
+   "name": "Krankentransport",
+   "keyword": "RD KTP",
+   "weight": 9,
+   "cat": "rd",
+   "call": "ktp",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5
+    ]
+   },
+   "objects": [
+    "Wohnung, 1. Obergeschoss",
+    "Pflegeheim",
+    "Arztpraxis",
+    "Dialysezentrum",
+    "Seniorenwohnung, Erdgeschoss"
+   ],
+   "reqs": {},
+   "work": 0,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    0,
+    0
+   ],
+   "variants": [
+    {
+     "p": 1.0,
+     "name": "Transport",
+     "lage": "Patient übernommen."
+    }
+   ],
+   "reports": {
+    "done": "Transport durchgeführt."
+   },
+   "kw_ok": []
+  },
+  "hochwasser": {
+   "name": "Hochwasser – Deichverteidigung",
+   "keyword": "THL UNWETTER",
+   "weight": 0,
+   "cat": "thl",
+   "call": "unwetter_keller",
+   "loc": {
+    "mode": "water"
+   },
+   "objects": [
+    "Uferbereich droht überflutet zu werden",
+    "Sickerstelle am Damm",
+    "überflutete Uferstraße"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "loeschen": 2,
+    "logistik": 1,
+    "pumpen": 1,
+    "thw": 1
+   },
+   "work": 5400,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Sandsackverbau",
+     "lage": "Wasser steigt weiter. Sandsackverbau auf 150 Meter erforderlich, benötigen Logistik, THW und Pumpen."
+    },
+    {
+     "p": 0.4,
+     "name": "Evakuierung",
+     "lage": "Wohnhäuser am Ufer nicht mehr zu halten, 60 Anwohner werden evakuiert. Betreuung und Wasserrettung erforderlich!",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 2,
+      "logistik": 1,
+      "pumpen": 1,
+      "thw": 1,
+      "wasserrettung": 1,
+      "betreuung": 1,
+      "polizei": 2
+     },
+     "work": 7200,
+     "patients": [
+      0,
+      2
+     ]
+    }
+   ],
+   "reports": {
+    "p50": "Damm gesichert, Pumpen laufen.",
+    "done": "Pegel fällt, Einsatz beendet."
+   },
+   "kw_ok": []
+  },
+  "veranstaltung": {
+   "name": "Zwischenfall bei Großveranstaltung",
+   "keyword": "RD MANV 10–15",
+   "weight": 0,
+   "cat": "rd",
+   "call": "veranstaltung",
+   "loc": {
+    "mode": "poi",
+    "poi_kinds": [
+     "stadion",
+     "messe",
+     "veranstaltung"
+    ]
+   },
+   "objects": [
+    "Gedränge am Eingangsbereich",
+    "Tribüne Block C",
+    "Pyrotechnik im Zuschauerbereich",
+    "Reizgas in einer Halle"
+   ],
+   "reqs": {
+    "elrd": 1,
+    "polizei": 3,
+    "pol_gruppe": 1,
+    "fuehrung_fw": 1,
+    "loeschen": 1
+   },
+   "work": 2400,
+   "patients": [
+    5,
+    10
+   ],
+   "sev": [
+    1,
+    3
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Mehrere Verletzte",
+     "lage": "Mehrere Verletzte nach Gedränge, Patientenablage am Sanitätsstützpunkt. Benötigen Transportkapazität und SEG.",
+     "reqs": {
+      "elrd": 1,
+      "seg": 1,
+      "polizei": 3,
+      "pol_gruppe": 1,
+      "fuehrung_fw": 1,
+      "loeschen": 1
+     }
+    },
+    {
+     "p": 0.4,
+     "name": "Massenpanik",
+     "lage": "Panik im Zuschauerbereich, über zehn Verletzte! MANV 2.",
+     "reqs": {
+      "elrd": 1,
+      "seg": 2,
+      "polizei": 4,
+      "pol_gruppe": 2,
+      "pol_fuehrung": 1,
+      "fuehrung_fw": 2,
+      "loeschen": 2,
+      "betreuung": 1
+     },
+     "patients": [
+      10,
+      16
+     ],
+     "work": 3600,
+     "keyword": "RD MANV 16–25"
+    }
+   ],
+   "reports": {
+    "p50": "Lage unter Kontrolle, Sichtung abgeschlossen.",
+    "done": "Einsatz beendet."
+   },
+   "kw_ok": [
+    "RD 5",
+    "RD MANV 16–25"
+   ]
+  },
+  "brand_gartenhuette": {
+   "name": "Brand Gartenhütte / Schuppen",
+   "keyword": "B 2",
+   "kw_ok": [
+    "B 1",
+    "B 3"
+   ],
+   "weight": 1.8,
+   "cat": "brand",
+   "call": "brand_gartenhuette",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     4,
+     5
+    ],
+    "styles": [
+     "wohn",
+     "vorstadt",
+     "dorf",
+     "wald"
+    ]
+   },
+   "objects": [
+    "Gartenhütte in einer Kleingartenanlage",
+    "Holzschuppen hinter einem Wohnhaus",
+    "Gerätehaus",
+    "Carport mit Brennholz"
+   ],
+   "reqs": {
+    "loeschen": 1,
+    "polizei": 1
+   },
+   "work": 900,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.7,
+     "name": "Hütte in Vollbrand",
+     "lage": "Gartenhütte in Vollbrand, Riegelstellung zum Wohnhaus aufgebaut."
+    },
+    {
+     "p": 0.2,
+     "name": "Gasflasche im Schuppen",
+     "lage": "Im Schuppen lagert eine Propangasflasche! Gefahrenbereich, zweites Löschfahrzeug erforderlich.",
+     "reqs": {
+      "loeschen": 2,
+      "fuehrung_fw": 1,
+      "polizei": 1
+     },
+     "work": 1500
+    },
+    {
+     "p": 0.1,
+     "name": "Person verletzt",
+     "lage": "Eigentümer hat selbst gelöscht und sich dabei Verbrennungen zugezogen.",
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      2,
+      2
+     ],
+     "keyword": "B 2 PERSON"
+    }
+   ],
+   "reports": {
+    "p50": "Feuer in Gewalt.",
+    "done": "Feuer aus, Brandstelle an Eigentümer übergeben."
+   }
+  },
+  "brand_wald": {
+   "name": "Waldbrand",
+   "keyword": "B WALD",
+   "kw_ok": [
+    "B 2",
+    "B 3"
+   ],
+   "weight": 0.5,
+   "cat": "brand",
+   "call": "brand_wald",
+   "weather": {
+    "klar": 1.2
+   },
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5,
+     6
+    ],
+    "styles": [
+     "wald",
+     "land",
+     "dorf",
+     "vorstadt"
+    ]
+   },
+   "objects": [
+    "Waldstück am Ortsrand",
+    "Böschung neben der Kreisstraße",
+    "Waldweg hinter dem Sportplatz",
+    "Unterholz im Forst"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "loeschen": 2,
+    "wasser": 1,
+    "polizei": 1
+   },
+   "work": 2400,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.45,
+     "name": "Bodenfeuer",
+     "lage": "Bodenfeuer auf ca. 500 m², Ausbreitung durch Wind. Wasserversorgung über Pendelverkehr.",
+     "keyword": "B 2"
+    },
+    {
+     "p": 0.4,
+     "name": "Waldbrand",
+     "lage": "Waldbrand auf über 1.000 m², Flammen erreichen die Baumkronen! Großer Wasserbedarf.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 3,
+      "wasser": 2,
+      "logistik": 1,
+      "polizei": 1
+     },
+     "work": 4800
+    },
+    {
+     "p": 0.15,
+     "name": "Waldbrand mit Gefährdung",
+     "lage": "Waldbrand bedroht eine Siedlung am Waldrand! Häuser werden geräumt, Betreuung erforderlich.",
+     "reqs": {
+      "fuehrung_fw": 2,
+      "elw2": 1,
+      "loeschen": 4,
+      "wasser": 3,
+      "logistik": 1,
+      "betreuung": 1,
+      "polizei": 2
+     },
+     "work": 6000
+    }
+   ],
+   "developments": [
+    {
+     "at": [
+      0.2,
+      0.5
+     ],
+     "p": 0.3,
+     "text": "Wind dreht, Feuer springt über den Waldweg!",
+     "add": {
+      "loeschen": 1,
+      "wasser": 1
+     },
+     "work": 1200
+    }
+   ],
+   "strain": [
+    {
+     "after": 480,
+     "text": "Feuer breitet sich ungehindert aus – zu wenig Löschwasser vor Ort!",
+     "add": {
+      "wasser": 1,
+      "loeschen": 1
+     },
+     "work": 1800
+    }
+   ],
+   "reports": {
+    "p35": "Ausbreitung gestoppt.",
+    "p75": "Feuer aus, Nachlöscharbeiten im Wurzelbereich.",
+    "done": "Einsatz beendet, Brandwache durch Forstbetrieb."
+   }
+  },
+  "brand_zug": {
+   "name": "Brand in einem Zug",
+   "keyword": "B ZUG",
+   "kw_ok": [
+    "B 3",
+    "B 4"
+   ],
+   "weight": 0.25,
+   "cat": "brand",
+   "call": "brand_zug",
+   "loc": {
+    "mode": "poi",
+    "poi_kinds": [
+     "bahnhof"
+    ]
+   },
+   "objects": [
+    "Regionalzug am Bahnsteig",
+    "S-Bahn-Triebwagen auf Gleis 4",
+    "Güterwagen auf dem Abstellgleis",
+    "Diesellok im Rangierbereich"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "loeschen": 3,
+    "wasser": 1,
+    "atemschutz": 1,
+    "polizei": 1
+   },
+   "work": 2700,
+   "patients": [
+    0,
+    3
+   ],
+   "sev": [
+    1,
+    2
+   ],
+   "variants": [
+    {
+     "p": 0.5,
+     "name": "Schmorbrand Triebwagen",
+     "lage": "Rauch aus dem Technikbereich des Triebwagens, Fahrgäste evakuiert. Bahnstrom wird abgeschaltet und geerdet.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 2,
+      "polizei": 1
+     },
+     "work": 1800
+    },
+    {
+     "p": 0.35,
+     "name": "Wagen in Brand",
+     "lage": "Ein Personenwagen in Vollbrand, mehrere Reisende mit Rauchgasvergiftung. Notfallmanager der Bahn verständigt."
+    },
+    {
+     "p": 0.15,
+     "name": "Güterwagen mit Gefahrgut",
+     "lage": "Brennender Güterwagen mit Gefahrgutkennzeichnung! Gefahrstoffzug erforderlich, Räumung im Umkreis von 300 m.",
+     "reqs": {
+      "fuehrung_fw": 2,
+      "elw2": 1,
+      "loeschen": 4,
+      "wasser": 2,
+      "gefahrgut": 1,
+      "dekon": 1,
+      "atemschutz": 1,
+      "polizei": 2
+     },
+     "work": 5400,
+     "keyword": "ABC 3"
+    }
+   ],
+   "reports": {
+    "p35": "Brand unter Kontrolle, Bahnstrom geerdet.",
+    "p75": "Feuer aus, Belüftung des Wagens.",
+    "done": "Einsatz beendet, Strecke an die Bahn übergeben."
+   },
+   "closure": 0.0
+  },
+  "brand_trafo": {
+   "name": "Brand einer Trafostation",
+   "keyword": "B ELEKTROANLAGE",
+   "kw_ok": [
+    "B 2",
+    "B 3"
+   ],
+   "weight": 0.6,
+   "cat": "brand",
+   "call": "brand_trafo",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     8
+    ],
+    "styles": [
+     "industrie",
+     "gewerbe",
+     "wohn",
+     "wohn_dicht"
+    ]
+   },
+   "objects": [
+    "Trafostation am Straßenrand",
+    "Umspannstation hinter einer Halle",
+    "Elektroverteiler im Keller eines Bürogebäudes",
+    "Photovoltaikanlage auf einem Hallendach"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "loeschen": 2,
+    "polizei": 1
+   },
+   "work": 1800,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Trafobrand",
+     "lage": "Trafostation brennt, Stromausfall im Umkreis. Kein Löschwasser einsetzen bis zur Freischaltung durch den Netzbetreiber!"
+    },
+    {
+     "p": 0.25,
+     "name": "PV-Anlage",
+     "lage": "Photovoltaikanlage auf dem Dach in Brand, Drehleiter für Außenangriff erforderlich.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 2,
+      "dlk": 1,
+      "polizei": 1
+     },
+     "work": 2400
+    },
+    {
+     "p": 0.15,
+     "name": "Kabelbrand",
+     "lage": "Kabelbrand im Verteiler, starke Verrauchung. Gebäude wird geräumt.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 2,
+      "atemschutz": 1
+     },
+     "work": 1500
+    }
+   ],
+   "reports": {
+    "p50": "Anlage freigeschaltet, Brand unter Kontrolle.",
+    "done": "Einsatz beendet, Anlage an Netzbetreiber übergeben."
+   }
+  },
+  "brand_pflegeheim": {
+   "name": "Brand in einem Pflegeheim",
+   "keyword": "B 5",
+   "kw_ok": [
+    "B 4"
+   ],
+   "weight": 0.18,
+   "cat": "brand",
+   "call": "brand_pflegeheim",
+   "multi_calls": 1.0,
+   "loc": {
+    "mode": "poi",
+    "poi_kinds": [
+     "pflege"
+    ]
+   },
+   "objects": [
+    "Pflegeheim, Wohnbereich 2. Obergeschoss",
+    "Seniorenresidenz, Zimmer im Erdgeschoss",
+    "Pflegeeinrichtung, Aufenthaltsraum"
+   ],
+   "reqs": {
+    "fuehrung_fw": 2,
+    "elw2": 1,
+    "loeschen": 5,
+    "dlk": 2,
+    "atemschutz": 1,
+    "rtw": 3,
+    "notarzt": 2,
+    "elrd": 1,
+    "seg": 1,
+    "betreuung": 1,
+    "polizei": 2
+   },
+   "work": 4200,
+   "patients": [
+    4,
+    9
+   ],
+   "sev": [
+    1,
+    3
+   ],
+   "variants": [
+    {
+     "p": 0.5,
+     "name": "Zimmerbrand im Pflegeheim",
+     "lage": "Zimmerbrand im 2. OG, Flur stark verraucht. Bettlägerige Bewohner werden horizontal evakuiert. MANV-Lage!"
+    },
+    {
+     "p": 0.3,
+     "name": "Kleinbrand – Rauchausbreitung",
+     "lage": "Kleinbrand gelöscht, aber Rauch hat sich im Wohnbereich ausgebreitet. Mehrere Bewohner mit Atemwegsreizung.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 3,
+      "dlk": 1,
+      "rtw": 2,
+      "notarzt": 1,
+      "elrd": 1,
+      "polizei": 1
+     },
+     "work": 2400,
+     "patients": [
+      2,
+      4
+     ],
+     "keyword": "B 4"
+    },
+    {
+     "p": 0.2,
+     "name": "Ausgedehnter Brand",
+     "lage": "Brand hat auf mehrere Zimmer übergegriffen, Bewohner an den Fenstern! Menschenrettung über Drehleitern läuft.",
+     "reqs": {
+      "fuehrung_fw": 2,
+      "elw2": 1,
+      "loeschen": 6,
+      "dlk": 3,
+      "atemschutz": 1,
+      "rtw": 5,
+      "notarzt": 3,
+      "elrd": 1,
+      "seg": 2,
+      "grtw": 1,
+      "betreuung": 1,
+      "polizei": 3
+     },
+     "work": 6000,
+     "patients": [
+      8,
+      14
+     ]
+    }
+   ],
+   "developments": [
+    {
+     "at": [
+      0.2,
+      0.5
+     ],
+     "p": 0.4,
+     "text": "Weitere Bewohner werden aus verrauchten Zimmern gerettet, zusätzliche Rettungsmittel erforderlich!",
+     "add": {
+      "rtw": 2
+     },
+     "work": 600,
+     "patients": [
+      2,
+      3
+     ],
+     "sev": [
+      1,
+      3
+     ]
+    }
+   ],
+   "strain": [
+    {
+     "after": 420,
+     "text": "Rauch dringt in das Treppenhaus – Evakuierung gerät ins Stocken!",
+     "add": {
+      "loeschen": 1,
+      "dlk": 1
+     },
+     "work": 1200,
+     "patients": [
+      1,
+      2
+     ],
+     "sev": [
+      2,
+      3
+     ]
+    }
+   ],
+   "reports": {
+    "p35": "Menschenrettung abgeschlossen, Feuer unter Kontrolle.",
+    "p75": "Feuer aus, Bewohner werden in andere Wohnbereiche verlegt.",
+    "done": "Einsatz beendet. Betreuung durch Heimleitung übernommen."
+   }
+  },
+  "person_hoehe": {
+   "name": "Rettung aus Höhe oder Tiefe",
+   "keyword": "THL P RETTUNG H/T",
+   "kw_ok": [
+    "THL 1",
+    "THL 3"
+   ],
+   "weight": 0.7,
+   "cat": "thl",
+   "call": "person_hoehe",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5,
+     8
+    ]
+   },
+   "objects": [
+    "Person auf einem Hausdach",
+    "Arbeiter auf einem Baukran",
+    "Person in einem Kanalschacht",
+    "Person auf einer Brücke",
+    "Kind in einem Lichtschacht"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "thl": 1,
+    "dlk": 1,
+    "rtw": 1,
+    "polizei": 1
+   },
+   "work": 1500,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    1,
+    2
+   ],
+   "gate": 0.7,
+   "variants": [
+    {
+     "p": 0.4,
+     "name": "Person droht zu springen",
+     "lage": "Person sitzt auf der Dachkante und droht zu springen. Polizei verhandelt, Sprungpolster wird aufgebaut. Kriseninterventionsteam anfordern!",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "dlk": 1,
+      "loeschen": 1,
+      "rtw": 1,
+      "notarzt": 1,
+      "polizei": 2,
+      "betreuung_psnv": 1
+     },
+     "work": 2400,
+     "sev": [
+      2,
+      2
+     ]
+    },
+    {
+     "p": 0.35,
+     "name": "Arbeiter in Höhe",
+     "lage": "Kranführer nach Kreislaufproblem in der Kabine in 40 m Höhe. Höhenrettung erforderlich!",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "thl": 1,
+      "hoehenrettung": 1,
+      "rtw": 1,
+      "notarzt": 1
+     },
+     "work": 2700,
+     "sev": [
+      2,
+      3
+     ]
+    },
+    {
+     "p": 0.25,
+     "name": "Person in Tiefe",
+     "lage": "Person in einen Schacht gestürzt, ca. 4 m tief, ansprechbar. Rettung mit Dreibock und Schleifkorbtrage.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "thl": 1,
+      "rtw": 1,
+      "notarzt": 1
+     },
+     "work": 1500,
+     "sev": [
+      2,
+      3
+     ]
+    }
+   ],
+   "reports": {
+    "p75": "Person gerettet und an den Rettungsdienst übergeben.",
+    "done": "Einsatz beendet."
+   }
+  },
+  "strassenbahn": {
+   "name": "Person unter Straßenbahn",
+   "keyword": "THL P STRAßENBAHN",
+   "kw_ok": [
+    "THL 3"
+   ],
+   "weight": 0.25,
+   "cat": "thl",
+   "call": "strassenbahn",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     2,
+     3
+    ],
+    "styles": [
+     "altstadt",
+     "zentrum",
+     "wohn_dicht",
+     "wohn"
+    ]
+   },
+   "objects": [
+    "Straßenbahn an einer Haltestelle",
+    "Straßenbahn im Kreuzungsbereich",
+    "Straßenbahn vor einem Einkaufszentrum"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "thl": 2,
+    "rw": 1,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 2
+   },
+   "work": 2100,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    3,
+    4
+   ],
+   "gate": 0.6,
+   "variants": [
+    {
+     "p": 0.75,
+     "name": "Person unter Bahn",
+     "lage": "Fußgänger unter dem ersten Drehgestell eingeklemmt, ansprechbar. Fahrstrom abgeschaltet, Anheben mit Hebekissen."
+    },
+    {
+     "p": 0.25,
+     "name": "Person neben Bahn",
+     "lage": "Person wurde von der Straßenbahn erfasst und liegt neben dem Gleis. Nicht eingeklemmt.",
+     "reqs": {
+      "rtw": 1,
+      "notarzt": 1,
+      "polizei": 2
+     },
+     "work": 600,
+     "gate": 0,
+     "keyword": "RD 2"
+    }
+   ],
+   "reports": {
+    "p75": "Person befreit, Übergabe an Notarzt.",
+    "done": "Einsatzstelle an Polizei und Verkehrsbetrieb übergeben."
+   },
+   "closure": 1.0
+  },
+  "stromunfall": {
+   "name": "Stromunfall",
+   "keyword": "THL P STROM",
+   "kw_ok": [
+    "RD 2"
+   ],
+   "weight": 0.4,
+   "cat": "thl",
+   "call": "stromunfall",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5,
+     8
+    ]
+   },
+   "objects": [
+    "Baustelle eines Wohnhauses",
+    "Werkstatt im Hinterhof",
+    "Wohnung, Badezimmer",
+    "Firmengelände, Schaltschrank"
+   ],
+   "reqs": {
+    "thl_klein": 1
+   },
+   "work": 600,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    2,
+    3
+   ],
+   "gate": 0.8,
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Stromunfall",
+     "lage": "Handwerker hat Stromschlag erlitten, ansprechbar, Herzrhythmusstörung möglich. Anlage wird freigeschaltet."
+    },
+    {
+     "p": 0.25,
+     "name": "Bewusstlos",
+     "lage": "Person nach Stromschlag bewusstlos, Reanimation läuft!",
+     "sev": [
+      4,
+      4
+     ]
+    },
+    {
+     "p": 0.15,
+     "name": "Person noch in Kontakt",
+     "lage": "Person noch in Kontakt mit spannungsführendem Teil! Freischalten durch Feuerwehr, Eigenschutz beachten.",
+     "reqs": {
+      "thl_klein": 1,
+      "loeschen": 1
+     },
+     "work": 900,
+     "sev": [
+      3,
+      3
+     ]
+    }
+   ],
+   "reports": {
+    "done": "Anlage gesichert, Einsatz beendet."
+   }
+  },
+  "gasgeruch": {
+   "name": "Gasgeruch in Wohngebäude",
+   "keyword": "ABC 1",
+   "kw_ok": [
+    "ABC 2"
+   ],
+   "weight": 2.2,
+   "cat": "abc",
+   "call": "gasgeruch",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5
+    ],
+    "styles": [
+     "altstadt",
+     "zentrum",
+     "wohn_dicht",
+     "wohn",
+     "vorstadt"
+    ]
+   },
+   "objects": [
+    "Mehrfamilienhaus, Treppenhaus",
+    "Wohnung im 1. Obergeschoss",
+    "Keller eines Einfamilienhauses",
+    "Gaststätte, Küche"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "loeschen": 1
+   },
+   "work": 900,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.55,
+     "name": "Kein Befund",
+     "lage": "Messung mit dem Ex-Warngerät negativ. Vermutlich Geruch aus der Kanalisation. Netzbetreiber informiert.",
+     "work": 480
+    },
+    {
+     "p": 0.3,
+     "name": "Gasaustritt",
+     "lage": "Messung positiv: Gasaustritt an einer Leitung im Keller! Gebäude wird geräumt, Zündquellen ausgeschaltet, Netzbetreiber angefordert.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 2,
+      "atemschutz": 1,
+      "polizei": 1,
+      "betreuung": 1
+     },
+     "work": 2400,
+     "keyword": "ABC 3"
+    },
+    {
+     "p": 0.15,
+     "name": "Verpuffung",
+     "lage": "Verpuffung in einer Wohnung! Fenster herausgedrückt, eine Person mit Verbrennungen, Statik wird geprüft.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 2,
+      "gefahrgut": 1,
+      "atemschutz": 1,
+      "rtw": 1,
+      "notarzt": 1,
+      "polizei": 2
+     },
+     "work": 3000,
+     "patients": [
+      1,
+      2
+     ],
+     "sev": [
+      2,
+      3
+     ],
+     "keyword": "ABC EXPLOSION"
+    }
+   ],
+   "reports": {
+    "p50": "Gaszufuhr abgesperrt.",
+    "done": "Gebäude belüftet und an Netzbetreiber übergeben."
+   }
+  },
+  "co_vergiftung": {
+   "name": "CO-Warnmelder / Kohlenmonoxid",
+   "keyword": "ABC 1",
+   "kw_ok": [
+    "RD 3"
+   ],
+   "weight": 0.9,
+   "cat": "abc",
+   "call": "co_vergiftung",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5
+    ],
+    "styles": [
+     "wohn_dicht",
+     "wohn",
+     "vorstadt",
+     "altstadt",
+     "zentrum"
+    ]
+   },
+   "objects": [
+    "Wohnung mit Gastherme",
+    "Badezimmer mit Durchlauferhitzer",
+    "Shisha-Bar im Erdgeschoss",
+    "Kellerraum mit Notstromaggregat"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "loeschen": 1,
+    "rtw": 2,
+    "notarzt": 1
+   },
+   "work": 900,
+   "patients": [
+    2,
+    3
+   ],
+   "sev": [
+    1,
+    3
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "CO-Vergiftung",
+     "lage": "CO-Konzentration stark erhöht! Mehrere Personen mit Kopfschmerz und Übelkeit. Raum unter Atemschutz belüftet.",
+     "keyword": "RD 3"
+    },
+    {
+     "p": 0.25,
+     "name": "Fehlalarm Warnmelder",
+     "lage": "Messung unauffällig, Warnmelder defekt. Keine Patienten.",
+     "patients": [
+      0,
+      0
+     ],
+     "work": 420
+    },
+    {
+     "p": 0.15,
+     "name": "Shisha-Bar",
+     "lage": "Mehrere Gäste einer Shisha-Bar mit CO-Vergiftung, zwei bewusstlos!",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 1,
+      "rtw": 4,
+      "notarzt": 2,
+      "elrd": 1,
+      "polizei": 1
+     },
+     "patients": [
+      4,
+      5
+     ],
+     "sev": [
+      2,
+      4
+     ],
+     "keyword": "RD 4"
+    }
+   ],
+   "reports": {
+    "done": "Räume belüftet, Gerät außer Betrieb gesetzt."
+   }
+  },
+  "gma": {
+   "name": "Auslösung Gefahrstoff-Meldeanlage",
+   "keyword": "ABC GEFAHRSTOFF-MELDEANLAGE",
+   "kw_ok": [
+    "ABC 2",
+    "B BMA"
+   ],
+   "weight": 0.8,
+   "cat": "abc",
+   "call": "gma",
+   "loc": {
+    "mode": "poi",
+    "poi_kinds": [
+     "industrie"
+    ]
+   },
+   "objects": [
+    "Meldeanlage Ammoniak, Kühlhaus",
+    "Meldeanlage Chlor, Wasseraufbereitung",
+    "Meldeanlage CO₂, Getränkeabfüllung",
+    "Meldeanlage Propan, Lagerbereich"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "loeschen": 1
+   },
+   "work": 600,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Fehlauslösung",
+     "lage": "Erkundung unter Atemschutz negativ, Sensor defekt. Anlage an Betreiber übergeben.",
+     "work": 480
+    },
+    {
+     "p": 0.3,
+     "name": "Kleine Leckage",
+     "lage": "Leichte Leckage an einem Ventil, Messwerte erhöht. Bereich abgesperrt, Gefahrstoffzug zur Abdichtung.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 1,
+      "gefahrgut": 1
+     },
+     "work": 1800,
+     "keyword": "ABC 2"
+    },
+    {
+     "p": 0.1,
+     "name": "Großer Austritt",
+     "lage": "Massiver Ammoniakaustritt! Zwei Mitarbeiter mit Atemwegsverätzung, Warnung der Bevölkerung erforderlich.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "gefahrgut": 1,
+      "loeschen": 2,
+      "atemschutz": 1,
+      "dekon": 1,
+      "rtw": 2,
+      "notarzt": 1,
+      "polizei": 2
+     },
+     "work": 3600,
+     "patients": [
+      2,
+      2
+     ],
+     "sev": [
+      2,
+      3
+     ],
+     "keyword": "ABC 3"
+    }
+   ],
+   "reports": {
+    "done": "Anlage überprüft und an Betreiber übergeben."
+   }
+  },
+  "oel_wasser": {
+   "name": "Ölfilm auf Gewässer",
+   "keyword": "ABC ÖL WASSER",
+   "kw_ok": [
+    "THL 1"
+   ],
+   "weight": 0.4,
+   "cat": "abc",
+   "call": "oel_wasser",
+   "loc": {
+    "mode": "water"
+   },
+   "objects": [
+    "Ölfilm auf ca. 200 m Länge",
+    "schillernder Film am Ufer",
+    "ausgelaufener Diesel eines Bootes"
+   ],
+   "reqs": {
+    "thl_klein": 1,
+    "wasserrettung": 1
+   },
+   "work": 1800,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.8,
+     "name": "Ölsperre",
+     "lage": "Ölfilm treibt ab, schwimmende Ölsperre wird ausgebracht. Wasserbehörde verständigt."
+    },
+    {
+     "p": 0.2,
+     "name": "Großer Ölschaden",
+     "lage": "Größere Menge Heizöl aus einem Einleiter, Ölsperren über die gesamte Breite nötig.",
+     "reqs": {
+      "thl_klein": 1,
+      "wasserrettung": 1,
+      "logistik": 1,
+      "fuehrung_fw": 1
+     },
+     "work": 3600
+    }
+   ],
+   "reports": {
+    "done": "Ölsperre gestellt, Übergabe an Wasserwirtschaftsamt."
+   }
+  },
+  "rd_kind": {
+   "name": "Notfall Kind",
+   "keyword": "RD 2-KIND",
+   "kw_ok": [
+    "RD 2"
+   ],
+   "weight": 3.0,
+   "cat": "rd",
+   "call": "rd_kind",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5
+    ]
+   },
+   "objects": [
+    "Wohnung, Kinderzimmer",
+    "Kindergarten, Gruppenraum",
+    "Spielplatz",
+    "Schwimmbad, Kinderbecken"
+   ],
+   "reqs": {},
+   "work": 0,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    3,
+    3
+   ],
+   "variants": [
+    {
+     "p": 0.5,
+     "name": "Fieberkrampf",
+     "lage": "Kleinkind nach Fieberkrampf, wieder ansprechbar, Eltern sehr aufgeregt."
+    },
+    {
+     "p": 0.3,
+     "name": "Atemnot Kind",
+     "lage": "Kind mit Pseudokrupp, hörbares Atemgeräusch, Sauerstoffgabe läuft."
+    },
+    {
+     "p": 0.2,
+     "name": "Säugling leblos",
+     "lage": "Säugling leblos aufgefunden, Reanimation läuft! Kindernotarzt dringend erforderlich.",
+     "reqs": {
+      "kindernotarzt": 1
+     },
+     "sev": [
+      4,
+      4
+     ]
+    }
+   ],
+   "reports": {
+    "done": "Kind mit Begleitperson in die Kinderklinik transportiert."
+   }
+  },
+  "geburt": {
+   "name": "Geburt",
+   "keyword": "RD 2",
+   "kw_ok": [
+    "RD 1"
+   ],
+   "weight": 1.2,
+   "cat": "rd",
+   "call": "geburt",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5
+    ]
+   },
+   "objects": [
+    "Wohnung, 3. Obergeschoss",
+    "Einfamilienhaus",
+    "Taxi am Straßenrand",
+    "Wohnung, Badezimmer"
+   ],
+   "reqs": {},
+   "work": 0,
+   "patients": [
+    1,
+    2
+   ],
+   "sev": [
+    2,
+    2
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Wehen",
+     "lage": "Regelmäßige Wehen, Geburt nicht unmittelbar bevorstehend. Transport in die Geburtsklinik.",
+     "keyword": "RD 1",
+     "sev": [
+      1,
+      1
+     ],
+     "patients": [
+      1,
+      1
+     ]
+    },
+    {
+     "p": 0.3,
+     "name": "Geburt läuft",
+     "lage": "Geburt hat eingesetzt, Kopf ist bereits sichtbar! Notarzt und Hebamme erforderlich."
+    },
+    {
+     "p": 0.1,
+     "name": "Komplikation",
+     "lage": "Starke Blutung nach der Geburt, Neugeborenes atmet schwach!",
+     "sev": [
+      3,
+      4
+     ],
+     "patients": [
+      2,
+      2
+     ]
+    }
+   ],
+   "reports": {
+    "done": "Mutter und Kind in die Klinik transportiert."
+   }
+  },
+  "psych_polizei": {
+   "name": "Psychiatrischer Notfall mit Fremdgefährdung",
+   "keyword": "RD 2",
+   "kw_ok": [
+    "POL 2"
+   ],
+   "weight": 1.0,
+   "cat": "rd",
+   "call": "psych_polizei",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5,
+     7
+    ]
+   },
+   "objects": [
+    "Wohnung, 2. Obergeschoss",
+    "Hinterhof eines Wohnblocks",
+    "Bushaltestelle",
+    "Treppenhaus"
+   ],
+   "reqs": {
+    "polizei": 2
+   },
+   "work": 900,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    2,
+    2
+   ],
+   "gate": 0.6,
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Verwirrte Person",
+     "lage": "Person stark verwirrt und aggressiv, bedroht Nachbarn. Polizei sichert, Notarzt prüft Unterbringung."
+    },
+    {
+     "p": 0.25,
+     "name": "Suizidandrohung",
+     "lage": "Person kündigt Suizid an und hat sich in der Wohnung eingeschlossen. Polizei verhandelt, Feuerwehr zur Türöffnung bereit.",
+     "reqs": {
+      "polizei": 2,
+      "thl_klein": 1,
+      "betreuung_psnv": 1
+     },
+     "work": 1800,
+     "sev": [
+      3,
+      3
+     ]
+    },
+    {
+     "p": 0.15,
+     "name": "Beruhigt",
+     "lage": "Person hat sich beruhigt und ist kooperativ, freiwilliger Transport in die Klinik.",
+     "keyword": "RD 1",
+     "sev": [
+      1,
+      1
+     ],
+     "work": 300
+    }
+   ],
+   "reports": {
+    "done": "Person in die Fachklinik gebracht."
+   }
+  },
+  "ktp_schwerlast": {
+   "name": "Transport schwergewichtiger Patient",
+   "keyword": "RD KTP/RTW",
+   "kw_ok": [
+    "THL TRAGEHILFE"
+   ],
+   "weight": 0.6,
+   "cat": "rd",
+   "call": "ktp_schwerlast",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     5
+    ]
+   },
+   "objects": [
+    "Wohnung im 4. Obergeschoss ohne Aufzug",
+    "Einfamilienhaus, Schlafzimmer im Obergeschoss",
+    "Pflegeheim, Zimmer 214"
+   ],
+   "reqs": {
+    "loeschen": 1
+   },
+   "work": 900,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "gate": 0.7,
+   "variants": [
+    {
+     "p": 0.7,
+     "name": "Schwerlasttransport",
+     "lage": "Patient ca. 210 kg, Transport nur mit Schwerlast-RTW und Tragehilfe der Feuerwehr möglich.",
+     "reqs": {
+      "loeschen": 1,
+      "srtw": 1
+     }
+    },
+    {
+     "p": 0.3,
+     "name": "Drehleiterrettung",
+     "lage": "Treppenhaus zu eng – Patient muss über die Drehleiter mit Krankentragenhalterung gerettet werden.",
+     "reqs": {
+      "dlk": 1,
+      "loeschen": 1,
+      "srtw": 1
+     },
+     "work": 1500,
+     "keyword": "THL TRAGEHILFE"
+    }
+   ],
+   "reports": {
+    "done": "Patient transportiert, Einsatz beendet."
+   }
+  },
+  "reizgas_schule": {
+   "name": "Reizgas in einer Schule",
+   "keyword": "RD 4",
+   "kw_ok": [
+    "RD 3",
+    "RD 5",
+    "ABC 2"
+   ],
+   "weight": 0.25,
+   "cat": "rd",
+   "call": "reizgas_schule",
+   "loc": {
+    "mode": "poi",
+    "poi_kinds": [
+     "schule"
+    ]
+   },
+   "objects": [
+    "Klassenzimmer im 1. Stock",
+    "Turnhalle",
+    "Pausenhof",
+    "Flur im Erdgeschoss"
+   ],
+   "reqs": {
+    "elrd": 1,
+    "fuehrung_fw": 1,
+    "loeschen": 1,
+    "polizei": 2
+   },
+   "work": 1200,
+   "patients": [
+    4,
+    5
+   ],
+   "sev": [
+    1,
+    2
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Pfefferspray",
+     "lage": "Pfefferspray im Klassenzimmer versprüht, mehrere Schüler mit Augenreizung und Husten. Raum wird belüftet."
+    },
+    {
+     "p": 0.4,
+     "name": "Viele Betroffene",
+     "lage": "Reizstoff in der Lüftungsanlage verteilt! Zahlreiche Schüler betroffen – erhöhen auf RD 5.",
+     "patients": [
+      6,
+      9
+     ],
+     "reqs": {
+      "elrd": 1,
+      "fuehrung_fw": 1,
+      "loeschen": 2,
+      "atemschutz": 1,
+      "seg": 1,
+      "polizei": 3
+     },
+     "work": 2400,
+     "keyword": "RD 5"
+    }
+   ],
+   "reports": {
+    "done": "Alle Betroffenen gesichtet und versorgt. Einsatzstelle an Polizei übergeben."
+   }
+  },
+  "eisunfall": {
+   "name": "Person im Eis eingebrochen",
+   "keyword": "RD EISUNFALL 2",
+   "kw_ok": [
+    "THL WASSER",
+    "RD WASSERNOT 3"
+   ],
+   "weight": 0.02,
+   "cat": "thl",
+   "call": "eisunfall",
+   "weather": {
+    "schnee": 25
+   },
+   "loc": {
+    "mode": "water"
+   },
+   "objects": [
+    "Eisfläche, ca. 20 m vom Ufer",
+    "zugefrorener Weiher",
+    "Eis am Uferbereich"
+   ],
+   "reqs": {
+    "wasserrettung": 1,
+    "loeschen": 1,
+    "polizei": 1
+   },
+   "work": 900,
+   "patients": [
+    1,
+    2
+   ],
+   "sev": [
+    3,
+    3
+   ],
+   "gate": 0.7,
+   "variants": [
+    {
+     "p": 0.7,
+     "name": "Person im Eis",
+     "lage": "Person ins Eis eingebrochen, hält sich an der Eiskante fest. Eisrettung mit Rettungsbrett."
+    },
+    {
+     "p": 0.3,
+     "name": "Person untergegangen",
+     "lage": "Person unter dem Eis verschwunden! Taucher dringend erforderlich.",
+     "reqs": {
+      "wasserrettung": 1,
+      "taucher": 1,
+      "loeschen": 1,
+      "polizei": 1
+     },
+     "sev": [
+      4,
+      4
+     ],
+     "work": 1800
+    }
+   ],
+   "reports": {
+    "done": "Person gerettet, Einsatz beendet."
+   }
+  }
+ }
 }

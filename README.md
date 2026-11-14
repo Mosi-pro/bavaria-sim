@@ -14,9 +14,9 @@ Alle Orte, Straßen, Wachen, Funkrufnamen, Personen und Telefonnummern sind frei
 |---|---|
 | Spielwelt | Stadt Bavaria (≈ 26 × 23 km), 18 Stadtteile + 5 Randgemeinden, ≈ 7.700 Straßenknoten, ≈ 11.900 Straßenabschnitte, ≈ 1.000 Straßennamen, Autobahnring A 99, A 1/A 2/A 3/A 991 mit 40 Anschlussstellen, Bundesstraßen, Ringe, Kreisstraßen, Fußgängerzone, Brücken, Tunnel, Ampeln, Kreisverkehre, Flüsse, Seen, Wälder, Flughafen, Hafen, Messe, Stadion, Universität, Bahnanlagen, 50 besondere Objekte, 9 Kliniken |
 | Karte | Eigene Vektorkarte (offline), chunkbasiert (1-km-Kacheln) mit 4 Detailstufen, Gebäude erst bei hoher Zoomstufe und bedarfsweise erzeugt, räumlicher Index, Straßennamen, Verkehrslage, Baustellen, Sperrungen, Routen |
-| Organisationen | Feuerwehr (10 BF-Wachen, Flughafenfeuerwehr, 13 FF), Rettungsdienst (22 Standorte inkl. NEF, ITW, KTW, SEG, ELRD), Polizei (Präsidium, 9 PI, VPI, Einsatzhundertschaft, Kripo, Spezialeinheit), THW, Wasserrettung, Katastrophenschutz – 63 Standorte, 251 Fahrzeuge, 43 Fahrzeugtypen |
+| Organisationen | Feuerwehr (10 BF-Wachen, Flughafenfeuerwehr, 13 FF), Rettungsdienst (22 Standorte inkl. NEF, ITW, KTW, SEG, ELRD), Polizei (Präsidium, 9 PI, VPI, Einsatzhundertschaft, Kripo, Spezialeinheit), THW, Wasserrettung, Katastrophenschutz – 66 Standorte, 271 Fahrzeuge, 52 Fahrzeugtypen |
 | Notrufe | Dynamisch erzeugt, Tageszeit-/Wetter-/Stadtteil-/Veranstaltungsabhängig; Anrufertypen (ruhig, aufgeregt, panisch, Senior, Kind, Passant), ungenaue Ortsangaben (Stadtteil / Straße / genau), Rückfragen, Beruhigen, AML-Ortung, Folge- und Wiederholungsanrufe, Fehl- und Scherzanrufe, Mehrfachmeldungen |
-| Einsätze | 28 Einsatzarten mit eigener Logik (Lagevarianten, Lageentwicklungen, Verschärfung bei Kräftemangel, Patienten mit Verschlechterung, technische Rettung vor Patientenversorgung, Transport in geeignete Kliniken, Sperrungen); 24 Einsatzstichwörter mit Alarmierungsvorschlag |
+| Einsätze | 46 Einsatzarten mit eigener Logik (Lagevarianten, Lageentwicklungen, Verschärfung bei Kräftemangel, Patienten mit Verschlechterung, technische Rettung vor Patientenversorgung, Transport in geeignete Kliniken, Sperrungen); 51 Einsatzstichwörter nach bayerischer Systematik mit Mindestanforderung und Alarmierungsvorschlag |
 | Disposition | Vorschlag nach realer Fahrzeit (Dijkstra/A* im Straßennetz), Verfügbarkeit, Besatzung, Fähigkeiten und laufenden Einsätzen; Entscheidung beim Spieler |
 | Fahrzeuge | FMS-Status 1–9 (konfigurierbar), Ausrückzeiten je Wachentyp, Sonder- und Wegerechte, Routing mit Straßenklassen, Abbiegekosten, Ampeln, Sperrungen, Verkehr; Neuroutung bei Sperrung |
 | Personal | Wachstärke je Qualifikation, Mindestbesatzung und Qualifikationen je Fahrzeug, eingeschränkte Verfügbarkeit Freiwilliger (Realismusmodus) |
@@ -49,6 +49,13 @@ Alle Orte, Straßen, Wachen, Funkrufnamen, Personen und Telefonnummern sind frei
 4. Mitspieler: Hauptmenü → **MULTIPLAYER** → Sitzung wählen bzw. IP/Port eingeben → Passwort → Verbinden.
 5. Rollen in der Lobby zuweisen (Schichtführung, Disposition, Feuerwehr, Rettungsdienst, Polizei, Beobachter), dann **Spiel starten**.
    Ein laufendes Einzelspiel lässt sich über *Multiplayer → Laufendes Spiel für Mitspieler öffnen* freigeben.
+
+## Einsatzstichwörter und Fahrzeuge
+
+* **Stichwörter** folgen der Systematik der öffentlich bekanntgemachten bayerischen Alarmierungsbekanntmachung (ABek): Brand (B 1–B 5, B 2/B 3 PERSON, B BMA, B ZUG, B WALD …), THL (THL 1–5, THL P EINGESCHLOSSEN, THL P RETTUNG H/T …), ABC (ABC 1–3, ABC EXPLOSION, Gefahrstoff-Meldeanlage …) und RD (RD 1, RD 2, RD 2-KIND, RD 3–5, RD MANV …). Zu jedem Stichwort zeigt das Spiel typische Schlagwörter und die Mindestanforderung (Trupp/Staffel/Gruppe, Löschwasser, Atemschutz).
+* Das richtige Stichwort ergibt sich aus der **tatsächlichen Lage** (z. B. B 3 PERSON, wenn Menschen in Gefahr sind). Gleichwertige Stichwörter werden in der Bewertung nur gering abgezogen.
+* **Fahrzeugtypen** nach dem Vorbild bayerischer Großstädte, u. a. Kleinalarmfahrzeug, Schwerlast-RTW, Großraum-RTW, Kindernotarzt, Höhenrettung, Dekon-Fahrzeug, Diensthundeführer, Polizei-Motorrad und Kriseninterventionsteam. Rettungswagen stehen auch an Feuerwachen.
+* Alle Wachen, Standorte und Fahrzeugbestände von Bavaria bleiben **erfunden**; reale Standort- und Bestandslisten werden nicht nachgebildet.
 
 ## Architektur
 
@@ -85,7 +92,7 @@ installer/        Inno-Setup-Skript
 ## Tests
 
 ```bash
-godot --headless --path . res://tests/run_tests.tscn     # 86 Kerntests inkl. Einweisung
+godot --headless --path . res://tests/run_tests.tscn     # 87 Kerntests inkl. Einweisung und Durchlauf aller Einsatzarten
 tools/test_multiplayer.sh                                # Host + 2 Clients als getrennte Prozesse
 LEITSTELLE112.exe --headless --selbsttest                # Selbsttest der fertigen Anwendung
 ```

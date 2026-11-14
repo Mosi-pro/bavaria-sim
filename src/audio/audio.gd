@@ -4,7 +4,7 @@ extends Node
 
 const FILES := {
 	"alarm": ["effects", "alarm"], "system": ["effects", "system"], "error": ["effects", "error"], "talk": ["effects", "talk"],
-	"radio": ["radio", "radio"], "voice": ["phone", "voice"], "key": ["keys", "key1"],
+	"radio": ["radio", "radio"], "voice": ["phone", "voice"], "key": ["keys", "key1"], "phone": ["phone", "phone"],
 }
 var _streams := {}
 var _players := {}
@@ -31,7 +31,6 @@ func _ready() -> void:
 	add_child(_ring)
 	_ambient = AudioStreamPlayer.new()
 	add_child(_ambient)
-	_loop(_ring, "phone")
 	_loop(_ambient, "ambient")
 	Sim.sound_requested.connect(play)
 	refresh_volumes()
@@ -54,7 +53,7 @@ func refresh_volumes() -> void:
 	_ambient.volume_db = _vol("ambient") - 6.0
 
 func play(name: String) -> void:
-	if not enabled or name == "phone":
+	if not enabled:
 		return
 	var def: Array = FILES.get(name, [])
 	if def.is_empty():
@@ -69,7 +68,7 @@ func play(name: String) -> void:
 	if float(Settings.get_v("audio", cat)) <= 0.001 or not _streams.has(file):
 		return
 	var now := Time.get_ticks_msec()
-	var gap := 900 if name == "radio" else (120 if name == "key" else 250)
+	var gap := 900 if name == "radio" else (120 if name == "key" else (1500 if name == "phone" else 250))
 	if now - int(_last.get(name, -10000)) < gap:
 		return
 	_last[name] = now
@@ -81,20 +80,9 @@ func play(name: String) -> void:
 			return
 
 func _process(_delta: float) -> void:
-	var ringing := false
 	var session: bool = State.active and Game.in_session
-	if session and not State.meta["paused"]:
-		for id in State.calls:
-			if State.calls[id]["state"] == "ringing":
-				ringing = true
-				break
 	var muted: bool = Settings.get_v("audio", "mute_unfocused") and not get_window().has_focus()
 	AudioServer.set_bus_mute(0, muted or float(Settings.get_v("audio", "master")) <= 0.001)
-	if ringing and float(Settings.get_v("audio", "phone")) > 0.001:
-		if not _ring.playing and _ring.stream != null:
-			_ring.play()
-	elif _ring.playing:
-		_ring.stop()
 	if session and float(Settings.get_v("audio", "ambient")) > 0.001:
 		if not _ambient.playing and _ambient.stream != null:
 			_ambient.play()

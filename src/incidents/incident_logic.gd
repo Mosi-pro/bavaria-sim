@@ -43,6 +43,7 @@ static func make_truth(type_id: String, loc: Dictionary, forced_variant := -1) -
 		"id": tid, "type": type_id, "t0": State.clock, "x": p.x, "y": p.y, "node": int(loc["node"]),
 		"address": loc["address"], "district": loc.get("district", ""), "street": loc.get("street", ""),
 		"object": objects[rng.randi() % objects.size()], "vname": va.get("name", t["name"]), "lage": va.get("lage", ""),
+		"kw": va.get("keyword", t["keyword"]),
 		"reqs": reqs, "known": {}, "work_total": float(va.get("work", t.get("work", 0))), "work_done": 0.0,
 		"gate": float(va.get("gate", t.get("gate", 0.0))), "patients": [], "devs": [], "strain_t": 0.0, "strain_i": 0, "strain_n": 0,
 		"reports": {}, "incident": "", "calls": 0, "dup_calls": 0, "next_call": 0.0, "closure": -1, "state": "open",
@@ -71,7 +72,14 @@ static func _add_patients(tr: Dictionary, n: int, sev_range: Array) -> void:
 		tr["patients"].append({"sev": sev, "state": "wait", "wait": 0.0, "care": 0.0, "veh": ""})
 
 static func correct_keyword(tr: Dictionary) -> String:
-	return Data.incident_types[tr["type"]]["keyword"]
+	return tr.get("kw", Data.incident_types[tr["type"]]["keyword"])
+
+## Gleichwertige Stichwörter (Meldebild am Telefon passt zu mehreren Stichwörtern).
+static func acceptable_keywords(tr: Dictionary) -> Array:
+	var t: Dictionary = Data.incident_types[tr["type"]]
+	var out: Array = [correct_keyword(tr), t["keyword"]]
+	out.append_array(t.get("kw_ok", []))
+	return out
 
 # ---------------------------------------------------------------- Einsatz anlegen
 static func create_incident(form: Dictionary, call_id: String, by: String) -> String:
@@ -523,7 +531,10 @@ static func score(inc: Dictionary, tr: Dictionary) -> int:
 	var correct := correct_keyword(tr)
 	if inc["keyword"] != correct:
 		var same: bool = Data.keywords.get(inc["keyword"], {}).get("cat", "") == Data.keywords.get(correct, {}).get("cat", "x")
-		s -= 5.0 if same else 12.0
+		if acceptable_keywords(tr).has(inc["keyword"]):
+			s -= 2.0
+		else:
+			s -= 6.0 if same else 12.0
 	s -= 10.0 * int(tr["strain_n"])
 	s -= 30.0 * int(tr["dead"])
 	return int(clampf(s, 0.0, 100.0))

@@ -32,7 +32,11 @@ def trill(sec):
     x = np.where(mod, np.sin(2 * np.pi * 1320 * tt), np.sin(2 * np.pi * 1050 * tt))
     x += 0.3 * np.sin(2 * np.pi * 2640 * tt)
     return x * env(len(x), 0.01, 0.05) * 0.35
-save("phone", np.concatenate([trill(0.9), silence(0.25), trill(0.9), silence(0.95)]))
+# einmaliges, kurzes Klingeln bei neuem Notruf (kein Dauerklingeln)
+def ring(sec):
+    x = trill(sec) / 0.35 * 0.62
+    return x
+save("phone", np.concatenate([ring(0.45), silence(0.12), ring(0.45)]))
 
 # Alarmierung: eigener Dreiklang-Gong + kurze Tonfolge
 def gong(f, sec, vol):

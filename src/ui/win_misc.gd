@@ -158,12 +158,17 @@ Ziehen = verschieben, Mausrad = zoomen, Klick auf Fahrzeug/Einsatz/Wache = Detai
 F2 Notruf annehmen · F6 Sprechwunsch · F5 Speichern · Pause · Num +/− Zeitraffer · Pos1 Gesamtansicht · F11 Vollbild (änderbar in den Einstellungen)"""
 		"stichworte":
 			title = "Einsatzstichwörter und Alarmierungsvorschlag"
-			var t := "[b]Einsatzstichwörter (Alarm- und Ausrückeordnung der ILS Bavaria)[/b]\n\n[table=3]"
-			t += "[cell][b]Stichwort   [/b][/cell][cell][b]Bedeutung   [/b][/cell][cell][b]Vorschlag[/b][/cell]"
-			for k in Data.keyword_list():
-				var kd: Dictionary = Data.keywords[k]
-				t += "[cell][color=#d6a83b]%s[/color]   [/cell][cell]%s   [/cell][cell][color=#a4adb5]%s[/color][/cell]" % [k, kd["name"], IL.need_text(kd.get("aao", {}))]
-			t += "[/table]"
+			var t := "[b]Einsatzstichwörter der ILS Bavaria[/b]\n[color=#a4adb5]Systematik angelehnt an die bayerische Alarmierungsbekanntmachung (Brand, THL, ABC, RD). Trupp = 3, Staffel = 6, Gruppe = 9 Einsatzkräfte.[/color]\n"
+			for cat in ["brand", "thl", "abc", "rd", "pol", "sonst"]:
+				t += "\n[b]%s[/b]\n" % Data.category_name(cat)
+				for k in Data.keywords_in(cat):
+					var kd: Dictionary = Data.keywords[k]
+					t += "[color=#d6a83b]%s[/color] – %s\n" % [k, kd["name"]]
+					if String(kd.get("schlagworte", "")) != "":
+						t += "    [color=#a4adb5]Typisch:[/color] %s\n" % kd["schlagworte"]
+					if String(kd.get("min", "")) != "":
+						t += "    [color=#a4adb5]Mindestanforderung:[/color] %s\n" % kd["min"]
+					t += "    [color=#a4adb5]Vorschlag:[/color] %s\n" % IL.need_text(kd.get("aao", {}))
 			r.text = t
 		"fms":
 			title = "Funkmeldesystem – Statusübersicht"

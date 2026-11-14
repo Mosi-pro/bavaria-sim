@@ -1,183 +1,772 @@
 {
-  "_comment": "Gesprächsbausteine für Notrufe. Platzhalter: {objekt} {n} {stadtteil} {strasse} {adresse} {name}.",
-  "greeting": "Notruf Feuerwehr und Rettungsdienst Bavaria, wo genau ist der Notfallort?",
-  "questions": {
-    "q_wo":       {"text": "Wo genau ist der Notfallort? Straße und Hausnummer?", "short": "Wo?"},
-    "q_was":      {"text": "Was genau ist passiert?", "short": "Was?"},
-    "q_personen": {"text": "Wie viele Personen sind betroffen oder verletzt?", "short": "Wie viele?"},
-    "q_gefahr":   {"text": "Sind Personen in Gefahr, eingeklemmt oder noch im Gebäude?", "short": "Gefahr?"},
-    "q_zustand":  {"text": "Ist die Person ansprechbar? Atmet sie normal?", "short": "Zustand?"},
-    "q_rueckruf": {"text": "Wie ist Ihr Name und unter welcher Nummer sind Sie erreichbar?", "short": "Rückruf?"},
-    "q_beruhigen": {"text": "Bleiben Sie ruhig, ich helfe Ihnen. Atmen Sie durch und beantworten Sie meine Fragen.", "short": "Beruhigen"}
+ "_comment": "Gesprächsbausteine für Notrufe. Platzhalter: {objekt} {n} {stadtteil} {strasse} {adresse} {name}.",
+ "greeting": "Notruf Feuerwehr und Rettungsdienst Bavaria, wo genau ist der Notfallort?",
+ "questions": {
+  "q_wo": {
+   "text": "Wo genau ist der Notfallort? Straße und Hausnummer?",
+   "short": "Wo?"
   },
-  "personas": {
-    "ruhig":     {"name": "ruhig", "prefix": [""], "vague_mul": 0.6, "weight": 4},
-    "aufgeregt": {"name": "aufgeregt", "prefix": ["Hilfe! ", "Bitte kommen Sie schnell! ", "Oh Gott, oh Gott! ", "Schnell, schnell! "], "vague_mul": 1.5, "weight": 4},
-    "panisch":   {"name": "panisch", "prefix": ["HILFE!! ", "Bitte, bitte, schnell!! ", "Ich weiß nicht, was ich machen soll! "], "vague_mul": 2.2, "weight": 1.5},
-    "senior":    {"name": "älterer Anrufer", "prefix": ["Ja, grüß Gott, also ... ", "Entschuldigen Sie die Störung ... ", "Hallo? Hören Sie mich? "], "vague_mul": 1.3, "weight": 2},
-    "kind":      {"name": "Kind", "prefix": ["Hallo? ", "Ähm ... "], "vague_mul": 1.8, "weight": 0.8},
-    "passant":   {"name": "Passant, ortsfremd", "prefix": ["Guten Tag, ", "Hallo, ich bin gerade vorbeigekommen, "], "vague_mul": 2.0, "weight": 2}
+  "q_was": {
+   "text": "Was genau ist passiert?",
+   "short": "Was?"
   },
-  "generic": {
-    "loc_vague": ["Ich weiß es nicht genau ... irgendwo in {stadtteil}.", "Ich kenne mich hier nicht aus! Das ist in {stadtteil}, glaube ich.", "Äh ... {stadtteil}, in der Nähe von einer großen Straße."],
-    "loc_street": ["In der {strasse}, die Hausnummer sehe ich gerade nicht.", "{strasse} ... wo genau, kann ich nicht sagen.", "Das ist in der {strasse} in {stadtteil}."],
-    "loc_exact": ["{adresse}.", "Die Adresse ist {adresse}.", "Kommen Sie zur {adresse}."],
-    "dontknow": ["Das weiß ich nicht!", "Das kann ich von hier nicht sehen.", "Keine Ahnung, bitte kommen Sie einfach!", "Ich bin mir nicht sicher ..."],
-    "calmed": ["Ja ... ja, in Ordnung. Ich versuche es.", "Okay. Okay, ich bin ruhig.", "Ist gut. Was wollen Sie wissen?"],
-    "callback": ["Mein Name ist {name}, die Nummer ist {telefon}.", "{name}. Sie erreichen mich unter {telefon}."],
-    "persons0": ["Verletzt ist niemand, soweit ich das sehe.", "Ich glaube, es ist niemand verletzt.", "Personen sind keine betroffen."],
-    "persons": ["{n} Person(en), so wie ich das sehe.", "Ich sehe {n} Verletzte.", "Es sind {n} Leute betroffen."],
-    "persons_many": ["Viele! Mindestens {n}, vielleicht mehr!", "Das sind bestimmt {n} Verletzte, überall liegen Leute!"],
-    "danger_no": ["Nein, es ist niemand in Gefahr.", "Ich glaube nicht.", "Nein, alle sind draußen."],
-    "danger_yes": ["Ja! Da ist noch jemand drin!", "Ja, eine Person kommt nicht raus!", "Ich glaube schon, ich höre jemanden rufen!"],
-    "zustand1": ["Ja, die Person ist wach und redet mit mir.", "Ansprechbar ja, aber es geht ihr nicht gut."],
-    "zustand2": ["Sie ist wach, aber ganz blass und antwortet kaum.", "Er reagiert, aber er ist sehr schwach und verwirrt."],
-    "zustand3": ["Nein, sie reagiert nicht! Sie atmet aber, glaube ich.", "Er antwortet nicht mehr! Er atmet ganz komisch."],
-    "zustand4": ["Nein! Sie atmet nicht mehr!", "Er reagiert nicht und atmet nicht – ich weiß nicht, was ich tun soll!"],
-    "zustand_na": ["Das trifft hier nicht zu.", "Es geht nicht um eine kranke Person."],
-    "hangup": "— Anrufer hat aufgelegt —"
+  "q_personen": {
+   "text": "Wie viele Personen sind betroffen oder verletzt?",
+   "short": "Wie viele?"
   },
-  "scripts": {
-    "brand_klein": {
-      "open": ["Hier brennt ein Müllcontainer!", "Da brennt was am Straßenrand, ein Container glaube ich.", "Bei uns hinten im Hof brennen die Mülltonnen."],
-      "what": ["Es ist ein {objekt}, die Flammen sind schon einen Meter hoch.", "Der Container brennt richtig, {objekt}. Daneben stehen Autos."],
-      "danger": "no"
-    },
-    "brand_pkw": {
-      "open": ["Hier brennt ein Auto!", "Aus einem Auto kommt Rauch und Feuer!", "Ein Fahrzeug steht in Flammen, direkt an der Straße!"],
-      "what": ["Ein {objekt}, es brennt vorne im Motorraum.", "{objekt} – es qualmt stark und es knallt immer wieder."],
-      "danger": "maybe"
-    },
-    "brand_wohnung": {
-      "open": ["Es brennt! Bei uns im Haus brennt es!", "Aus einer Wohnung gegenüber kommt dichter schwarzer Rauch!", "Im Treppenhaus ist alles voller Rauch, es riecht verbrannt!", "Bei meinem Nachbarn piepst der Rauchmelder und es qualmt aus dem Fenster."],
-      "what": ["Es ist ein {objekt}. Aus dem Fenster kommt Rauch.", "{objekt} – ich sehe Flammen hinter der Scheibe!", "Rauch aus der Wohnung, {objekt}. Mehr kann ich nicht sehen."],
-      "danger": "maybe"
-    },
-    "brand_efh": {
-      "open": ["Unser Haus brennt!", "Beim Nachbarn kommt Rauch aus dem Dach!", "Es brennt im Keller, alles ist voller Rauch!", "Hier brennt ein Haus, die Flammen schlagen aus dem Fenster!"],
-      "what": ["Ein {objekt}. Es brennt im Erdgeschoss, glaube ich.", "{objekt}, der Rauch wird immer dichter."],
-      "danger": "maybe"
-    },
-    "bma": {
-      "open": ["Automatische Brandmeldung über Übertragungseinrichtung.", "Hier ist die Pforte, unsere Brandmeldeanlage hat ausgelöst.", "Sicherheitsdienst hier, die BMA läuft ein."],
-      "what": ["Ausgelöst hat {objekt}. Ob es brennt, wissen wir noch nicht.", "{objekt}. Ein Kollege schaut gerade nach."],
-      "danger": "no", "persona": "ruhig", "exact": true
-    },
-    "brand_industrie": {
-      "open": ["Aus einer Halle im Gewerbegebiet kommt dichter Rauch!", "Bei uns in der Firma brennt es in der Halle!", "Hier qualmt es gewaltig aus einem Betrieb!"],
-      "what": ["Es ist eine {objekt}. Schwarzer Rauch aus dem Dach.", "{objekt} – die Mitarbeiter laufen alle raus."],
-      "danger": "maybe"
-    },
-    "grossbrand": {
-      "open": ["Hier brennt eine riesige Halle! Die Flammen sind meterhoch!", "Großes Feuer im Industriegebiet, man sieht den Rauch kilometerweit!", "Bei uns explodiert etwas, die ganze Halle brennt!"],
-      "what": ["Ein {objekt}. Alles brennt lichterloh!", "{objekt}. Es knallt ständig, das Dach stürzt ein!"],
-      "danger": "maybe"
-    },
-    "vu": {
-      "open": ["Hier hat es einen Unfall gegeben, zwei Autos sind zusammengestoßen.", "Verkehrsunfall! Gerade eben, direkt vor mir.", "Ich hatte einen Unfall, ein anderes Auto ist mir reingefahren."],
-      "what": ["{objekt}. Die Autos stehen mitten auf der Straße.", "{objekt}, es läuft Flüssigkeit aus."],
-      "danger": "maybe"
-    },
-    "vu_eingeklemmt": {
-      "open": ["Schwerer Unfall! Da ist jemand im Auto eingeklemmt!", "Ein Auto ist verunglückt, der Fahrer kommt nicht mehr raus!", "Hier ist ein schlimmer Unfall passiert, das Auto ist total zerstört!"],
-      "what": ["{objekt}. Die Person steckt fest, die Tür geht nicht auf.", "{objekt} – der Fahrer bewegt sich kaum."],
-      "danger": "yes"
-    },
-    "vu_massen": {
-      "open": ["Massenunfall! Hier sind ganz viele Fahrzeuge ineinander gefahren!", "Ein Bus ist verunglückt, überall sind Verletzte!", "Schwerer Unfall mit vielen Verletzten, bitte schicken Sie alles, was Sie haben!"],
-      "what": ["{objekt}. Überall liegen Trümmer.", "{objekt}, Leute schreien, einige sind noch in den Fahrzeugen."],
-      "danger": "yes", "many": true
-    },
-    "med_notfall": {
-      "open": ["Ich brauche einen Krankenwagen, meine Mutter ist gestürzt.", "Mein Mann hat starke Bauchschmerzen, er krümmt sich.", "Hier ist jemand auf dem Gehweg gestürzt und blutet am Kopf.", "Meiner Kollegin ist ganz schwindlig, sie kann nicht mehr stehen.", "Mein Kind hat hohes Fieber und einen Krampfanfall gehabt.", "Ich habe mir in die Hand geschnitten, es hört nicht auf zu bluten.", "Mein Vater bekommt schlecht Luft, er hat Asthma."],
-      "what": ["Die Person ist hier: {objekt}. Sie hat starke Schmerzen.", "{objekt}. Es ist vor ein paar Minuten passiert."],
-      "danger": "no"
-    },
-    "med_bewusstlos": {
-      "open": ["Hier liegt jemand bewusstlos am Boden!", "Mein Mann ist umgekippt und reagiert nicht mehr!", "Eine Frau ist zusammengebrochen, sie bewegt sich nicht!", "Hier liegt ein Mann, ich glaube, der atmet nicht richtig!"],
-      "what": ["{objekt}. Die Person ist einfach umgefallen.", "{objekt} – plötzlich zusammengesackt."],
-      "danger": "no"
-    },
-    "med_herz": {
-      "open": ["Mein Mann hat starke Schmerzen in der Brust!", "Meine Frau bekommt keine Luft und hat Druck auf der Brust!", "Ich habe starke Brustschmerzen, die ziehen in den linken Arm ...", "Unser Bewohner klagt über Atemnot und ist ganz grau im Gesicht."],
-      "what": ["{objekt}. Die Schmerzen haben vor zwanzig Minuten angefangen.", "{objekt}. Er schwitzt stark und ist ganz blass."],
-      "danger": "no"
-    },
-    "wohnungsoeffnung": {
-      "open": ["Meine Nachbarin macht die Tür nicht auf, ich höre sie rufen!", "Ich mache mir Sorgen um meinen Vater, er geht seit Tagen nicht ans Telefon und öffnet nicht.", "Hinter der Wohnungstür nebenan stöhnt jemand, aber keiner macht auf!"],
-      "what": ["Es ist eine {objekt}. Der Briefkasten quillt über.", "{objekt}. Ich höre ein Klopfen von drinnen."],
-      "danger": "yes"
-    },
-    "baum": {
-      "open": ["Hier liegt ein Baum quer über der Straße!", "Ein großer Ast ist auf die Fahrbahn gefallen, da kommt keiner mehr durch.", "Ein Baum ist umgestürzt und blockiert alles."],
-      "what": ["{objekt}.", "Es ist ein {objekt}, die Autos wenden schon."],
-      "danger": "maybe"
-    },
-    "oelspur": {
-      "open": ["Auf der Straße ist eine lange Ölspur, das ist spiegelglatt.", "Hier verliert ein LKW Diesel, die ganze Fahrbahn ist voll."],
-      "what": ["{objekt}.", "Eine {objekt}, es stinkt stark nach Kraftstoff."],
-      "danger": "no"
-    },
-    "gefahrgut": {
-      "open": ["Hier läuft aus einem Tanklaster etwas aus, es stinkt furchtbar!", "Bei uns im Lager ist ein Behälter mit Chemikalien undicht!", "Ein LKW mit orangen Warntafeln ist verunglückt, da tropft etwas raus!"],
-      "what": ["{objekt}. Auf der Tafel stehen Zahlen, ich kann sie nicht lesen.", "{objekt} – es dampft und riecht stechend."],
-      "danger": "maybe"
-    },
-    "wasserrettung": {
-      "open": ["Da ist jemand im Wasser und kommt nicht mehr raus!", "Hilfe, ein Boot ist gekentert, die Leute sind im Wasser!", "Ein Kind ist ins Wasser gefallen!"],
-      "what": ["{objekt}.", "{objekt}. Ich sehe die Person kaum noch!"],
-      "danger": "yes", "water": true
-    },
-    "unwetter_keller": {
-      "open": ["Bei uns läuft der Keller voll Wasser!", "Die Tiefgarage steht unter Wasser, das steigt immer weiter.", "Wasser drückt durch die Kellerfenster, alles schwimmt."],
-      "what": ["{objekt}.", "{objekt}. Der Strom ist auch schon ausgefallen."],
-      "danger": "no"
-    },
-    "unwetter_dach": {
-      "open": ["Der Sturm hat Teile vom Dach gelöst, die fallen gleich auf die Straße!", "Hier droht etwas herunterzufallen, das ist lebensgefährlich!"],
-      "what": ["{objekt}.", "{objekt}, unten laufen Leute vorbei."],
-      "danger": "maybe"
-    },
-    "aufzug": {
-      "open": ["Wir stecken im Aufzug fest!", "Bei uns im Haus sind Leute im Aufzug eingeschlossen, der Notruf geht nicht."],
-      "what": ["{objekt}. Wir sind zu zweit.", "{objekt}."],
-      "danger": "no"
-    },
-    "tier": {
-      "open": ["Hier ist ein Tier in Not.", "Ich weiß nicht, ob Sie zuständig sind, aber hier braucht ein Tier Hilfe."],
-      "what": ["{objekt}.", "Es geht um Folgendes: {objekt}."],
-      "danger": "no"
-    },
-    "pol_ruhe": {
-      "open": ["Bei meinen Nachbarn ist seit Stunden Lärm und Geschrei.", "Hier streiten sich zwei lautstark, das eskaliert gleich.", "Unten vor dem Haus grölen Betrunkene herum."],
-      "what": ["Das ist {objekt}.", "{objekt}, es fliegen schon Flaschen."],
-      "danger": "no"
-    },
-    "pol_einbruch": {
-      "open": ["Bei uns bricht gerade jemand ein!", "Ich sehe Leute mit Taschenlampen im Gebäude gegenüber, da ist eine Scheibe eingeschlagen.", "Die Alarmanlage läuft und ich habe jemanden weglaufen sehen."],
-      "what": ["Es geht um ein {objekt}.", "{objekt}. Zwei Personen, dunkel gekleidet."],
-      "danger": "maybe"
-    },
-    "pol_schlaegerei": {
-      "open": ["Hier prügeln sich mehrere Leute!", "Schlägerei! Einer liegt schon am Boden!", "Da gehen mehrere auf einen los, kommen Sie schnell!"],
-      "what": ["Das ist {objekt}.", "{objekt}. Es sind bestimmt fünf oder sechs Leute."],
-      "danger": "yes"
-    },
-    "ktp": {
-      "open": ["Guten Tag, Praxis hier. Wir benötigen einen Krankentransport, liegend, zur Klinik.", "Pflegeheim, Station 2. Wir bräuchten einen Transport ins Krankenhaus zur Abklärung, nicht dringend.", "Ich brauche einen Transport zur Dialyse, mein Hausarzt hat das verordnet."],
-      "what": ["Der Patient befindet sich hier: {objekt}. Transportschein liegt vor.", "{objekt}. Der Patient ist stabil."],
-      "danger": "no", "persona": "ruhig", "exact": true
-    },
-    "veranstaltung": {
-      "open": ["Sanitätsdienst hier – wir haben mehrere Verletzte auf dem Veranstaltungsgelände!", "Hier ist Panik ausgebrochen, Leute sind gestürzt und werden getreten!"],
-      "what": ["{objekt}.", "{objekt}. Unsere Sanitäter sind überlastet."],
-      "danger": "yes", "many": true, "exact": true
-    }
+  "q_gefahr": {
+   "text": "Sind Personen in Gefahr, eingeklemmt oder noch im Gebäude?",
+   "short": "Gefahr?"
   },
-  "nuisance": [
-    {"id": "hosentasche", "name": "Hosentaschenanruf", "open": ["... (Rascheln, Schritte, undeutliche Stimmen) ..."], "answers": ["... (keine Reaktion, nur Hintergrundgeräusche) ..."]},
-    {"id": "verwaehlt", "name": "Verwählt", "open": ["Oh, Entschuldigung – ich wollte eigentlich die Auskunft anrufen."], "answers": ["Nein, nein, es ist nichts passiert. Entschuldigen Sie bitte."]},
-    {"id": "auskunft", "name": "Kein Notfall", "open": ["Ja hallo, ich wollte fragen, welche Apotheke heute Notdienst hat?", "Guten Tag, bei uns ist der Strom ausgefallen. Wissen Sie, wie lange das dauert?", "Ich finde mein Auto nicht mehr, ich glaube, es wurde abgeschleppt."], "answers": ["Nein, verletzt ist niemand. Ich wollte nur nachfragen.", "Ach so, da bin ich bei Ihnen falsch? Entschuldigung."]},
-    {"id": "scherz", "name": "Scherzanruf", "open": ["(Kichern) ... Ähm, bei uns brennt die Schule! (Gelächter im Hintergrund)"], "answers": ["(Kichern) ... Ähm ... (aufgelegt)"]}
-  ]
+  "q_zustand": {
+   "text": "Ist die Person ansprechbar? Atmet sie normal?",
+   "short": "Zustand?"
+  },
+  "q_rueckruf": {
+   "text": "Wie ist Ihr Name und unter welcher Nummer sind Sie erreichbar?",
+   "short": "Rückruf?"
+  },
+  "q_beruhigen": {
+   "text": "Bleiben Sie ruhig, ich helfe Ihnen. Atmen Sie durch und beantworten Sie meine Fragen.",
+   "short": "Beruhigen"
+  }
+ },
+ "personas": {
+  "ruhig": {
+   "name": "ruhig",
+   "prefix": [
+    ""
+   ],
+   "vague_mul": 0.6,
+   "weight": 4
+  },
+  "aufgeregt": {
+   "name": "aufgeregt",
+   "prefix": [
+    "Hilfe! ",
+    "Bitte kommen Sie schnell! ",
+    "Oh Gott, oh Gott! ",
+    "Schnell, schnell! "
+   ],
+   "vague_mul": 1.5,
+   "weight": 4
+  },
+  "panisch": {
+   "name": "panisch",
+   "prefix": [
+    "HILFE!! ",
+    "Bitte, bitte, schnell!! ",
+    "Ich weiß nicht, was ich machen soll! "
+   ],
+   "vague_mul": 2.2,
+   "weight": 1.5
+  },
+  "senior": {
+   "name": "älterer Anrufer",
+   "prefix": [
+    "Ja, grüß Gott, also ... ",
+    "Entschuldigen Sie die Störung ... ",
+    "Hallo? Hören Sie mich? "
+   ],
+   "vague_mul": 1.3,
+   "weight": 2
+  },
+  "kind": {
+   "name": "Kind",
+   "prefix": [
+    "Hallo? ",
+    "Ähm ... "
+   ],
+   "vague_mul": 1.8,
+   "weight": 0.8
+  },
+  "passant": {
+   "name": "Passant, ortsfremd",
+   "prefix": [
+    "Guten Tag, ",
+    "Hallo, ich bin gerade vorbeigekommen, "
+   ],
+   "vague_mul": 2.0,
+   "weight": 2
+  }
+ },
+ "generic": {
+  "loc_vague": [
+   "Ich weiß es nicht genau ... irgendwo in {stadtteil}.",
+   "Ich kenne mich hier nicht aus! Das ist in {stadtteil}, glaube ich.",
+   "Äh ... {stadtteil}, in der Nähe von einer großen Straße."
+  ],
+  "loc_street": [
+   "In der {strasse}, die Hausnummer sehe ich gerade nicht.",
+   "{strasse} ... wo genau, kann ich nicht sagen.",
+   "Das ist in der {strasse} in {stadtteil}."
+  ],
+  "loc_exact": [
+   "{adresse}.",
+   "Die Adresse ist {adresse}.",
+   "Kommen Sie zur {adresse}."
+  ],
+  "dontknow": [
+   "Das weiß ich nicht!",
+   "Das kann ich von hier nicht sehen.",
+   "Keine Ahnung, bitte kommen Sie einfach!",
+   "Ich bin mir nicht sicher ..."
+  ],
+  "calmed": [
+   "Ja ... ja, in Ordnung. Ich versuche es.",
+   "Okay. Okay, ich bin ruhig.",
+   "Ist gut. Was wollen Sie wissen?"
+  ],
+  "callback": [
+   "Mein Name ist {name}, die Nummer ist {telefon}.",
+   "{name}. Sie erreichen mich unter {telefon}."
+  ],
+  "persons0": [
+   "Verletzt ist niemand, soweit ich das sehe.",
+   "Ich glaube, es ist niemand verletzt.",
+   "Personen sind keine betroffen."
+  ],
+  "persons": [
+   "{n} Person(en), so wie ich das sehe.",
+   "Ich sehe {n} Verletzte.",
+   "Es sind {n} Leute betroffen."
+  ],
+  "persons_many": [
+   "Viele! Mindestens {n}, vielleicht mehr!",
+   "Das sind bestimmt {n} Verletzte, überall liegen Leute!"
+  ],
+  "danger_no": [
+   "Nein, es ist niemand in Gefahr.",
+   "Ich glaube nicht.",
+   "Nein, alle sind draußen."
+  ],
+  "danger_yes": [
+   "Ja! Da ist noch jemand drin!",
+   "Ja, eine Person kommt nicht raus!",
+   "Ich glaube schon, ich höre jemanden rufen!"
+  ],
+  "zustand1": [
+   "Ja, die Person ist wach und redet mit mir.",
+   "Ansprechbar ja, aber es geht ihr nicht gut."
+  ],
+  "zustand2": [
+   "Sie ist wach, aber ganz blass und antwortet kaum.",
+   "Er reagiert, aber er ist sehr schwach und verwirrt."
+  ],
+  "zustand3": [
+   "Nein, sie reagiert nicht! Sie atmet aber, glaube ich.",
+   "Er antwortet nicht mehr! Er atmet ganz komisch."
+  ],
+  "zustand4": [
+   "Nein! Sie atmet nicht mehr!",
+   "Er reagiert nicht und atmet nicht – ich weiß nicht, was ich tun soll!"
+  ],
+  "zustand_na": [
+   "Das trifft hier nicht zu.",
+   "Es geht nicht um eine kranke Person."
+  ],
+  "hangup": "— Anrufer hat aufgelegt —"
+ },
+ "scripts": {
+  "brand_klein": {
+   "open": [
+    "Hier brennt ein Müllcontainer!",
+    "Da brennt was am Straßenrand, ein Container glaube ich.",
+    "Bei uns hinten im Hof brennen die Mülltonnen."
+   ],
+   "what": [
+    "Es ist ein {objekt}, die Flammen sind schon einen Meter hoch.",
+    "Der Container brennt richtig, {objekt}. Daneben stehen Autos."
+   ],
+   "danger": "no"
+  },
+  "brand_pkw": {
+   "open": [
+    "Hier brennt ein Auto!",
+    "Aus einem Auto kommt Rauch und Feuer!",
+    "Ein Fahrzeug steht in Flammen, direkt an der Straße!"
+   ],
+   "what": [
+    "Ein {objekt}, es brennt vorne im Motorraum.",
+    "{objekt} – es qualmt stark und es knallt immer wieder."
+   ],
+   "danger": "maybe"
+  },
+  "brand_wohnung": {
+   "open": [
+    "Es brennt! Bei uns im Haus brennt es!",
+    "Aus einer Wohnung gegenüber kommt dichter schwarzer Rauch!",
+    "Im Treppenhaus ist alles voller Rauch, es riecht verbrannt!",
+    "Bei meinem Nachbarn piepst der Rauchmelder und es qualmt aus dem Fenster."
+   ],
+   "what": [
+    "Es ist ein {objekt}. Aus dem Fenster kommt Rauch.",
+    "{objekt} – ich sehe Flammen hinter der Scheibe!",
+    "Rauch aus der Wohnung, {objekt}. Mehr kann ich nicht sehen."
+   ],
+   "danger": "maybe"
+  },
+  "brand_efh": {
+   "open": [
+    "Unser Haus brennt!",
+    "Beim Nachbarn kommt Rauch aus dem Dach!",
+    "Es brennt im Keller, alles ist voller Rauch!",
+    "Hier brennt ein Haus, die Flammen schlagen aus dem Fenster!"
+   ],
+   "what": [
+    "Ein {objekt}. Es brennt im Erdgeschoss, glaube ich.",
+    "{objekt}, der Rauch wird immer dichter."
+   ],
+   "danger": "maybe"
+  },
+  "bma": {
+   "open": [
+    "Automatische Brandmeldung über Übertragungseinrichtung.",
+    "Hier ist die Pforte, unsere Brandmeldeanlage hat ausgelöst.",
+    "Sicherheitsdienst hier, die BMA läuft ein."
+   ],
+   "what": [
+    "Ausgelöst hat {objekt}. Ob es brennt, wissen wir noch nicht.",
+    "{objekt}. Ein Kollege schaut gerade nach."
+   ],
+   "danger": "no",
+   "persona": "ruhig",
+   "exact": true
+  },
+  "brand_industrie": {
+   "open": [
+    "Aus einer Halle im Gewerbegebiet kommt dichter Rauch!",
+    "Bei uns in der Firma brennt es in der Halle!",
+    "Hier qualmt es gewaltig aus einem Betrieb!"
+   ],
+   "what": [
+    "Es ist eine {objekt}. Schwarzer Rauch aus dem Dach.",
+    "{objekt} – die Mitarbeiter laufen alle raus."
+   ],
+   "danger": "maybe"
+  },
+  "grossbrand": {
+   "open": [
+    "Hier brennt eine riesige Halle! Die Flammen sind meterhoch!",
+    "Großes Feuer im Industriegebiet, man sieht den Rauch kilometerweit!",
+    "Bei uns explodiert etwas, die ganze Halle brennt!"
+   ],
+   "what": [
+    "Ein {objekt}. Alles brennt lichterloh!",
+    "{objekt}. Es knallt ständig, das Dach stürzt ein!"
+   ],
+   "danger": "maybe"
+  },
+  "vu": {
+   "open": [
+    "Hier hat es einen Unfall gegeben, zwei Autos sind zusammengestoßen.",
+    "Verkehrsunfall! Gerade eben, direkt vor mir.",
+    "Ich hatte einen Unfall, ein anderes Auto ist mir reingefahren."
+   ],
+   "what": [
+    "{objekt}. Die Autos stehen mitten auf der Straße.",
+    "{objekt}, es läuft Flüssigkeit aus."
+   ],
+   "danger": "maybe"
+  },
+  "vu_eingeklemmt": {
+   "open": [
+    "Schwerer Unfall! Da ist jemand im Auto eingeklemmt!",
+    "Ein Auto ist verunglückt, der Fahrer kommt nicht mehr raus!",
+    "Hier ist ein schlimmer Unfall passiert, das Auto ist total zerstört!"
+   ],
+   "what": [
+    "{objekt}. Die Person steckt fest, die Tür geht nicht auf.",
+    "{objekt} – der Fahrer bewegt sich kaum."
+   ],
+   "danger": "yes"
+  },
+  "vu_massen": {
+   "open": [
+    "Massenunfall! Hier sind ganz viele Fahrzeuge ineinander gefahren!",
+    "Ein Bus ist verunglückt, überall sind Verletzte!",
+    "Schwerer Unfall mit vielen Verletzten, bitte schicken Sie alles, was Sie haben!"
+   ],
+   "what": [
+    "{objekt}. Überall liegen Trümmer.",
+    "{objekt}, Leute schreien, einige sind noch in den Fahrzeugen."
+   ],
+   "danger": "yes",
+   "many": true
+  },
+  "med_notfall": {
+   "open": [
+    "Ich brauche einen Krankenwagen, meine Mutter ist gestürzt.",
+    "Mein Mann hat starke Bauchschmerzen, er krümmt sich.",
+    "Hier ist jemand auf dem Gehweg gestürzt und blutet am Kopf.",
+    "Meiner Kollegin ist ganz schwindlig, sie kann nicht mehr stehen.",
+    "Mein Kind hat hohes Fieber und einen Krampfanfall gehabt.",
+    "Ich habe mir in die Hand geschnitten, es hört nicht auf zu bluten.",
+    "Mein Vater bekommt schlecht Luft, er hat Asthma."
+   ],
+   "what": [
+    "Die Person ist hier: {objekt}. Sie hat starke Schmerzen.",
+    "{objekt}. Es ist vor ein paar Minuten passiert."
+   ],
+   "danger": "no"
+  },
+  "med_bewusstlos": {
+   "open": [
+    "Hier liegt jemand bewusstlos am Boden!",
+    "Mein Mann ist umgekippt und reagiert nicht mehr!",
+    "Eine Frau ist zusammengebrochen, sie bewegt sich nicht!",
+    "Hier liegt ein Mann, ich glaube, der atmet nicht richtig!"
+   ],
+   "what": [
+    "{objekt}. Die Person ist einfach umgefallen.",
+    "{objekt} – plötzlich zusammengesackt."
+   ],
+   "danger": "no"
+  },
+  "med_herz": {
+   "open": [
+    "Mein Mann hat starke Schmerzen in der Brust!",
+    "Meine Frau bekommt keine Luft und hat Druck auf der Brust!",
+    "Ich habe starke Brustschmerzen, die ziehen in den linken Arm ...",
+    "Unser Bewohner klagt über Atemnot und ist ganz grau im Gesicht."
+   ],
+   "what": [
+    "{objekt}. Die Schmerzen haben vor zwanzig Minuten angefangen.",
+    "{objekt}. Er schwitzt stark und ist ganz blass."
+   ],
+   "danger": "no"
+  },
+  "wohnungsoeffnung": {
+   "open": [
+    "Meine Nachbarin macht die Tür nicht auf, ich höre sie rufen!",
+    "Ich mache mir Sorgen um meinen Vater, er geht seit Tagen nicht ans Telefon und öffnet nicht.",
+    "Hinter der Wohnungstür nebenan stöhnt jemand, aber keiner macht auf!"
+   ],
+   "what": [
+    "Es ist eine {objekt}. Der Briefkasten quillt über.",
+    "{objekt}. Ich höre ein Klopfen von drinnen."
+   ],
+   "danger": "yes"
+  },
+  "baum": {
+   "open": [
+    "Hier liegt ein Baum quer über der Straße!",
+    "Ein großer Ast ist auf die Fahrbahn gefallen, da kommt keiner mehr durch.",
+    "Ein Baum ist umgestürzt und blockiert alles."
+   ],
+   "what": [
+    "{objekt}.",
+    "Es ist ein {objekt}, die Autos wenden schon."
+   ],
+   "danger": "maybe"
+  },
+  "oelspur": {
+   "open": [
+    "Auf der Straße ist eine lange Ölspur, das ist spiegelglatt.",
+    "Hier verliert ein LKW Diesel, die ganze Fahrbahn ist voll."
+   ],
+   "what": [
+    "{objekt}.",
+    "Eine {objekt}, es stinkt stark nach Kraftstoff."
+   ],
+   "danger": "no"
+  },
+  "gefahrgut": {
+   "open": [
+    "Hier läuft aus einem Tanklaster etwas aus, es stinkt furchtbar!",
+    "Bei uns im Lager ist ein Behälter mit Chemikalien undicht!",
+    "Ein LKW mit orangen Warntafeln ist verunglückt, da tropft etwas raus!"
+   ],
+   "what": [
+    "{objekt}. Auf der Tafel stehen Zahlen, ich kann sie nicht lesen.",
+    "{objekt} – es dampft und riecht stechend."
+   ],
+   "danger": "maybe"
+  },
+  "wasserrettung": {
+   "open": [
+    "Da ist jemand im Wasser und kommt nicht mehr raus!",
+    "Hilfe, ein Boot ist gekentert, die Leute sind im Wasser!",
+    "Ein Kind ist ins Wasser gefallen!"
+   ],
+   "what": [
+    "{objekt}.",
+    "{objekt}. Ich sehe die Person kaum noch!"
+   ],
+   "danger": "yes",
+   "water": true
+  },
+  "unwetter_keller": {
+   "open": [
+    "Bei uns läuft der Keller voll Wasser!",
+    "Die Tiefgarage steht unter Wasser, das steigt immer weiter.",
+    "Wasser drückt durch die Kellerfenster, alles schwimmt."
+   ],
+   "what": [
+    "{objekt}.",
+    "{objekt}. Der Strom ist auch schon ausgefallen."
+   ],
+   "danger": "no"
+  },
+  "unwetter_dach": {
+   "open": [
+    "Der Sturm hat Teile vom Dach gelöst, die fallen gleich auf die Straße!",
+    "Hier droht etwas herunterzufallen, das ist lebensgefährlich!"
+   ],
+   "what": [
+    "{objekt}.",
+    "{objekt}, unten laufen Leute vorbei."
+   ],
+   "danger": "maybe"
+  },
+  "aufzug": {
+   "open": [
+    "Wir stecken im Aufzug fest!",
+    "Bei uns im Haus sind Leute im Aufzug eingeschlossen, der Notruf geht nicht."
+   ],
+   "what": [
+    "{objekt}. Wir sind zu zweit.",
+    "{objekt}."
+   ],
+   "danger": "no"
+  },
+  "tier": {
+   "open": [
+    "Hier ist ein Tier in Not.",
+    "Ich weiß nicht, ob Sie zuständig sind, aber hier braucht ein Tier Hilfe."
+   ],
+   "what": [
+    "{objekt}.",
+    "Es geht um Folgendes: {objekt}."
+   ],
+   "danger": "no"
+  },
+  "pol_ruhe": {
+   "open": [
+    "Bei meinen Nachbarn ist seit Stunden Lärm und Geschrei.",
+    "Hier streiten sich zwei lautstark, das eskaliert gleich.",
+    "Unten vor dem Haus grölen Betrunkene herum."
+   ],
+   "what": [
+    "Das ist {objekt}.",
+    "{objekt}, es fliegen schon Flaschen."
+   ],
+   "danger": "no"
+  },
+  "pol_einbruch": {
+   "open": [
+    "Bei uns bricht gerade jemand ein!",
+    "Ich sehe Leute mit Taschenlampen im Gebäude gegenüber, da ist eine Scheibe eingeschlagen.",
+    "Die Alarmanlage läuft und ich habe jemanden weglaufen sehen."
+   ],
+   "what": [
+    "Es geht um ein {objekt}.",
+    "{objekt}. Zwei Personen, dunkel gekleidet."
+   ],
+   "danger": "maybe"
+  },
+  "pol_schlaegerei": {
+   "open": [
+    "Hier prügeln sich mehrere Leute!",
+    "Schlägerei! Einer liegt schon am Boden!",
+    "Da gehen mehrere auf einen los, kommen Sie schnell!"
+   ],
+   "what": [
+    "Das ist {objekt}.",
+    "{objekt}. Es sind bestimmt fünf oder sechs Leute."
+   ],
+   "danger": "yes"
+  },
+  "ktp": {
+   "open": [
+    "Guten Tag, Praxis hier. Wir benötigen einen Krankentransport, liegend, zur Klinik.",
+    "Pflegeheim, Station 2. Wir bräuchten einen Transport ins Krankenhaus zur Abklärung, nicht dringend.",
+    "Ich brauche einen Transport zur Dialyse, mein Hausarzt hat das verordnet."
+   ],
+   "what": [
+    "Der Patient befindet sich hier: {objekt}. Transportschein liegt vor.",
+    "{objekt}. Der Patient ist stabil."
+   ],
+   "danger": "no",
+   "persona": "ruhig",
+   "exact": true
+  },
+  "veranstaltung": {
+   "open": [
+    "Sanitätsdienst hier – wir haben mehrere Verletzte auf dem Veranstaltungsgelände!",
+    "Hier ist Panik ausgebrochen, Leute sind gestürzt und werden getreten!"
+   ],
+   "what": [
+    "{objekt}.",
+    "{objekt}. Unsere Sanitäter sind überlastet."
+   ],
+   "danger": "yes",
+   "many": true,
+   "exact": true
+  },
+  "brand_gartenhuette": {
+   "open": [
+    "Bei uns im Garten brennt die Hütte!",
+    "Im Nachbargarten brennt ein Schuppen, das greift gleich auf die Hecke über!",
+    "Da hinten in der Kleingartenanlage steht eine Hütte in Flammen."
+   ],
+   "what": [
+    "{objekt}. Die Flammen sind schon richtig hoch.",
+    "{objekt} – es knallt immer wieder darin."
+   ],
+   "danger": "maybe"
+  },
+  "brand_wald": {
+   "open": [
+    "Es brennt im Wald! Man sieht schon Flammen!",
+    "Am Waldrand steigt dichter Rauch auf, das wird immer mehr!",
+    "Ich bin mit dem Hund unterwegs, hier brennt der Waldboden!"
+   ],
+   "what": [
+    "{objekt}. Der Wind treibt das Feuer weiter.",
+    "{objekt}. Es brennt auf einer großen Fläche."
+   ],
+   "danger": "no"
+  },
+  "brand_zug": {
+   "open": [
+    "Hier am Bahnhof brennt ein Zug!",
+    "Aus einem Zug kommt dichter Rauch, die Leute rennen raus!",
+    "Bahnmitarbeiter hier – wir haben ein Feuer an einem Wagen."
+   ],
+   "what": [
+    "{objekt}. Es qualmt stark aus den Fenstern.",
+    "{objekt}. Einige Reisende husten stark."
+   ],
+   "danger": "maybe"
+  },
+  "brand_trafo": {
+   "open": [
+    "Hier brennt eine Trafostation, es knallt und funkt!",
+    "Bei uns ist der Strom ausgefallen und draußen brennt der Stromkasten!",
+    "Aus dem Elektrohäuschen kommt schwarzer Rauch!"
+   ],
+   "what": [
+    "{objekt}. Es brutzelt und es riecht verschmort.",
+    "{objekt}, ringsum ist der Strom weg."
+   ],
+   "danger": "no"
+  },
+  "brand_pflegeheim": {
+   "open": [
+    "Pflegeheim hier – bei uns brennt es im Wohnbereich!",
+    "Feuer im Altenheim! Die Bewohner können nicht allein raus!",
+    "Hier ist die Nachtwache vom Seniorenheim, der Flur ist voller Rauch!"
+   ],
+   "what": [
+    "{objekt}. Wir haben viele bettlägerige Bewohner.",
+    "{objekt}. Wir versuchen, die Leute rauszubringen, aber wir sind zu wenige!"
+   ],
+   "danger": "yes",
+   "many": true,
+   "exact": true
+  },
+  "person_hoehe": {
+   "open": [
+    "Da sitzt jemand oben auf dem Dach und will springen!",
+    "Ein Arbeiter hängt oben auf dem Kran und rührt sich nicht!",
+    "Hier ist jemand in einen Schacht gefallen!"
+   ],
+   "what": [
+    "{objekt}.",
+    "{objekt}. Wir kommen nicht an die Person heran."
+   ],
+   "danger": "yes"
+  },
+  "strassenbahn": {
+   "open": [
+    "Hier ist jemand unter die Straßenbahn gekommen!",
+    "Die Straßenbahn hat einen Fußgänger erfasst!",
+    "Fahrerin der Straßenbahn hier – ich habe jemanden überfahren!"
+   ],
+   "what": [
+    "{objekt}. Die Person liegt unter der Bahn.",
+    "{objekt}. Man hört die Person schreien."
+   ],
+   "danger": "yes"
+  },
+  "stromunfall": {
+   "open": [
+    "Mein Kollege hat einen Stromschlag bekommen!",
+    "Hier ist jemand an eine Leitung gekommen und umgefallen!"
+   ],
+   "what": [
+    "{objekt}. Er zittert am ganzen Körper.",
+    "{objekt}. Ich weiß nicht, ob der Strom noch an ist!"
+   ],
+   "danger": "yes"
+  },
+  "gasgeruch": {
+   "open": [
+    "Im ganzen Treppenhaus riecht es nach Gas!",
+    "Bei uns im Keller stinkt es stark nach Gas.",
+    "Es riecht nach faulen Eiern, ich glaube, da ist Gas!"
+   ],
+   "what": [
+    "{objekt}. Der Geruch wird stärker.",
+    "{objekt}. Soll ich die Fenster aufmachen?"
+   ],
+   "danger": "maybe"
+  },
+  "co_vergiftung": {
+   "open": [
+    "Bei uns piepst der CO-Melder und uns ist allen schlecht!",
+    "Mehrere Leute haben Kopfschmerzen und Schwindel, der Gaswarner schlägt an!"
+   ],
+   "what": [
+    "{objekt}. Wir sind zu dritt in der Wohnung.",
+    "{objekt}. Einer ist schon umgekippt."
+   ],
+   "danger": "yes"
+  },
+  "gma": {
+   "open": [
+    "Automatische Meldung: Gefahrstoff-Meldeanlage ausgelöst.",
+    "Werkschutz hier, unsere Gaswarnanlage hat ausgelöst."
+   ],
+   "what": [
+    "Ausgelöst hat {objekt}.",
+    "{objekt}. Wir haben den Bereich geräumt."
+   ],
+   "danger": "no",
+   "persona": "ruhig",
+   "exact": true
+  },
+  "oel_wasser": {
+   "open": [
+    "Auf dem Wasser treibt ein großer Ölfilm!",
+    "Am Ufer schillert alles bunt und es stinkt nach Diesel."
+   ],
+   "what": [
+    "{objekt}.",
+    "{objekt}, er treibt flussabwärts."
+   ],
+   "danger": "no",
+   "water": true
+  },
+  "rd_kind": {
+   "open": [
+    "Mein Kind krampft, bitte kommen Sie schnell!",
+    "Mein Baby atmet ganz komisch!",
+    "Hilfe, mein Sohn bekommt keine Luft!"
+   ],
+   "what": [
+    "{objekt}. Es ist zwei Jahre alt.",
+    "{objekt}. Das Kind ist ganz blau um die Lippen!"
+   ],
+   "danger": "no"
+  },
+  "geburt": {
+   "open": [
+    "Meine Frau bekommt das Baby, jetzt sofort!",
+    "Die Fruchtblase ist geplatzt und die Wehen kommen alle zwei Minuten!",
+    "Ich bin Taxifahrer, meine Fahrgästin bekommt gerade ihr Kind!"
+   ],
+   "what": [
+    "{objekt}. Es geht ganz schnell!",
+    "{objekt}. Was soll ich tun?"
+   ],
+   "danger": "no"
+  },
+  "psych_polizei": {
+   "open": [
+    "Mein Nachbar dreht völlig durch und bedroht alle!",
+    "Hier ist ein Mann, der wirr redet und mit einem Messer herumfuchtelt!",
+    "Meine Schwester hat angekündigt, sich etwas anzutun!"
+   ],
+   "what": [
+    "{objekt}.",
+    "{objekt}. Ich habe Angst."
+   ],
+   "danger": "yes"
+  },
+  "ktp_schwerlast": {
+   "open": [
+    "Pflegedienst hier. Wir brauchen einen Transport ins Krankenhaus, die Patientin wiegt über 200 Kilo.",
+    "Mein Vater muss ins Krankenhaus, aber wir bekommen ihn nicht die Treppe hinunter."
+   ],
+   "what": [
+    "{objekt}.",
+    "Die Person ist hier: {objekt}."
+   ],
+   "danger": "no",
+   "persona": "ruhig",
+   "exact": true
+  },
+  "reizgas_schule": {
+   "open": [
+    "Schulleitung hier – im Schulhaus hat jemand Reizgas versprüht!",
+    "Bei uns in der Schule husten alle Kinder und die Augen brennen!"
+   ],
+   "what": [
+    "{objekt}. Es sind mehrere Klassen betroffen.",
+    "{objekt}. Wir haben die Kinder auf den Hof gebracht."
+   ],
+   "danger": "yes",
+   "many": true,
+   "exact": true
+  },
+  "eisunfall": {
+   "open": [
+    "Da ist jemand ins Eis eingebrochen!",
+    "Ein Kind ist auf dem See durchs Eis gebrochen!"
+   ],
+   "what": [
+    "{objekt}.",
+    "{objekt}. Ich sehe nur noch den Kopf!"
+   ],
+   "danger": "yes",
+   "water": true
+  }
+ },
+ "nuisance": [
+  {
+   "id": "hosentasche",
+   "name": "Hosentaschenanruf",
+   "open": [
+    "... (Rascheln, Schritte, undeutliche Stimmen) ..."
+   ],
+   "answers": [
+    "... (keine Reaktion, nur Hintergrundgeräusche) ..."
+   ]
+  },
+  {
+   "id": "verwaehlt",
+   "name": "Verwählt",
+   "open": [
+    "Oh, Entschuldigung – ich wollte eigentlich die Auskunft anrufen."
+   ],
+   "answers": [
+    "Nein, nein, es ist nichts passiert. Entschuldigen Sie bitte."
+   ]
+  },
+  {
+   "id": "auskunft",
+   "name": "Kein Notfall",
+   "open": [
+    "Ja hallo, ich wollte fragen, welche Apotheke heute Notdienst hat?",
+    "Guten Tag, bei uns ist der Strom ausgefallen. Wissen Sie, wie lange das dauert?",
+    "Ich finde mein Auto nicht mehr, ich glaube, es wurde abgeschleppt."
+   ],
+   "answers": [
+    "Nein, verletzt ist niemand. Ich wollte nur nachfragen.",
+    "Ach so, da bin ich bei Ihnen falsch? Entschuldigung."
+   ]
+  },
+  {
+   "id": "scherz",
+   "name": "Scherzanruf",
+   "open": [
+    "(Kichern) ... Ähm, bei uns brennt die Schule! (Gelächter im Hintergrund)"
+   ],
+   "answers": [
+    "(Kichern) ... Ähm ... (aufgelegt)"
+   ]
+  }
+ ]
 }
