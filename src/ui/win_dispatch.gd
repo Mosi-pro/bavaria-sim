@@ -18,6 +18,8 @@ var note_edit: LineEdit
 var sugg_label: Label
 var org_filter: OptionButton
 var only_free: CheckBox
+var type_filter: OptionButton
+var _types: Array = []
 var alarm_btn: Button
 var close_btn: Button
 var tabs: TabContainer
@@ -53,14 +55,22 @@ func setup(id: String) -> void:
 	org_filter = UI.option(names, 0)
 	org_filter.item_selected.connect(func(_i): _fill_disposition(false))
 	only_free = CheckBox.new()
-	only_free.text = "Alle verfügbaren Fahrzeuge zeigen"
-	only_free.tooltip_text = "Aus: nur der Vorschlag des Systems.  Ein: alle einsatzbereiten Fahrzeuge, sortiert nach Ankunftszeit."
+	only_free.text = "Nur Vorschlag zeigen"
+	only_free.tooltip_text = "Ein: nur die vom System vorgeschlagenen Fahrzeuge.  Aus: alle einsatzbereiten Fahrzeuge (Vorschlag oben, blau markiert)."
 	only_free.button_pressed = false
 	only_free.focus_mode = Control.FOCUS_NONE
-	only_free.toggled.connect(func(on):
-		org_filter.visible = on
-		_fill_disposition(false))
-	org_filter.visible = false
+	only_free.toggled.connect(func(_on): _fill_disposition(false))
+	_types = [""]
+	var tnames: Array = ["Alle Fahrzeugtypen"]
+	var tlist: Array = Data.vehicle_types.keys()
+	tlist.sort_custom(func(a, b): return [Data.vehicle_types[a]["org"], Data.vehicle_types[a]["short"]] < [Data.vehicle_types[b]["org"], Data.vehicle_types[b]["short"]])
+	for tid in tlist:
+		_types.append(tid)
+		tnames.append("%s – %s" % [Data.vehicle_types[tid]["short"], Data.vehicle_types[tid]["name"]])
+	type_filter = UI.option(tnames, 0)
+	type_filter.custom_minimum_size.x = 200
+	type_filter.tooltip_text = "Nur einen bestimmten Fahrzeugtyp anzeigen, z. B. um gezielt eine Drehleiter nachzualarmieren"
+	type_filter.item_selected.connect(func(_i): _fill_disposition(false))
 	sugg_label = UI.label("", UI.TEXT2)
 	sugg_label.clip_text = true
 	sugg_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -76,7 +86,7 @@ func setup(id: String) -> void:
 	alarm_btn.custom_minimum_size.x = 170
 	var dv := UI.vbox([
 		sugg_label,
-		UI.hbox([only_free, org_filter, UI.spacer(), UI.button("Vorschlag neu berechnen", func(): _fill_disposition(true), "Vorschlag nach Stichwort bzw. aktuellem Bedarf neu berechnen und anhaken"), UI.button("Alle Haken entfernen", func():
+		UI.hbox([org_filter, type_filter, only_free, UI.spacer(), UI.button("Vorschlag neu berechnen", func(): _fill_disposition(true), "Vorschlag nach Stichwort bzw. aktuellem Bedarf neu berechnen und anhaken"), UI.button("Alle Haken entfernen", func():
 			_checked = {}
 			_fill_disposition(false))]),
 		disp_tree,
@@ -249,19 +259,30 @@ func _fill_disposition(apply_suggestion: bool) -> void:
 		for vid in _suggested:
 			_checked[vid] = true
 	var org: String = _orgs[org_filter.selected]
+	var vt: String = _types[type_filter.selected] if type_filter != null else ""
 	disp_tree.clear()
 	var root := disp_tree.create_item()
 	var shown := 0
-	for r in res["rows"]:
+	var rows: Array = res["rows"].duplicate()
+	# vorgeschlagene und bereits angehakte Fahrzeuge zuerst, dann nach Ankunftszeit
+	rows.sort_custom(func(a, b):
+		var pa: int = 0 if (_suggested.has(a["id"]) or _checked.get(a["id"], false)) else 1
+		var pb: int = 0 if (_suggested.has(b["id"]) or _checked.get(b["id"], false)) else 1
+		if pa != pb:
+			return pa < pb
+		return a["eta"] < b["eta"])
+	for r in rows:
 		var v: Dictionary = State.vehicles[r["id"]]
 		if v["incident"] == inc_id:
 			continue
 		if org != "" and v["org"] != org:
 			continue
+		if vt != "" and v["type"] != vt:
+			continue
 		var free: bool = r["reason"] == ""
 		if not free:
 			continue
-		if not only_free.button_pressed and not _suggested.has(r["id"]) and not _checked.get(r["id"], false):
+		if only_free.button_pressed and not _suggested.has(r["id"]) and not _checked.get(r["id"], false):
 			continue
 		shown += 1
 		if shown > 140:
@@ -282,11 +303,12 @@ func _fill_disposition(apply_suggestion: bool) -> void:
 		if not free:
 			it.set_custom_color(6, UI.TEXT2)
 		if _suggested.has(r["id"]):
-			it.set_custom_bg_color(1, Color(0.29, 0.5, 0.66, 0.4))
+			for col in [1, 2, 3]:
+				it.set_custom_bg_color(col, Color(0.29, 0.5, 0.66, 0.28))
 			it.set_tooltip_text(1, "Vom System vorgeschlagen")
-	var st := "Das System schlägt %d Fahrzeug(e) vor (schnellste passende Einheiten)." % _suggested.size()
+	var st := "Vorschlag: %d Fahrzeug(e) (blau, bereits angehakt). Du kannst jedes andere freie Fahrzeug zusätzlich anhaken oder Haken entfernen." % _suggested.size()
 	if _suggested.is_empty():
-		st = "Laut Stichwort bzw. Lage sind keine weiteren Fahrzeuge nötig."
+		st = "Kein Vorschlag nötig – du kannst trotzdem jedes freie Fahrzeug selbst anhaken und alarmieren."
 	if not res["missing"].is_empty():
 		st += "   Derzeit nicht verfügbar: " + IL.need_text(res["missing"])
 	sugg_label.text = st

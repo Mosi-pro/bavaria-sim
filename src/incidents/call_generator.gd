@@ -259,6 +259,11 @@ static func make_call(tid: String, recall: bool, force_level := -1) -> String:
 			level = 1
 	if force_level >= 0:
 		level = force_level
+	# Hinweis auf denselben, bereits laufenden Einsatz (nur bei leichten Schwierigkeitsgraden)
+	if tr["incident"] != "" and State.incidents.has(tr["incident"]):
+		var hl: String = IL.difficulty().get("hint", "none")
+		if hl != "none" or State.meta.get("mode", "") == "einweisung":
+			c["same_inc"] = tr["incident"]
 	c["true_pos"] = [tr["x"], tr["y"]]
 	_set_loc_level(c, tr, level)
 	var prefix := _pick(persona.get("prefix", [""]))
@@ -451,7 +456,7 @@ static func end_call(c: Dictionary, reason: String) -> void:
 	var tr: Dictionary = State.truths.get(c["truth"], {})
 	if c["nuisance"] != "":
 		State.meta["stats"]["calls_nuisance"] = int(State.meta["stats"]["calls_nuisance"]) + 1
-	elif not tr.is_empty() and tr["incident"] == "" and c["incident"] == "":
+	elif not tr.is_empty() and (tr["incident"] == "" or not State.incidents.has(tr["incident"])):
 		# echter Notfall ohne Einsatz beendet → Anrufer meldet sich erneut
 		tr["next_call"] = State.clock + Sim.rng.randf_range(60.0, 150.0)
 	State.remove_call(c["id"])

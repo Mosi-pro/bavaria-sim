@@ -374,7 +374,7 @@ static func _reveal(inc: Dictionary, tr: Dictionary, on: Array) -> void:
 	for p in tr["patients"]:
 		if p["state"] != "dead":
 			n += 1
-	var text := "Lagemeldung: %s – %s" % [tr["object"], tr["lage"]]
+	var text := "Lagemeldung %s, %s: %s – %s" % [inc["keyword"], String(inc["address"]).get_slice(",", 0), tr["object"], tr["lage"]]
 	if n > 0 and int(tr["patients"][0]["sev"]) > 0:
 		text += " %d Verletzte/Betroffene." % n
 	inc["lage"] = text

@@ -20,7 +20,8 @@ var obj: LineEdit
 var persons: LineEdit
 var danger: LineEdit
 var note: LineEdit
-var attach: OptionButton
+var dup_box: VBoxContainer
+var _force_new := false
 var dup_label: Label
 var _kws: Array = []
 var _lines := -1
@@ -103,17 +104,15 @@ func setup(id: String) -> void:
 	dup_label = UI.label("", UI.YELLOW)
 	dup_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dup_label.custom_minimum_size.x = 300
-	attach = UI.option(["Gehört zu laufendem Einsatz …"], 0)
-	attach.item_selected.connect(_attach)
-	attach.custom_minimum_size.x = 170
+	dup_box = UI.vbox([], 3)
 	var create := UI.accent(UI.button("Einsatz anlegen  →  Fahrzeuge wählen", _create), UI.RED)
 	create.custom_minimum_size.y = 30
 	var end := UI.button("Kein Einsatz – auflegen", func(): UI.confirm(self, "Gespräch beenden", "Gespräch ohne Einsatz beenden?\n(Richtig bei Fehlanrufen, Scherzanrufen oder Anfragen ohne Notfall.)", func():
 		Game.act({"a": "call_end", "id": call_id})
 		_close()))
 	var s3 := UI.vbox([_step_head("③", "Stichwort wählen und Einsatz anlegen"), hint_lbl,
-		UI.form([["Einsatzart", cat_opt], ["Stichwort", kw_opt]]), kw_desc, more, details, dup_label,
-		UI.hbox([create, attach, UI.spacer(), end])], 4)
+		UI.form([["Einsatzart", cat_opt], ["Stichwort", kw_opt]]), kw_desc, more, details, dup_label, dup_box,
+		UI.hbox([create, UI.spacer(), end])], 4)
 	var right := UI.vbox([UI.caption("Gespräch"), transcript, HSeparator.new(), s3], 6)
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var split := UI.hbox([left, VSeparator.new(), right], 10)
@@ -230,28 +229,50 @@ func _refresh(c: Dictionary) -> void:
 			if ci >= 0:
 				cat_opt.select(ci + 1)
 				_fill_keywords(hint.get("keyword", ""))
-	# Mehrfachmeldung?
+	# Mehrfachmeldung? Laufende Einsätze in der Nähe (bzw. bekannter gleicher Notfall)
 	var near: Array = []
+	var same: String = c.get("same_inc", "")
+	if same != "" and State.incidents.has(same) and not State.incidents[same]["done"]:
+		near.append(same)
 	if _pos != Vector2.ZERO:
 		for iid in State.incidents:
 			var inc: Dictionary = State.incidents[iid]
-			if not inc["done"] and Vector2(inc["x"], inc["y"]).distance_to(_pos) < 450.0 + _radius:
+			if not inc["done"] and not near.has(iid) and Vector2(inc["x"], inc["y"]).distance_to(_pos) < 450.0 + _radius:
 				near.append(iid)
 	if near != _attach_ids:
 		_attach_ids = near
-		attach.clear()
-		attach.add_item("Gehört zu laufendem Einsatz …")
+		for ch in dup_box.get_children():
+			ch.queue_free()
 		for iid in near:
-			attach.add_item("%s  %s" % [State.incidents[iid]["keyword"], String(State.incidents[iid]["address"]).get_slice(",", 0)])
-		attach.visible = not near.is_empty()
-	dup_label.text = "Achtung: In der Nähe läuft schon ein Einsatz. Wenn es derselbe Notfall ist, ordne den Anruf rechts unten dem Einsatz zu, statt einen neuen anzulegen." if near.size() > 0 else ""
-	dup_label.visible = near.size() > 0
+			var inc: Dictionary = State.incidents[iid]
+			var dist := Vector2(inc["x"], inc["y"]).distance_to(_pos) if _pos != Vector2.ZERO else 0.0
+			var txt := "%s  ·  %s  ·  %d Fzg.  ·  %d m entfernt" % [inc["keyword"], String(inc["address"]).get_slice(",", 0), State.incident_vehicles(iid).size(), int(dist)]
+			var l := UI.label(txt, UI.GREEN if iid == same else UI.TEXT)
+			l.clip_text = true
+			l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			if iid == same:
+				l.tooltip_text = "Hinweis: Dieser Anruf betrifft denselben Notfall."
+			var b := UI.accent(UI.button("Diesem Einsatz zuordnen", _attach_to.bind(iid), "Anruf als weitere Meldung zu diesem Einsatz nehmen – kein neuer Einsatz"), UI.BLUE)
+			var row := PanelContainer.new()
+			row.add_theme_stylebox_override("panel", UI.box(Color(0.84, 0.66, 0.23, 0.08), UI.YELLOW if iid != same else UI.GREEN, 1, 4))
+			row.add_child(UI.hbox([l, b], 6))
+			dup_box.add_child(row)
+	if near.is_empty():
+		dup_label.text = ""
+	elif same != "":
+		dup_label.text = "Dieser Anruf meldet sehr wahrscheinlich denselben Notfall wie ein laufender Einsatz. Ordne ihn dem Einsatz zu, statt einen neuen anzulegen:"
+	else:
+		dup_label.text = "In der Nähe läuft schon ein Einsatz. Ist es derselbe Notfall, ordne den Anruf zu, statt einen neuen Einsatz anzulegen:"
+	dup_label.visible = not near.is_empty()
+	dup_box.visible = not near.is_empty()
 
-func _attach(i: int) -> void:
-	if i <= 0 or i - 1 >= _attach_ids.size():
+func _attach_to(iid: String) -> void:
+	if not State.incidents.has(iid):
 		return
-	Game.act({"a": "call_attach", "id": call_id, "incident": _attach_ids[i - 1]}, func(res):
+	Game.act({"a": "call_attach", "id": call_id, "incident": iid}, func(res):
 		if res.get("ok", false):
+			if State.incidents.has(iid):
+				Game.ui.set_status("Anruf dem Einsatz %s (%s) zugeordnet." % [State.incidents[iid]["nr"], State.incidents[iid]["keyword"]], UI.GREEN)
 			_close())
 
 func _create() -> void:
@@ -262,6 +283,16 @@ func _create() -> void:
 	if _pos == Vector2.ZERO:
 		UI.message(self, "Einsatz anlegen", "Der Einsatzort ist noch unbekannt. Frage nach dem Ort (»Wo genau?«), orte das Handy oder wähle den Ort auf der Karte.")
 		return
+	if not _attach_ids.is_empty() and not _force_new:
+		var first: String = _attach_ids[0]
+		var inc: Dictionary = State.incidents.get(first, {})
+		if not inc.is_empty():
+			UI._dialog(self, "Möglicherweise derselbe Notfall",
+				"In der Nähe läuft bereits Einsatz %s (%s, %s).\n\nHandelt es sich um denselben Notfall, ordne den Anruf diesem Einsatz zu. Sonst lege einen neuen Einsatz an." % [String(inc["nr"]), inc["keyword"], String(inc["address"]).get_slice(",", 0)],
+				[["Zuordnen", _attach_to.bind(first), true], ["Neuen Einsatz anlegen", func():
+					_force_new = true
+					_create()], ["Abbrechen", Callable()]])
+			return
 	var form := {"keyword": kw, "x": _pos.x, "y": _pos.y, "radius": _radius, "address": loc_lbl.text, "object": obj.text, "persons": persons.text, "danger": danger.text, "info": note.text}
 	var cid := call_id
 	Game.act({"a": "call_create", "id": cid, "form": form}, func(res):

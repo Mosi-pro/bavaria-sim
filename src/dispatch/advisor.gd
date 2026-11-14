@@ -4,6 +4,7 @@ extends RefCounted
 
 const VL = preload("res://src/vehicles/vehicle_logic.gd")
 const IL = preload("res://src/incidents/incident_logic.gd")
+const SPECIAL := ["grtw", "srtw", "itw", "kindernotarzt", "flf", "elw2", "sek", "hoehenrettung", "dekon"]
 
 ## Rückgabe: {rows: [{id, eta, dist, reason, caps}], suggested: [ids], missing: {cap: n}, need: {cap: n}}
 static func suggest(inc: Dictionary, org_filter: Array = []) -> Dictionary:
@@ -43,12 +44,19 @@ static func suggest(inc: Dictionary, org_filter: Array = []) -> Dictionary:
 	for k in open.keys():
 		while int(open[k]) > 0:
 			var pick := {}
+			var best := INF
 			for r in rows:
 				if r["reason"] != "" or suggested.has(r["id"]):
 					continue
 				if int(r["caps"].get(k, 0)) > 0 and r["eta"] < INF:
-					pick = r
-					break
+					# Sonderfahrzeuge nur, wenn ihre Sonderfähigkeit gebraucht wird oder nichts anderes in Reichweite ist
+					var eff: float = r["eta"]
+					for sc in SPECIAL:
+						if int(r["caps"].get(sc, 0)) > 0 and not need.has(sc):
+							eff += 1200.0
+					if eff < best:
+						best = eff
+						pick = r
 			if pick.is_empty():
 				break
 			suggested.append(pick["id"])

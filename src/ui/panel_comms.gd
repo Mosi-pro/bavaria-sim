@@ -95,7 +95,10 @@ func _on_radio(e: Dictionary, sound := true) -> void:
 			col = "#d6a83b"
 	if src == "Leitstelle":
 		src_col = "#e5e7e9"
-	funk.append_text("[color=#6b737b]%s[/color] %s [color=%s]%-26s[/color] [color=%s]%s[/color]\n" % [time, _status_tag(st), src_col, src.replace("[", "[lb]"), col, esc_text])
+	var tag := ""
+	if String(e.get("tag", "")) != "" and kind != "alarm" and kind != "system":
+		tag = "[color=#d6a83b]‹%s›[/color] " % String(e["tag"]).replace("[", "[lb]")
+	funk.append_text("[color=#6b737b]%s[/color] %s [color=%s]%-26s[/color] %s[color=%s]%s[/color]\n" % [time, _status_tag(st), src_col, src.replace("[", "[lb]"), tag, col, esc_text])
 	if sound and kind == "funk":
 		Audio.play("radio")
 

@@ -23,7 +23,11 @@ func sound(name: String) -> void:
 	sound_requested.emit(name)
 
 func radio(src: String, text: String, status := -1, kind := "funk", inc := "") -> void:
-	State.add_radio({"t": State.clock, "src": src, "text": text, "status": status, "kind": kind, "inc": inc})
+	var e := {"t": State.clock, "src": src, "text": text, "status": status, "kind": kind, "inc": inc}
+	if inc != "" and State.incidents.has(inc):
+		var i: Dictionary = State.incidents[inc]
+		e["tag"] = "%s %s" % [i["keyword"], String(i["address"]).get_slice(",", 0)]
+	State.add_radio(e)
 
 func _build_hospitals() -> void:
 	hospitals = []
