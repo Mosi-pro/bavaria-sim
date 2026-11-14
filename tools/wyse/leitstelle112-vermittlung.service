@@ -1,0 +1,22 @@
+[Unit]
+Description=LEITSTELLE 112 – Vermittlungsdienst
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=leitstelle
+WorkingDirectory=/opt/leitstelle112
+ExecStart=/opt/leitstelle112/leitstelle112.x86_64 --headless -- --vermittlung --port=24180
+Restart=always
+RestartSec=5
+# Schutz: Dienst darf nur sein eigenes Verzeichnis beschreiben
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/home/leitstelle /opt/leitstelle112
+PrivateTmp=true
+MemoryMax=600M
+
+[Install]
+WantedBy=multi-user.target

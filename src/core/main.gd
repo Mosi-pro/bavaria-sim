@@ -8,6 +8,10 @@ const Workstation = preload("res://src/ui/workstation.gd")
 var screen: Control
 
 func _ready() -> void:
+	var args := OS.get_cmdline_args() + OS.get_cmdline_user_args()
+	if args.has("--vermittlung"):
+		_run_relay(args)
+		return
 	theme = UI.theme()
 	get_window().title = "LEITSTELLE 112 – Integrierte Leitstelle Bavaria"
 	get_window().min_size = Vector2i(1280, 720)
@@ -103,3 +107,17 @@ func _selftest() -> void:
 	report.call(key, "Module vollständig")
 	print("SELBSTTEST " + ("BESTANDEN" if ok else "FEHLGESCHLAGEN"))
 	get_tree().quit(0 if ok else 1)
+
+## Vermittlungsdienst ohne Oberfläche (z. B. auf dem Dell Wyse).
+func _run_relay(args: Array) -> void:
+	const RelayServer = preload("res://src/multiplayer/relay_server.gd")
+	var port := int(Data.network.get("relay_port", 24180))
+	for a in args:
+		if String(a).begins_with("--port="):
+			port = int(String(a).substr(7))
+	Audio.enabled = false
+	var srv := Node.new()
+	srv.set_script(RelayServer)
+	add_child(srv)
+	if srv.start(port) != OK:
+		get_tree().quit(1)

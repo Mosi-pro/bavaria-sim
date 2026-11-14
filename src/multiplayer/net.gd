@@ -5,6 +5,7 @@ extends Node
 
 const Auth = preload("res://src/multiplayer/auth.gd")
 const Discovery = preload("res://src/multiplayer/discovery.gd")
+const RelayPeer = preload("res://src/multiplayer/relay_peer.gd")
 
 const MODE_NONE := 0
 const MODE_HOST := 1
@@ -21,6 +22,9 @@ signal reconnecting(attempt, max_attempts)
 signal game_started
 signal servers_changed
 signal upnp_result(text)
+signal relay_hosted(code)
+signal host_failed(text)
+signal internet_list(sessions, error)
 
 var mode := MODE_NONE
 var session := {}
@@ -29,7 +33,12 @@ var discovery := Discovery.new()
 var status_text := "Einzelplatz"
 var last_ping := -1
 
-var _peer: ENetMultiplayerPeer
+var _peer: MultiplayerPeer
+var via_relay := false
+var relay_code := ""
+var _dir_ws: WebSocketPeer
+var _dir_t := 0.0
+var _dir_sent := false
 var _pw_salt := PackedByteArray()
 var _pw_key := PackedByteArray()
 var _pending := {}           # Host: peer_id -> {nonce, t}
@@ -94,28 +103,66 @@ func local_addresses() -> Array:
 func host(opts: Dictionary) -> String:
 	shutdown()
 	var port := int(opts.get("port", Settings.get_v("net", "port")))
-	_peer = ENetMultiplayerPeer.new()
-	var err := _peer.create_server(port, clampi(int(opts.get("max_players", 6)), 2, 8) - 1 + 4)
-	if err != OK:
-		_peer = null
-		return "Der Spielport %d (UDP) konnte nicht geöffnet werden. Läuft bereits eine Sitzung?" % port
-	multiplayer.multiplayer_peer = _peer
-	mode = MODE_HOST
 	var pw: String = opts.get("password", "")
-	_pw_salt = Auth.random_bytes(16)
-	_pw_key = Auth.derive(pw, _pw_salt) if pw != "" else PackedByteArray()
+	via_relay = bool(opts.get("relay", false))
+	relay_code = ""
 	session = {
 		"name": String(opts.get("name", "Leitstelle Bavaria")).substr(0, 40), "host": Game.me["name"], "max": clampi(int(opts.get("max_players", 6)), 2, 8),
 		"mode": opts.get("game_mode", "Freies Spiel"), "region": "Bavaria", "private": bool(opts.get("private", false)), "locked": pw != "", "port": port,
+		"version": PROTOCOL, "relay": via_relay,
 	}
 	_started = bool(opts.get("started", false))
 	players = {1: {"name": Game.me["name"], "role": "leitung", "token": ""}}
+	if via_relay:
+		var url := Data.relay_url()
+		if url == "":
+			return "Es ist kein Vermittlungsdienst eingetragen."
+		var rp := RelayPeer.new()
+		rp.relay_event.connect(_on_relay_event)
+		if rp.start_host(url, _discovery_info()) != OK:
+			return rp.error_text
+		_peer = rp
+	else:
+		var ep := ENetMultiplayerPeer.new()
+		var err := ep.create_server(port, clampi(int(opts.get("max_players", 6)), 2, 8) - 1 + 4)
+		if err != OK:
+			return "Der Spielport %d (UDP) konnte nicht geöffnet werden. Läuft bereits eine Sitzung?" % port
+		_peer = ep
+		discovery.start_host(_discovery_info(), port + 1, int(Settings.get_v("net", "discovery_port")))
+	multiplayer.multiplayer_peer = _peer
+	mode = MODE_HOST
+	_pw_salt = Auth.random_bytes(16)
+	_pw_key = Auth.derive(pw, _pw_salt) if pw != "" else PackedByteArray()
 	Game.me["role"] = "leitung"
 	Game.me["id"] = 1
-	discovery.start_host(_discovery_info(), port + 1, int(Settings.get_v("net", "discovery_port")))
-	status_text = "Host · %d Spieler" % players.size()
+	status_text = "Verbinde mit Vermittlung …" if via_relay else "Host · %d Spieler" % players.size()
 	lobby_changed.emit()
 	return ""
+
+func _on_relay_event(op: String, d: Dictionary) -> void:
+	match op:
+		"hosted":
+			relay_code = String(d.get("code", ""))
+			session["code"] = relay_code
+			status_text = "Host (Internet) · Code %s" % relay_code
+			relay_hosted.emit(relay_code)
+			lobby_changed.emit()
+		"error":
+			if mode == MODE_HOST and relay_code == "":
+				var text := String(d.get("text", "Vermittlungsdienst nicht erreichbar."))
+				shutdown()
+				host_failed.emit(text)
+		"host_gone":
+			if mode == MODE_CLIENT:
+				_expect_close = true
+				_reconnect_n = 0
+				var text := String(d.get("text", "Der Host hat die Sitzung beendet."))
+				var was := _in_game
+				_drop_peer()
+				if was:
+					connection_lost.emit(text)
+				else:
+					connect_result.emit(false, text)
 
 func _discovery_info() -> Dictionary:
 	var d: Dictionary = session.duplicate()
@@ -133,7 +180,12 @@ func _auth_ids() -> Array:
 func _on_peer_connected(id: int) -> void:
 	if mode != MODE_HOST:
 		return
-	var ip := _peer.get_peer(id).get_remote_address() if _peer.get_peer(id) != null else "?"
+	var ip := "?"
+	if _peer is ENetMultiplayerPeer:
+		var pp: ENetPacketPeer = (_peer as ENetMultiplayerPeer).get_peer(id)
+		ip = pp.get_remote_address() if pp != null else "?"
+	elif _peer is RelayPeer:
+		ip = (_peer as RelayPeer).peer_ip(id)
 	var f: Array = _fails.get(ip, [0, 0])
 	if int(f[1]) > Time.get_ticks_msec():
 		c_reject.rpc_id(id, "Zu viele Fehlversuche. Bitte später erneut versuchen.")
@@ -199,8 +251,10 @@ func s_auth(version: int, name: String, client_nonce: PackedByteArray, proof: Pa
 		Sim.radio("Leitstelle", "%s hat den Arbeitsplatz übernommen (%s)." % [name, Data.roles.get(role, {}).get("name", role)], -1, "system", "")
 
 func _broadcast_lobby() -> void:
-	status_text = "Host · %d Spieler" % players.size()
+	status_text = ("Host (Internet) · Code %s · %d Spieler" % [relay_code, players.size()]) if via_relay else "Host · %d Spieler" % players.size()
 	discovery.update_info(_discovery_info())
+	if _peer is RelayPeer:
+		(_peer as RelayPeer).update_info(_discovery_info())
 	var pub := {}
 	for id in players:
 		pub[id] = {"name": players[id]["name"], "role": players[id]["role"]}
@@ -262,6 +316,8 @@ func start_game() -> void:
 		return
 	_started = true
 	discovery.update_info(_discovery_info())
+	if _peer is RelayPeer:
+		(_peer as RelayPeer).update_info(_discovery_info())
 	for id in _auth_ids():
 		_send_full_state(id)
 	_broadcast_lobby()
@@ -356,20 +412,44 @@ func send_lobby_chat(text: String, who := "") -> void:
 	lobby_chat.emit(who, text)
 
 # ================================================================= CLIENT
-func join(ip: String, port: int, password: String) -> String:
+## Beitritt über Einladungscode (Vermittlungsdienst).
+func join_code(code: String, password: String) -> String:
 	shutdown()
-	_peer = ENetMultiplayerPeer.new()
-	var err := _peer.create_client(ip, port)
-	if err != OK:
-		_peer = null
-		return "Verbindung zu %s:%d konnte nicht aufgebaut werden." % [ip, port]
+	var url := Data.relay_url()
+	if url == "":
+		return "Es ist kein Vermittlungsdienst eingetragen."
+	var rp := RelayPeer.new()
+	rp.relay_event.connect(_on_relay_event)
+	if rp.start_client(url, code) != OK:
+		return rp.error_text
+	_peer = rp
+	via_relay = true
 	multiplayer.multiplayer_peer = _peer
 	mode = MODE_CLIENT
+	_join = {"code": code.strip_edges().to_upper(), "password": password, "token": _token()}
+	_authed = false
+	_expect_close = false
+	status_text = "Verbinde über Vermittlung (Code %s) …" % _join["code"]
+	return ""
+
+func _token() -> String:
 	var token: String = LocalDB.fetch("profile", "net_token", "")
 	if token == "":
 		token = Auth.random_bytes(16).hex_encode()
 		LocalDB.put("profile", "net_token", token)
-	_join = {"ip": ip, "port": port, "password": password, "token": token}
+	return token
+
+func join(ip: String, port: int, password: String) -> String:
+	shutdown()
+	var ep := ENetMultiplayerPeer.new()
+	var err := ep.create_client(ip, port)
+	if err != OK:
+		return "Verbindung zu %s:%d konnte nicht aufgebaut werden." % [ip, port]
+	_peer = ep
+	via_relay = false
+	multiplayer.multiplayer_peer = _peer
+	mode = MODE_CLIENT
+	_join = {"ip": ip, "port": port, "password": password, "token": _token()}
 	_authed = false
 	_expect_close = false
 	status_text = "Verbinde mit %s:%d …" % [ip, port]
@@ -382,8 +462,13 @@ func _on_connection_failed() -> void:
 	if _reconnect_n > 0:
 		_schedule_reconnect()
 		return
+	var text := "Host nicht erreichbar. Adresse, Port und Portfreigabe (UDP) prüfen."
+	if _peer is RelayPeer:
+		text = (_peer as RelayPeer).error_text
+		if text == "":
+			text = "Vermittlungsdienst nicht erreichbar. Bitte Internetverbindung prüfen."
 	_drop_peer()
-	connect_result.emit(false, "Host nicht erreichbar. Adresse, Port und Portfreigabe (UDP) prüfen.")
+	connect_result.emit(false, text)
 
 @rpc("authority", "call_remote", "reliable")
 func c_challenge(version: int, salt: PackedByteArray, nonce: PackedByteArray, needs_pw: bool) -> void:
@@ -411,7 +496,8 @@ func c_accept(my_id_: int, name: String, role: String, sess: Dictionary, started
 	session = sess
 	Game.me = {"id": my_id_, "name": name, "role": role}
 	status_text = "Verbunden mit %s" % sess.get("name", "Host")
-	LocalDB.put("servers", "%s:%d" % [_join["ip"], int(_join["port"])], {"name": sess.get("name", ""), "ip": _join["ip"], "port": _join["port"], "last": int(Time.get_unix_time_from_system())})
+	if _join.has("ip"):
+		LocalDB.put("servers", "%s:%d" % [_join["ip"], int(_join["port"])], {"name": sess.get("name", ""), "ip": _join["ip"], "port": _join["port"], "last": int(Time.get_unix_time_from_system())})
 	if _reconnect_n > 0:
 		_reconnect_n = 0
 		_reconnect_t = -1.0
@@ -585,11 +671,19 @@ func _schedule_reconnect() -> void:
 	reconnecting.emit(_reconnect_n, 6)
 
 func _try_reconnect() -> void:
-	_peer = ENetMultiplayerPeer.new()
-	if _peer.create_client(_join["ip"], int(_join["port"])) != OK:
-		_peer = null
-		_schedule_reconnect()
-		return
+	if _join.has("code"):
+		var rp := RelayPeer.new()
+		rp.relay_event.connect(_on_relay_event)
+		if rp.start_client(Data.relay_url(), _join["code"]) != OK:
+			_schedule_reconnect()
+			return
+		_peer = rp
+	else:
+		var ep := ENetMultiplayerPeer.new()
+		if ep.create_client(_join["ip"], int(_join["port"])) != OK:
+			_schedule_reconnect()
+			return
+		_peer = ep
 	multiplayer.multiplayer_peer = _peer
 	_authed = false
 
@@ -617,6 +711,8 @@ func shutdown() -> void:
 	_drop_peer()
 	players = {}
 	session = {}
+	relay_code = ""
+	via_relay = false
 	_pending = {}
 	_started = false
 	_callbacks = {}
@@ -625,6 +721,39 @@ func shutdown() -> void:
 	State.players = {}
 	Game.me["id"] = 1
 	lobby_changed.emit()
+
+## Öffentliche Sitzungen beim Vermittlungsdienst abfragen (Ergebnis: Signal internet_list).
+func query_internet() -> void:
+	var url := Data.relay_url()
+	if url == "":
+		internet_list.emit([], "Kein Vermittlungsdienst eingetragen.")
+		return
+	_dir_ws = WebSocketPeer.new()
+	_dir_t = 0.0
+	_dir_sent = false
+	if _dir_ws.connect_to_url(url) != OK:
+		_dir_ws = null
+		internet_list.emit([], "Vermittlungsdienst nicht erreichbar.")
+
+func _poll_directory(delta: float) -> void:
+	if _dir_ws == null:
+		return
+	_dir_ws.poll()
+	_dir_t += delta
+	var st := _dir_ws.get_ready_state()
+	if st == WebSocketPeer.STATE_OPEN and not _dir_sent:
+		_dir_sent = true
+		_dir_ws.send_text(JSON.stringify({"op": "list"}))
+	while st == WebSocketPeer.STATE_OPEN and _dir_ws.get_available_packet_count() > 0:
+		var d = JSON.parse_string(_dir_ws.get_packet().get_string_from_utf8())
+		if typeof(d) == TYPE_DICTIONARY and d.get("op", "") == "list":
+			_dir_ws.close()
+			_dir_ws = null
+			internet_list.emit(d.get("sessions", []), "")
+			return
+	if st == WebSocketPeer.STATE_CLOSED or _dir_t > 8.0:
+		_dir_ws = null
+		internet_list.emit([], "Vermittlungsdienst nicht erreichbar. Internet-Spiele sind derzeit nicht möglich – im lokalen Netzwerk geht es weiterhin.")
 
 func start_browser() -> void:
 	if mode == MODE_NONE:
@@ -635,6 +764,7 @@ func stop_browser() -> void:
 		discovery.stop()
 
 func _process(delta: float) -> void:
+	_poll_directory(delta)
 	if discovery.hosting or discovery.listening:
 		if discovery.poll(delta):
 			servers_changed.emit()
@@ -676,8 +806,10 @@ func _process(delta: float) -> void:
 					c["wait"] = float(c["wait"]) + delta
 				elif c["state"] == "active":
 					c["talk"] = float(c["talk"]) + delta
-			if _peer != null and _peer.get_peer(1) != null:
-				last_ping = int(_peer.get_peer(1).get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME))
+			if _peer is ENetMultiplayerPeer and (_peer as ENetMultiplayerPeer).get_peer(1) != null:
+				last_ping = int((_peer as ENetMultiplayerPeer).get_peer(1).get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME))
+			elif _peer is RelayPeer:
+				last_ping = (_peer as RelayPeer).rtt_ms
 
 # ---------------------------------------------------------------- UPnP (optional)
 func try_upnp() -> void:

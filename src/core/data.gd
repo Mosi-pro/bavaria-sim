@@ -19,6 +19,7 @@ var names: Dictionary = {}
 var capabilities: Dictionary = {}
 var qualifications: Dictionary = {}
 var roles: Dictionary = {}
+var network: Dictionary = {}
 
 func _ready() -> void:
 	reload()
@@ -43,6 +44,7 @@ func reload() -> void:
 	modes = load_json("game_modes.json")
 	names = load_json("names.json")
 	roles = modes.get("roles", {})
+	network = load_json("network.json")
 
 func load_json(rel: String) -> Dictionary:
 	var candidates := [
@@ -95,3 +97,9 @@ func keywords_in(cat: String) -> Array:
 
 func category_name(cat: String) -> String:
 	return categories.get(cat, {}).get("name", cat)
+
+func relay_url() -> String:
+	var u := String(Settings.get_v("net", "relay_url"))
+	if u.strip_edges() == "":
+		u = String(network.get("relay_url", ""))
+	return u.strip_edges()

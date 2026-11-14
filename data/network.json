@@ -1,0 +1,5 @@
+{
+ "_comment": "Adresse des Vermittlungsdienstes, z. B. ws://spiel.deinedomain.de:24180 (eigener Dell Wyse mit DynDNS). Leer = Internet-Spiele ausgeschaltet, nur LAN/Direkt-IP. Kann über config/network.json neben der EXE oder in den Einstellungen überschrieben werden.",
+ "relay_url": "",
+ "relay_port": 24180
+}

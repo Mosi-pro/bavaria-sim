@@ -40,6 +40,7 @@ func setup() -> void:
 	tabs.add_child(_page("Steuerung", rows))
 	# Netzwerk
 	tabs.add_child(_page("Netzwerk", [["Spielport (UDP)", _spin("net", "port", 1024, 65535)], ["Port für LAN-Suche (UDP)", _spin("net", "discovery_port", 1024, 65535)], ["Maximale Spielerzahl (Host)", _spin("net", "max_players", 2, 8)], ["Automatische Wiederverbindung", _check("net", "reconnect")],
+		["Vermittlungsdienst (Internet)", _edit_long("net", "relay_url", "leer = Standard: " + String(Data.network.get("relay_url", "")))],
 		["Hinweis", UI.label("Für Internetspiele muss der Spielport am Router des Hosts als UDP-Portfreigabe eingerichtet sein.", UI.TEXT2)]]))
 	# Profil
 	tabs.add_child(_page("Benutzerprofil", [["Name des Disponenten", _edit("profile", "name")], ["Dienstnummer", _edit("profile", "dienstnummer")]]))
@@ -105,6 +106,11 @@ func _edit(sec: String, key: String) -> LineEdit:
 	e.text_changed.connect(func(t):
 		if t.strip_edges() != "":
 			Settings.set_v(sec, key, t.strip_edges()))
+	return e
+
+func _edit_long(sec: String, key: String, placeholder: String) -> LineEdit:
+	var e := UI.line_edit(placeholder, String(Settings.get_v(sec, key)))
+	e.text_changed.connect(func(t): Settings.set_v(sec, key, t.strip_edges()))
 	return e
 
 func _input(event: InputEvent) -> void:

@@ -32,6 +32,9 @@ static func host_dialog(parent: Node, in_session: bool) -> void:
 	var diffs: Array = Data.modes["difficulties"].keys()
 	var diff := UI.option(diffs.map(func(d): return Data.modes["difficulties"][d]["name"]), 1)
 	var region := UI.option(["Bavaria (Stadtgebiet und Umland)"], 0)
+	var has_relay: bool = Data.relay_url() != ""
+	var conn := UI.option(["Internet – Mitspieler treten per Code bei (empfohlen)", "Nur lokales Netzwerk / direkte IP-Adresse"], 0 if has_relay else 1)
+	conn.set_item_disabled(0, not has_relay)
 	var private := CheckBox.new()
 	private.text = "Private Sitzung (nicht in der LAN-Serverliste anzeigen)"
 	private.focus_mode = Control.FOCUS_NONE
@@ -39,9 +42,9 @@ static func host_dialog(parent: Node, in_session: bool) -> void:
 	if not in_session:
 		rows.append(["Spielmodus", mode])
 		rows.append(["Schwierigkeit", diff])
-	rows.append_array([["Region", region], ["Spielport (UDP)", port], ["", private]])
+	rows.append_array([["Verbindung", conn], ["Region", region], ["Spielport (UDP, nur LAN/IP)", port], ["", private]])
 	var box := UI.vbox([UI.form(rows)])
-	var hint := UI.label("Der eigene PC wird Host und führt die Simulation aus. Mitspieler im selben Netzwerk finden die Sitzung in der Serverliste; über das Internet verbinden sie sich direkt mit IP-Adresse und Port (UDP-Portfreigabe am Router erforderlich).", UI.TEXT2)
+	var hint := UI.label("Dein PC wird Host und führt die Simulation aus. Bei »Internet« ist keine Einrichtung nötig: Mitspieler finden die Sitzung in der Serverliste oder geben deinen Einladungscode ein.", UI.TEXT2)
 	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(hint)
 	var sp := Control.new()
@@ -55,7 +58,12 @@ static func host_dialog(parent: Node, in_session: bool) -> void:
 		Settings.set_v("net", "max_players", int(maxp.value))
 		Settings.save()
 		var m: String = modes[mode.selected][0]
-		var err: String = Net.host({"name": name.text, "password": pw.text, "max_players": int(maxp.value), "port": int(port.value), "private": private.button_pressed,
+		var on_fail := func(text):
+			UI.message(parent, "Spiel erstellen", "Die Sitzung konnte nicht über das Internet eröffnet werden:\n%s\n\nDu kannst stattdessen »Nur lokales Netzwerk« wählen." % text)
+		if Net.host_failed.is_connected(on_fail):
+			Net.host_failed.disconnect(on_fail)
+		Net.host_failed.connect(on_fail, CONNECT_ONE_SHOT)
+		var err: String = Net.host({"name": name.text, "password": pw.text, "max_players": int(maxp.value), "port": int(port.value), "private": private.button_pressed, "relay": conn.selected == 0,
 			"game_mode": Data.modes["modes"].get(State.meta["mode"], {}).get("name", "") if in_session else modes[mode.selected][1], "started": in_session})
 		if err != "":
 			UI.message(parent, "Spiel erstellen", err)
@@ -66,7 +74,7 @@ static func host_dialog(parent: Node, in_session: bool) -> void:
 			Net.start_game()
 			Sim.radio("Leitstelle", "Sitzung »%s« für Mitspieler geöffnet." % name.text, -1, "system", "")
 		lobby(parent)), UI.BLUE), UI.button("Abbrechen", func(): box.get_window().queue_free())]))
-	UI.window(parent, "Spiel erstellen" if not in_session else "Laufendes Spiel für Mitspieler öffnen", Vector2i(560, 400 if not in_session else 350), box, "host_dialog")
+	UI.window(parent, "Spiel erstellen" if not in_session else "Laufendes Spiel für Mitspieler öffnen", Vector2i(600, 440 if not in_session else 390), box, "host_dialog")
 
 static func _start_pending() -> void:
 	var m: String = pending_game.get("mode", "frei")
@@ -85,7 +93,7 @@ static func _start_pending() -> void:
 static func lobby(parent: Node) -> void:
 	var info := UI.rich(false)
 	info.scroll_following = false
-	info.custom_minimum_size.y = 96
+	info.custom_minimum_size.y = 120
 	info.size_flags_vertical = Control.SIZE_FILL
 	var tree := UI.tree([{"title": "Spieler"}, {"title": "Rolle", "width": 240}, {"title": "", "width": 70}])
 	var chat := UI.rich(false)
@@ -101,8 +109,13 @@ static func lobby(parent: Node) -> void:
 			return
 		var s: Dictionary = Net.session
 		var t := "[b]%s[/b]    Host: %s    Modus: %s    Region: %s\n" % [s.get("name", "–"), s.get("host", "–"), s.get("mode", "–"), s.get("region", "Bavaria")]
-		t += "[color=#a4adb5]Spieler[/color] %d / %d    [color=#a4adb5]Passwortschutz[/color] %s    [color=#a4adb5]Sichtbarkeit[/color] %s\n" % [Net.players.size(), int(s.get("max", 0)), "ja" if s.get("locked", false) else "nein", "privat" if s.get("private", false) else "LAN-Serverliste"]
-		if Net.mode == Net.MODE_HOST:
+		t += "[color=#a4adb5]Spieler[/color] %d / %d    [color=#a4adb5]Passwortschutz[/color] %s    [color=#a4adb5]Sichtbarkeit[/color] %s\n" % [Net.players.size(), int(s.get("max", 0)), "ja" if s.get("locked", false) else "nein", "privat (nur per Code)" if s.get("private", false) else ("öffentliche Serverliste" if s.get("relay", false) else "LAN-Serverliste")]
+		if Net.mode == Net.MODE_HOST and Net.via_relay:
+			if Net.relay_code != "":
+				t += "\n[font_size=22][b]Einladungscode:  [color=#d6a83b]%s[/color][/b][/font_size]\n[color=#a4adb5]Diesen Code an die Mitspieler weitergeben (z. B. per Messenger). Sie wählen »MULTIPLAYER« und geben ihn ein – ohne weitere Einrichtung.[/color]" % Net.relay_code
+			else:
+				t += "\n[color=#d6a83b]Verbinde mit dem Vermittlungsdienst …[/color]"
+		elif Net.mode == Net.MODE_HOST:
 			var addrs: Array = Net.local_addresses()
 			t += "[color=#a4adb5]Verbindungsdaten für Mitspieler[/color]  %s    Port %d (UDP)\n" % [",  ".join(addrs) if addrs.size() > 0 else "keine Netzwerkadresse gefunden", int(s.get("port", 0))]
 			t += "[color=#6b737b]Internet: öffentliche IP-Adresse des Routers weitergeben und Port %d (UDP) auf diesen PC weiterleiten.[/color]" % int(s.get("port", 0))
@@ -152,6 +165,7 @@ static func lobby(parent: Node) -> void:
 		if is_instance_valid(status) and status.is_inside_tree():
 			status.text = text
 	Net.lobby_changed.connect(fill)
+	Net.relay_hosted.connect(func(_c): fill.call())
 	Net.lobby_chat.connect(on_chat)
 	Net.upnp_result.connect(on_upnp)
 	box.tree_exiting.connect(func():
@@ -172,8 +186,13 @@ static func lobby(parent: Node) -> void:
 	var upnp := UI.button("Portfreigabe per UPnP versuchen", func():
 		status.text = "Suche UPnP-Router …"
 		Net.try_upnp())
-	upnp.visible = Net.mode == Net.MODE_HOST
-	box.add_child(UI.hbox([status, UI.spacer(), upnp, start_btn, leave]))
+	upnp.visible = Net.mode == Net.MODE_HOST and not Net.via_relay
+	var copy := UI.button("Code kopieren", func():
+		if Net.relay_code != "":
+			DisplayServer.clipboard_set(Net.relay_code)
+			status.text = "Einladungscode %s in die Zwischenablage kopiert." % Net.relay_code)
+	copy.visible = Net.mode == Net.MODE_HOST and Net.via_relay
+	box.add_child(UI.hbox([status, UI.spacer(), copy, upnp, start_btn, leave]))
 	var w := UI.window(parent, "Sitzung – Mitspieler und Rollen", Vector2i(680, 560), box, "lobby")
 	if w != null and not Game.in_session:
 		w.close_requested.connect(func(): Net.shutdown())
@@ -182,7 +201,7 @@ static func lobby(parent: Node) -> void:
 # ---------------------------------------------------------------- Serverübersicht
 static func browser(parent: Node) -> void:
 	Net.start_browser()
-	var tree := UI.tree([{"title": "Servername"}, {"title": "Host", "width": 110}, {"title": "Spieler", "width": 54}, {"title": "Max.", "width": 40}, {"title": "Spielmodus", "width": 150}, {"title": "Region", "width": 70}, {"title": "Ping", "width": 54}, {"title": "Passwort", "width": 64}, {"title": "Status", "width": 90}])
+	var tree := UI.tree([{"title": "Servername"}, {"title": "Host", "width": 110}, {"title": "Spieler", "width": 54}, {"title": "Max.", "width": 40}, {"title": "Spielmodus", "width": 150}, {"title": "Region", "width": 70}, {"title": "Netz", "width": 70}, {"title": "Passwort", "width": 64}, {"title": "Status", "width": 90}])
 	var ip := UI.line_edit("IP-Adresse oder Hostname", String(Settings.get_v("net", "last_host")))
 	var port := SpinBox.new()
 	port.min_value = 1024
@@ -194,7 +213,12 @@ static func browser(parent: Node) -> void:
 	player.max_length = 24
 	player.custom_minimum_size.x = 160
 	player.size_flags_horizontal = Control.SIZE_FILL
-	var status := UI.label(Net.discovery.listen_error if Net.discovery.listen_error != "" else "Suche nach Sitzungen im lokalen Netzwerk …", UI.TEXT2)
+	var code_edit := UI.line_edit("z. B. 2SN6DT")
+	code_edit.max_length = 6
+	code_edit.custom_minimum_size.x = 120
+	code_edit.size_flags_horizontal = Control.SIZE_FILL
+	var inet := {"list": [], "err": ""}
+	var status := UI.label("Suche Sitzungen im Internet und im lokalen Netzwerk …", UI.TEXT2)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var box := UI.vbox([])
@@ -206,6 +230,22 @@ static func browser(parent: Node) -> void:
 			sel = tree.get_selected().get_metadata(0)
 		tree.clear()
 		var root := tree.create_item()
+		for sx in inet["list"]:
+			var it := tree.create_item(root)
+			it.set_metadata(0, "inet:" + String(sx.get("code", "")))
+			it.set_text(0, String(sx.get("name", "?")))
+			it.set_text(1, String(sx.get("host", "?")))
+			it.set_text(2, str(int(sx.get("players", 0))))
+			it.set_text(3, str(int(sx.get("max", 0))))
+			it.set_text(4, String(sx.get("mode", "")))
+			it.set_text(5, String(sx.get("region", "")))
+			it.set_text(6, "Internet")
+			it.set_text(7, "ja" if sx.get("locked", false) else "nein")
+			var fullx: bool = int(sx.get("players", 0)) >= int(sx.get("max", 0))
+			it.set_text(8, "voll" if fullx else ("läuft" if sx.get("started", false) else "Lobby"))
+			it.set_custom_color(8, UI.RED if fullx else UI.GREEN)
+			if String(it.get_metadata(0)) == sel:
+				it.select(0)
 		for key in Net.discovery.servers:
 			var s: Dictionary = Net.discovery.servers[key]
 			var it := tree.create_item(root)
@@ -216,7 +256,7 @@ static func browser(parent: Node) -> void:
 			it.set_text(3, str(int(s.get("max", 0))))
 			it.set_text(4, String(s.get("mode", "")))
 			it.set_text(5, String(s.get("region", "")))
-			it.set_text(6, ("%d ms" % int(s["ping"])) if int(s.get("ping", -1)) >= 0 else "–")
+			it.set_text(6, ("LAN %d ms" % int(s["ping"])) if int(s.get("ping", -1)) >= 0 else "LAN")
 			it.set_text(7, "ja" if s.get("locked", false) else "nein")
 			var full: bool = int(s.get("players", 0)) >= int(s.get("max", 0))
 			it.set_text(8, "voll" if full else ("läuft" if s.get("started", false) else "Lobby"))
@@ -225,13 +265,25 @@ static func browser(parent: Node) -> void:
 				it.select(0)
 	tree.item_selected.connect(func():
 		var it := tree.get_selected()
-		if it != null and Net.discovery.servers.has(it.get_metadata(0)):
+		if it != null and String(it.get_metadata(0)).begins_with("inet:"):
+			code_edit.text = String(it.get_metadata(0)).substr(5)
+			ip.text = ""
+		elif it != null and Net.discovery.servers.has(it.get_metadata(0)):
+			code_edit.text = ""
 			var s: Dictionary = Net.discovery.servers[it.get_metadata(0)]
 			ip.text = s["ip"]
 			port.value = int(s["port"]))
 	var connect_fn := func():
+		if player.text.strip_edges() != "":
+			Settings.set_v("profile", "name", player.text.strip_edges())
+		if code_edit.text.strip_edges() != "":
+			Settings.save()
+			Net.discovery.stop()
+			var errc: String = Net.join_code(code_edit.text, pw.text)
+			status.text = errc if errc != "" else "Verbinde über Einladungscode %s …" % code_edit.text.strip_edges().to_upper()
+			return
 		if ip.text.strip_edges() == "":
-			status.text = "Bitte eine Sitzung auswählen oder eine IP-Adresse eingeben."
+			status.text = "Bitte eine Sitzung auswählen oder einen Einladungscode eingeben."
 			return
 		if player.text.strip_edges() != "":
 			Settings.set_v("profile", "name", player.text.strip_edges())
@@ -252,14 +304,34 @@ static func browser(parent: Node) -> void:
 			status.text = "Verbindung fehlgeschlagen: %s" % text
 			status.add_theme_color_override("font_color", UI.RED)
 			Net.start_browser()
+	var on_inet := func(arr, err):
+		inet["list"] = arr
+		inet["err"] = err
+		if is_instance_valid(status) and status.is_inside_tree():
+			if err != "":
+				status.text = err
+			elif arr.is_empty() and Net.discovery.servers.is_empty():
+				status.text = "Derzeit keine offenen Sitzungen. Mit einem Einladungscode kannst du direkt beitreten."
+			else:
+				status.text = "%d Sitzung(en) gefunden." % (arr.size() + Net.discovery.servers.size())
+		fill.call()
+	var timer := Timer.new()
+	timer.wait_time = 8.0
+	timer.autostart = true
+	timer.timeout.connect(func(): Net.query_internet())
+	box.add_child(timer)
+	Net.internet_list.connect(on_inet)
+	Net.query_internet()
 	Net.servers_changed.connect(fill)
 	Net.connect_result.connect(on_result)
 	box.tree_exiting.connect(func():
 		Net.servers_changed.disconnect(fill)
+		Net.internet_list.disconnect(on_inet)
 		Net.connect_result.disconnect(on_result)
 		Net.stop_browser())
-	box.add_child(UI.caption("Sitzungen im lokalen Netzwerk"))
+	box.add_child(UI.caption("Offene Sitzungen (Internet und lokales Netzwerk)"))
 	box.add_child(tree)
+	box.add_child(UI.hbox([UI.label("Einladungscode", UI.TEXT2), code_edit, UI.label("Passwort", UI.TEXT2), pw, UI.label("Spielername", UI.TEXT2), player]))
 	var recent: Dictionary = LocalDB.table("servers")
 	if not recent.is_empty():
 		var names: Array = ["Zuletzt verwendet …"]
@@ -272,9 +344,8 @@ static func browser(parent: Node) -> void:
 				ip.text = String(recent[keys[i - 1]]["ip"])
 				port.value = int(recent[keys[i - 1]]["port"]))
 		box.add_child(ro)
-	box.add_child(UI.caption("Direkte Verbindung (Internet / IP-Adresse)"))
+	box.add_child(UI.caption("Erweitert: direkte Verbindung per IP-Adresse"))
 	box.add_child(UI.hbox([UI.label("Adresse", UI.TEXT2), ip, UI.label("Port", UI.TEXT2), port]))
-	box.add_child(UI.hbox([UI.label("Spielername", UI.TEXT2), player, UI.label("Passwort", UI.TEXT2), pw]))
 	box.add_child(UI.hbox([status, UI.accent(UI.button("Verbinden", connect_fn), UI.BLUE), UI.button("Schließen", func(): box.get_window().queue_free())]))
 	var w := UI.window(parent, "Multiplayer – Serverübersicht", Vector2i(900, 520), box, "browser")
 	if w != null:

@@ -22,6 +22,35 @@ jobs:
         run: ./godot --headless --path . res://tests/run_tests.tscn
       - name: Mehrspielertest (Host + 2 Clients)
         run: tools/test_multiplayer.sh ./godot
+      - name: Mehrspielertest über Vermittlungsdienst
+        run: tools/test_relay.sh ./godot
+
+  wyse:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Godot und Linux-Exportvorlagen laden
+        run: |
+          curl -sSL -o g.zip https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
+          unzip -q g.zip && mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 godot && chmod +x godot
+          curl -sSL -o t.tpz https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          unzip -q -j t.tpz templates/linux_release.x86_64 templates/linux_debug.x86_64 templates/version.txt -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+      - name: Linux-Export für den Vermittlungsdienst
+        run: |
+          ./godot --headless --path . --import || true
+          mkdir -p wyse
+          ./godot --headless --path . --export-release "Linux" wyse/leitstelle112.x86_64
+          cp tools/wyse/* docs/VERMITTLUNGSDIENST.md wyse/
+          test -s wyse/leitstelle112.x86_64
+      - name: Start des Vermittlungsdienstes prüfen
+        run: |
+          (timeout 8 wyse/leitstelle112.x86_64 --headless -- --vermittlung --port=24180 || true) | tee relay.log
+          grep -q "Vermittlungsdienst LEITSTELLE 112 gestartet" relay.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LEITSTELLE112-Wyse-Vermittlung
+          path: wyse/
 
   windows:
     runs-on: windows-latest

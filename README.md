@@ -41,6 +41,11 @@ Alle Orte, Straßen, Wachen, Funkrufnamen, Personen und Telefonnummern sind frei
 * Karte: ziehen = verschieben, Mausrad = zoomen, Klick = Details, Rechtsklick = Kontextmenü
 * **F5** Schnellspeichern, **Pause**, Num +/− Zeitraffer, **F11** Vollbild
 
+## Internet-Spiel ohne Einrichtung (Vermittlungsdienst)
+
+Ein kleiner Vermittlungsdienst, z. B. auf einem Dell Wyse zuhause, führt die Serverliste und reicht die Spieldaten weiter. Host und Mitspieler bauen nur ausgehende Verbindungen auf, deshalb braucht beim Kunden niemand eine Portfreigabe. Der Host bekommt einen **Einladungscode**, die Mitspieler geben ihn ein oder wählen die Sitzung aus der Liste.
+Die Simulation läuft weiterhin ausschließlich beim Host; der Dienst kennt keine Passwörter. Einrichtung: [docs/VERMITTLUNGSDIENST.md](docs/VERMITTLUNGSDIENST.md). Start: `leitstelle112.x86_64 --headless -- --vermittlung`.
+
 ## Mehrspieler hosten
 
 1. Hauptmenü → **SPIEL ERSTELLEN**: Servername, Spielername, Passwort, max. Spieler, Spielmodus, Region, private Sitzung.

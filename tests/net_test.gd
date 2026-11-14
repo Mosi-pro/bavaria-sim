@@ -13,6 +13,10 @@ var call_id := ""
 var veh_id := ""
 var veh_start := Vector2.ZERO
 var result := {}
+var relay := ""
+var codefile := ""
+var code := ""
+var inet := {}
 
 func ok(cond: bool, name: String) -> void:
 	print("%s [%s] %s" % ["PASS" if cond else "FAIL", role, name])
@@ -23,19 +27,27 @@ func _ready() -> void:
 	for a in OS.get_cmdline_user_args():
 		if a.begins_with("--role="): role = a.substr(7)
 		if a.begins_with("--port="): port = int(a.substr(7))
+		if a.begins_with("--relay="): relay = a.substr(8)
+		if a.begins_with("--codefile="): codefile = a.substr(11)
+	if relay != "":
+		Settings.set_v("net", "relay_url", relay)
+		Net.internet_list.connect(func(arr, err): inet = {"list": arr, "err": err})
 	Settings.set_v("game", "autosave", false)
 	Settings.set_v("net", "discovery_port", port + 7)
 	Settings.set_v("profile", "name", "Disponent")
 	Net.connect_result.connect(func(success, text): result = {"ok": success, "text": text})
 	if role == "host":
-		var err: String = Net.host({"name": "Testsitzung", "password": "geheim112", "port": port, "max_players": 4})
-		ok(err == "", "Host erstellt Sitzung auf Port %d" % port)
+		var err: String = Net.host({"name": "Testsitzung", "password": "geheim112", "port": port, "max_players": 4, "relay": relay != ""})
+		ok(err == "", "Host erstellt Sitzung" + (" über Vermittlung" if relay != "" else " auf Port %d" % port))
 		ok(Net._pw_key.size() == 32 and Net.session.get("locked", false), "Passwort liegt nur als Schlüsselableitung vor")
 		Game.start_new({"mode": "frei", "difficulty": "leicht", "seed": 1})
 		State.meta["next_call"] = 1e12
 		Net.start_game()
 	elif role == "client":
-		Net.start_browser()
+		if relay != "":
+			Net.query_internet()
+		else:
+			Net.start_browser()
 
 func _process(delta: float) -> void:
 	t += delta
@@ -59,6 +71,14 @@ func _finish() -> void:
 	get_tree().quit(1 if fails > 0 else 0)
 
 func _host() -> void:
+	if relay != "" and code == "":
+		if Net.relay_code != "":
+			code = Net.relay_code
+			ok(code.length() == 6, "Einladungscode vom Vermittlungsdienst erhalten (%s)" % code)
+			var f := FileAccess.open(codefile, FileAccess.WRITE)
+			f.store_string(code)
+			f.close()
+		return
 	match step:
 		0:
 			if Net.players.size() >= 2:
@@ -93,7 +113,11 @@ func _host() -> void:
 func _bad() -> void:
 	match step:
 		0:
-			ok(Net.join("127.0.0.1", port, "falsch") == "", "Verbindungsaufbau gestartet")
+			if relay != "":
+				code = FileAccess.get_file_as_string(codefile).strip_edges()
+				ok(Net.join_code(code, "falsch") == "", "Verbindungsaufbau über Code gestartet")
+			else:
+				ok(Net.join("127.0.0.1", port, "falsch") == "", "Verbindungsaufbau gestartet")
 			_next()
 		1:
 			if not result.is_empty():
@@ -104,6 +128,19 @@ func _bad() -> void:
 func _client() -> void:
 	match step:
 		0:
+			if relay != "":
+				if inet.is_empty():
+					return
+				var found := {}
+				for sx in inet["list"]:
+					if sx.get("name", "") == "Testsitzung":
+						found = sx
+				ok(not found.is_empty() and found.get("locked", false), "Internet-Serverliste zeigt die Sitzung (mit Passwortschutz)")
+				code = FileAccess.get_file_as_string(codefile).strip_edges()
+				ok(found.get("code", "") == code, "Code in der Serverliste stimmt")
+				ok(Net.join_code(code, "geheim112") == "", "Beitritt über Code gestartet")
+				_next()
+				return
 			if Net.discovery.servers.size() > 0 or wait > 6.0:
 				ok(Net.discovery.servers.size() > 0, "LAN-Servererkennung findet die Sitzung")
 				if Net.discovery.servers.size() > 0:
