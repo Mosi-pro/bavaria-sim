@@ -6,6 +6,12 @@ Bavaria**, einer fiktiven Millionenstadt in Bayern: Notrufe abfragen, Einsätze 
 Einsatzmittel disponieren und alarmieren, Fahrzeuge auf der Lagekarte verfolgen,
 Nachforderungen bearbeiten und Einsätze abschließen – allein oder gemeinsam im Mehrspielermodus.
 
+## Herunterladen
+
+Die aktuelle Version gibt es unter **[Releases](https://github.com/Mosi-pro/bavaria-sim/releases/latest)**
+(ohne GitHub-Anmeldung): `LEITSTELLE112_Setup_<Version>.exe` herunterladen und auf dem
+Windows-PC ausführen.
+
 Alle Orte, Straßen, Wachen, Funkrufnamen, Personen und Telefonnummern sind frei erfunden.
 
 ## Funktionsumfang

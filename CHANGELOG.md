@@ -1,5 +1,10 @@
 # Änderungen – LEITSTELLE 112
 
+## Version 1.1.1 (15.11.2026)
+
+**Fehlerbehebungen**
+- Download: Jede geprüfte Version erscheint jetzt automatisch unter GitHub „Releases“. Die Setup-EXE lässt sich dort direkt herunterladen – ohne GitHub-Anmeldung und ohne ZIP-Datei. Zusätzlich gibt es eine portable ZIP-Version (ohne Installation), das Paket für den Vermittlungsdienst und Prüfsummen (SHA-256).
+
 ## Version 1.1.0 (15.11.2026)
 
 **Neue Funktionen**

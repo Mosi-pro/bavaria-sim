@@ -106,3 +106,43 @@ jobs:
           $ulog = Join-Path $env:APPDATA "LEITSTELLE112\logs\godot.log"
           if (Test-Path $ulog) { Get-Content $ulog -Tail 40 }
           if ($p.ExitCode -ne 0) { throw "Selbsttest fehlgeschlagen" }
+
+  release:
+    # Veröffentlicht die geprüften Dateien als GitHub-Release:
+    # direkter Download der Setup-EXE ohne Anmeldung und ohne ZIP.
+    needs: [tests, windows, wyse]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Versionsnummer ermitteln
+        run: echo "APP_VERSION=$(grep -oP '^config/version="\K[^"]+' project.godot)" >> $GITHUB_ENV
+      - uses: actions/download-artifact@v4
+        with:
+          name: LEITSTELLE112-Windows-${{ env.APP_VERSION }}
+          path: win
+      - uses: actions/download-artifact@v4
+        with:
+          name: LEITSTELLE112-Wyse-Vermittlung-${{ env.APP_VERSION }}
+          path: wyse
+      - name: Dateien zusammenstellen
+        run: |
+          mkdir -p out
+          cp win/installer/LEITSTELLE112_Setup_${APP_VERSION}.exe out/
+          (cd win/windows && zip -qr ../../out/LEITSTELLE112-Portable-${APP_VERSION}.zip .)
+          chmod +x wyse/leitstelle112.x86_64 wyse/*.sh
+          tar -czf out/LEITSTELLE112-Wyse-Vermittlung-${APP_VERSION}.tar.gz -C wyse .
+          (cd out && sha256sum * > SHA256SUMMEN.txt)
+          ls -la out
+          awk -v v="## Version ${APP_VERSION} " 'index($0,v)==1{f=1;next} /^## Version /{f=0} f' CHANGELOG.md > notes.md
+      - name: Release veröffentlichen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${APP_VERSION}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" out/* --clobber
+          else
+            gh release create "$TAG" out/* --target "$GITHUB_SHA" --title "LEITSTELLE 112 – Version ${APP_VERSION}" --notes-file notes.md
+          fi
