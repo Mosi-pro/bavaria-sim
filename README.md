@@ -9,7 +9,7 @@ Nachforderungen bearbeiten und Einsätze abschließen – allein oder gemeinsam 
 ## Herunterladen
 
 Die aktuelle Version gibt es unter **[Releases](https://github.com/Mosi-pro/bavaria-sim/releases/latest)**
-(ohne GitHub-Anmeldung): `LEITSTELLE112_Setup_<Version>.exe` herunterladen und auf dem
+(Anmeldung bei GitHub nötig, solange das Repository privat ist): `LEITSTELLE112_Setup_<Version>.exe` herunterladen und auf dem
 Windows-PC ausführen.
 
 Alle Orte, Straßen, Wachen, Funkrufnamen, Personen und Telefonnummern sind frei erfunden.
