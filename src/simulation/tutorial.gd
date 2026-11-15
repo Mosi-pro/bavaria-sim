@@ -6,7 +6,7 @@ extends RefCounted
 const CallGen = preload("res://src/incidents/call_generator.gd")
 const IL = preload("res://src/incidents/incident_logic.gd")
 
-const LAST := 12
+const LAST := 13
 
 ## Texte je Schritt: [Überschrift, Erklärung]. Die Oberfläche zeigt sie an.
 const STEPS := [
@@ -14,14 +14,15 @@ const STEPS := [
 	["1. Notruf annehmen", "Das Telefon klingelt. In der Aufgabenliste links steht »Notruf wartet«.\n\n→ Klicke dort auf »Annehmen« (oder drücke F2)."],
 	["2. Wo ist der Notfall?", "Das Wichtigste zuerst: der Ort. Der Anrufer nennt meist schon eine Adresse.\n\n→ Klicke im Notruffenster bei Schritt ① auf »Wo genau?«. Grün bedeutet: Adresse vollständig."],
 	["3. Was ist passiert?", "Jetzt die Lage klären.\n\n→ Klicke bei Schritt ② auf »Was ist passiert?«. Weitere Fragen (Wie viele? Gefahr? Zustand?) helfen dir bei schwierigeren Notrufen."],
-	["4. Stichwort wählen und Einsatz anlegen", "Das Stichwort bestimmt, welche Fahrzeuge vorgeschlagen werden. Hier geht es um einen medizinischen Notfall ohne Lebensgefahr.\n\n→ Wähle bei Schritt ③ die Kategorie »Rettungsdienst / Verletzte« und das Stichwort »RD 1«. Klicke dann »Einsatz anlegen«."],
+	["4. Stichwort wählen und Einsatz anlegen", "Das Stichwort bestimmt, welche Fahrzeuge vorgeschlagen werden. Hier hat sich jemand das Knie verletzt – ansprechbar, keine Lebensgefahr. Dafür reicht ein Rettungswagen ohne Notarzt.\n\n→ Wähle bei Schritt ③ die Kategorie »Rettungsdienst / Verletzte« und das Stichwort »RD 1«. Klicke dann »Einsatz anlegen«."],
 	["5. Fahrzeuge alarmieren", "Die Einsatzakte öffnet sich. Das System hat bereits passende, schnell verfügbare Fahrzeuge vorgeschlagen und angehakt.\n\n→ Prüfe den Vorschlag und klicke auf »ALARMIEREN«."],
 	["6. Anfahrt verfolgen", "Der Rettungswagen rückt aus (Status 3 = Einsatz übernommen) und fährt mit Sonderrechten zur Einsatzstelle. Du siehst ihn auf der Karte.\n\nTipp: Mit dem Zeitraffer oben rechts (2×, 4×) vergeht die Wartezeit schneller."],
 	["7. Rückmeldung abwarten", "Das Fahrzeug ist angekommen (Status 4). Es meldet die Lage über Funk – unten im Funkprotokoll. Der Patient wird versorgt und ins Krankenhaus gebracht (Status 7 und 8)."],
 	["8. Einsatz abschließen", "Der Einsatz ist beendet, das Fahrzeug fährt zurück zur Wache.\n\n→ Klicke in der Aufgabenliste bei »Einsatz beendet« auf »Abschließen«. Er landet dann im Einsatzarchiv."],
 	["9. Ungenaue Ortsangabe", "Neuer Notruf: Es brennt etwas. Diesmal kennt der Anrufer die Hausnummer nicht – die Ortsangabe ist gelb (ungenau).\n\n→ Nimm den Notruf an, frage nochmals »Wo genau?« oder nutze »Standort orten«. Lege den Einsatz mit Stichwort »B 1« an und alarmiere."],
 	["10. Ein größerer Einsatz", "Ein Wohnungsbrand wird gemeldet. Frage nach, ob Personen in Gefahr sind, und lege den Einsatz mit dem empfohlenen Stichwort an (»B 3« oder »B 3 PERSON«, wenn Menschen in Gefahr sind). Alarmiere dann den Vorschlag.\n\nAchtung: Vor Ort kann die Lage schlimmer sein als gemeldet."],
-	["11. Nachforderung bearbeiten", "Die Einsatzstelle braucht mehr Kräfte: Ein Fahrzeug meldet Status 5 (Sprechwunsch, lila).\n\n→ Klicke in der Aufgabenliste auf »Sprechen« und höre die Meldung im Funkprotokoll.\n→ Danach bei »Kräfte fehlen« auf »Nachalarmieren« – der Vorschlag enthält genau die fehlenden Fahrzeuge."],
+	["11. Anfahrt abwarten", "Die Fahrzeuge sind alarmiert und fahren zur Einsatzstelle. Die Einweisung geht weiter, sobald die erste Einheit vor Ort ist und ihre Lagemeldung gibt.\n\n→ Stelle den Zeitraffer oben rechts auf 4×, damit es schneller geht."],
+	["12. Nachforderung bearbeiten", "Die Einsatzstelle braucht mehr Kräfte: Ein Fahrzeug meldet Status 5 (Sprechwunsch, lila).\n\n→ Klicke in der Aufgabenliste auf »Sprechen« und höre die Meldung im Funkprotokoll.\n→ Danach bei »Kräfte fehlen« auf »Nachalarmieren« – der Vorschlag enthält genau die fehlenden Fahrzeuge."],
 	["Einweisung abgeschlossen", "Gut gemacht! Du kennst jetzt den kompletten Ablauf:\nNotruf annehmen → Ort klären → Lage klären → Stichwort → alarmieren → Rückmeldungen bearbeiten → abschließen.\n\nAb jetzt gehen Notrufe zufällig ein. Die Aufgabenliste links zeigt dir immer, was als Nächstes zu tun ist. Weitere Hilfe: Menü »Hilfe«."],
 ]
 
@@ -59,7 +60,7 @@ static func tick(_h: float) -> void:
 	match step:
 		0:
 			if since > 6.0:
-				_spawn(tut, "med_notfall", {"district": "altstadt", "variant": 0, "loc_level": 2})
+				_spawn(tut, "med_notfall", {"district": "altstadt", "variant": 0, "loc_level": 2, "case": 5})
 				_go(tut, 1)
 		1:
 			if not c.is_empty() and c["state"] == "active":
@@ -92,9 +93,12 @@ static func tick(_h: float) -> void:
 				_spawn(tut, "brand_wohnung", {"district": "westend", "variant": 2, "loc_level": 2})
 				_go(tut, 10)
 		10:
-			if not inc.is_empty() and inc["revealed"]:
+			if not inc.is_empty() and float(inc["t_alarm"]) >= 0.0:
 				_go(tut, 11)
 		11:
+			if not inc.is_empty() and inc["revealed"]:
+				_go(tut, 12)
+		12:
 			if not inc.is_empty() and inc["revealed"] and not inc.get("need", {}).is_empty():
 				var talks := false
 				for vid in State.incident_vehicles(inc["id"]):

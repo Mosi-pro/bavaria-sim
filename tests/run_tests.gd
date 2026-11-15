@@ -47,6 +47,10 @@ func _ready() -> void:
 	test_management()
 	print("== Alle Einsatzarten ==")
 	test_all_types()
+	print("== Rettungshubschrauber ==")
+	test_rth()
+	print("== Notrufgespräche und Häufigkeiten ==")
+	test_calls_consistency()
 	print("== Einweisung ==")
 	test_tutorial()
 	print("== Szenarien ==")
@@ -365,6 +369,85 @@ func test_all_types() -> void:
 		print("    ", f)
 	check(failed_types.is_empty(), "Alle Einsatzarten und Lagevarianten spielbar (Notruf → Alarm → Einsatzende)")
 
+func _rth(cs: String) -> Dictionary:
+	for vid in State.vehicles:
+		if State.vehicles[vid]["callsign"] == cs:
+			return State.vehicles[vid]
+	return {}
+
+func test_rth() -> void:
+	Sim.new_game({"mode": "frei", "seed": 12, "start_hour": 13})
+	Sim.running = false
+	State.meta["next_call"] = 1e12
+	var c1 := _rth("Christoph 1")
+	var c2 := _rth("Christoph Bavaria")
+	check(not c1.is_empty() and not c2.is_empty(), "Zwei Rettungshubschrauber vorhanden (Christoph 1, Christoph Bavaria)")
+	check(VL.block_reason(c1) == "" and VL.block_reason(c2) == "", "Tagsüber beide Hubschrauber einsatzbereit")
+	# Notfall in entlegener Gemeinde: Hubschrauber wird vorgeschlagen und fliegt direkt
+	var res: Dictionary = Sim.act({"a": "inc_create", "form": {"keyword": "RD 2", "x": -11300.0, "y": 6700.0}}, me)
+	var inc: Dictionary = State.incidents[res["id"]]
+	var sg: Array = Advisor.suggest(inc)["suggested"]
+	var heli := ""
+	for vid in sg:
+		if VL.is_air(State.vehicles[vid]):
+			heli = vid
+	check(heli != "", "Bei entlegenem Notfall wird ein Hubschrauber als Notarzt vorgeschlagen")
+	if heli != "":
+		Sim.act({"a": "inc_alarm", "id": inc["id"], "vehicles": sg}, me)
+		var h: Dictionary = State.vehicles[heli]
+		var arrived: bool = run(1800.0, func(): return h["state"] == "onscene")
+		check(arrived and Vector2(h["x"], h["y"]).distance_to(Vector2(inc["x"], inc["y"])) < 5.0, "Hubschrauber fliegt direkt zur Einsatzstelle (Ankunft nach %d s)" % int(State.clock))
+	# Stadtgebiet: bodengebundener Notarzt bevorzugt
+	res = Sim.act({"a": "inc_create", "form": {"keyword": "RD 2", "x": 200.0, "y": 300.0}}, me)
+	var city_sg: Array = Advisor.suggest(State.incidents[res["id"]])["suggested"]
+	var any_air := false
+	for vid in city_sg:
+		if VL.is_air(State.vehicles[vid]):
+			any_air = true
+	check(not any_air, "In der Innenstadt wird ein bodengebundener Notarzt vorgeschlagen")
+	# Nacht: Christoph 1 nicht verfügbar, Christoph Bavaria schon
+	Sim.new_game({"mode": "frei", "seed": 12, "start_hour": 21})
+	Sim.running = false
+	State.meta["next_call"] = 1e12
+	State.meta["start_unix"] = int(State.meta["start_unix"]) + 2 * 3600
+	c1 = _rth("Christoph 1")
+	c2 = _rth("Christoph Bavaria")
+	check(VL.block_reason(c1).find("Tageslicht") >= 0 and VL.block_reason(c2) == "", "Nachts fliegt nur Christoph Bavaria (24 h)")
+	State.env["weather"] = "nebel"
+	check(VL.block_reason(c2).find("Wetter") >= 0, "Bei Nebel kein Flugbetrieb")
+
+func test_calls_consistency() -> void:
+	Sim.new_game({"mode": "frei", "seed": 44})
+	Sim.running = false
+	State.meta["next_call"] = 1e12
+	var scripts: Dictionary = Data.call_scripts["scripts"]
+	var ok := true
+	for tid in ["med_notfall", "med_bewusstlos", "med_herz", "rd_kind"]:
+		var cases: Array = scripts[Data.incident_types[tid]["call"]]["cases"]
+		for ci in cases.size():
+			var cid := CallGen.spawn_event(tid, {"case": ci, "loc_level": 2})
+			var c: Dictionary = State.calls[cid]
+			Sim.act({"a": "call_take", "id": cid}, me)
+			Sim.act({"a": "call_ask", "id": cid, "q": "q_was"}, me)
+			run(40.0, func(): return c["pending"].is_empty())
+			var lines: Array = []
+			for l in c["transcript"]:
+				lines.append(l["text"])
+			var all := "\n".join(lines)
+			var tr: Dictionary = State.truths[c["truth"]]
+			if all.find(cases[ci]["open"]) < 0 or all.find(String(cases[ci]["what"]).replace("{objekt}", tr["object"])) < 0:
+				ok = false
+				print("    Gespräch passt nicht: ", tid, " Fall ", ci)
+			Sim.act({"a": "call_end", "id": cid}, me)
+	check(ok, "Medizinische Notrufe: Eröffnung und Antwort auf »Was ist passiert?« passen zusammen")
+	var counts := {}
+	for i in 4000:
+		var t := CallGen.pick_type()
+		counts[t] = int(counts.get(t, 0)) + 1
+	var herz := float(counts.get("med_herz", 0)) / 4000.0
+	var kind := float(counts.get("rd_kind", 0)) / 4000.0
+	check(herz < 0.06 and kind < 0.02, "Häufigkeit: Brustschmerz %.1f %%, Kindernotfall %.1f %%" % [herz * 100.0, kind * 100.0])
+
 func test_tutorial() -> void:
 	const Tutorial = preload("res://src/simulation/tutorial.gd")
 	Sim.new_game({"mode": "einweisung", "seed": 8})
@@ -402,7 +485,7 @@ func test_tutorial() -> void:
 			var inc: Dictionary = State.incidents[iid]
 			if step_of.call() == 8 and inc["done"]:
 				Sim.act({"a": "inc_close", "id": iid}, me)
-			if step_of.call() == 11 and inc["revealed"] and int(State.clock) % 20 == 0:
+			if step_of.call() == 12 and inc["revealed"] and int(State.clock) % 20 == 0:
 				var sg: Array = Advisor.suggest(inc)["suggested"]
 				if not sg.is_empty():
 					Sim.act({"a": "inc_alarm", "id": iid, "vehicles": sg}, me)
@@ -413,7 +496,7 @@ func test_tutorial() -> void:
 			all = false
 			print("    Schritt nicht erreicht: ", i)
 	check(ok and all, "Einweisung: alle %d Schritte nacheinander durchlaufen" % Tutorial.LAST)
-	check(seen.has(11), "Einweisung: Nachforderung tritt auf (Schritt 11)")
+	check(seen.has(12), "Einweisung: Nachforderung tritt auf (Schritt 12)")
 	check(float(State.meta["next_call"]) < 1e11, "Nach der Einweisung startet der reguläre Notrufbetrieb")
 	check(Tutorial.STEPS.size() == Tutorial.LAST + 1, "Einweisung: Text für jeden Schritt vorhanden")
 

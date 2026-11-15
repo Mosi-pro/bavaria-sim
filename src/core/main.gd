@@ -13,7 +13,7 @@ func _ready() -> void:
 		_run_relay(args)
 		return
 	theme = UI.theme()
-	get_window().title = "LEITSTELLE 112 – Integrierte Leitstelle Bavaria"
+	get_window().title = "LEITSTELLE 112 – Integrierte Leitstelle Bavaria – Version %s" % ProjectSettings.get_setting("application/config/version", "")
 	get_window().min_size = Vector2i(1280, 720)
 	var bg := ColorRect.new()
 	bg.color = UI.BG

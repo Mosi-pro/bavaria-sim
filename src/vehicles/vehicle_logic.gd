@@ -13,6 +13,31 @@ static func caps(v: Dictionary) -> Dictionary:
 static func has_cap(v: Dictionary, cap: String) -> bool:
 	return int(caps(v).get(cap, 0)) > 0
 
+static func is_air(v: Dictionary) -> bool:
+	return bool(vtype(v).get("air", false))
+
+## Tageslicht in Bavaria (vereinfacht nach Jahreszeit): [Sonnenaufgang, Sonnenuntergang] in Stunden
+static func daylight() -> Array:
+	var d := Time.get_datetime_dict_from_unix_time(State.game_unix())
+	var doy := float((Time.get_unix_time_from_datetime_dict({"year": d["year"], "month": d["month"], "day": d["day"]}) - Time.get_unix_time_from_datetime_dict({"year": d["year"], "month": 1, "day": 1})) / 86400)
+	var len_h := 12.0 + 4.1 * sin(TAU * (doy - 80.0) / 365.0)
+	var noon := 12.75 if (d["month"] >= 4 and d["month"] <= 10) else 12.25
+	return [noon - len_h * 0.5, noon + len_h * 0.5]
+
+## Flugbetrieb möglich? Liefert "" oder den Grund.
+static func flight_block(v: Dictionary) -> String:
+	if not is_air(v):
+		return ""
+	var w: String = State.env.get("weather", "klar")
+	if w in ["nebel", "sturm"]:
+		return "Kein Flugbetrieb (Wetter)"
+	var st: Dictionary = State.stations.get(v["station"], {})
+	if st.get("flight", "24h") == "day":
+		var dl := daylight()
+		if State.hour_f() < float(dl[0]) or State.hour_f() > float(dl[1]):
+			return "Kein Flugbetrieb (nur bei Tageslicht, %02d:%02d–%02d:%02d)" % [int(dl[0]), int(fmod(dl[0], 1.0) * 60), int(dl[1]), int(fmod(dl[1], 1.0) * 60)]
+	return ""
+
 static func is_dispatchable(v: Dictionary) -> bool:
 	if v["incident"] != "":
 		return false
@@ -28,13 +53,15 @@ static func block_reason(v: Dictionary) -> String:
 		return "Im Einsatz (Status %d)" % int(v["status"])
 	if v["state"] == "station" and not Personnel.can_staff(v):
 		return "Besatzung nicht verfügbar"
-	return ""
+	return flight_block(v) if v["state"] == "station" else ""
 
 static func turnout(v: Dictionary) -> float:
 	var tt: Dictionary = Data.modes.get("turnout", {})
 	var key: String = "road"
 	if v["state"] == "station":
 		key = State.stations[v["station"]]["kind"]
+	if is_air(v):
+		key = "rth"
 	var r: Array = tt.get(key, [45, 90])
 	return Sim.rng.randf_range(float(r[0]), float(r[1]))
 
@@ -43,6 +70,8 @@ static func turnout_mean(v: Dictionary) -> float:
 	var key: String = "road"
 	if v["state"] == "station":
 		key = State.stations[v["station"]]["kind"]
+	if is_air(v):
+		key = "rth"
 	var r: Array = tt.get(key, [45, 90])
 	return (float(r[0]) + float(r[1])) * 0.5
 
@@ -80,7 +109,21 @@ static func node_of(v: Dictionary) -> int:
 		return int(State.stations[v["station"]]["node"])
 	return World.access_node(State.veh_pos(v))
 
+## Luftweg: direkter Flug, Zeit für Start und Landung eingerechnet.
+static func air_eta(v: Dictionary, dest: Vector2) -> float:
+	var speed: float = float(vtype(v)["speed"]) / 3.6
+	return State.veh_pos(v).distance_to(dest) / speed + 90.0
+
 static func start_route(v: Dictionary, to_node: int, emergency: bool, dest: Vector2) -> bool:
+	if is_air(v):
+		v["route"] = []
+		v["air"] = true
+		v["pre"] = false
+		v["emergency"] = emergency
+		v["dx"] = dest.x
+		v["dy"] = dest.y
+		v["eta"] = State.clock + air_eta(v, dest)
+		return true
 	var from := node_of(v)
 	var r := World.find_path(from, to_node, emergency)
 	if not r["ok"]:
@@ -231,7 +274,25 @@ static func tick(h: float) -> void:
 				v["status"] = v["prev_status"]
 			State.touch_vehicle(id)
 
+static func _fly(v: Dictionary, h: float) -> void:
+	var pos := State.veh_pos(v)
+	var dest := Vector2(v["dx"], v["dy"])
+	var d := pos.distance_to(dest)
+	var speed: float = float(vtype(v)["speed"]) / 3.6
+	if d <= speed * h:
+		_arrive(v)
+		return
+	var dir := (dest - pos) / d
+	pos += dir * speed * h
+	v["heading"] = dir.angle()
+	v["x"] = pos.x
+	v["y"] = pos.y
+	v["km"] = float(v["km"]) + speed * h / 1000.0
+
 static func _move(v: Dictionary, h: float) -> void:
+	if is_air(v):
+		_fly(v, h)
+		return
 	var route: Array = v["route"]
 	var vmax: float = float(vtype(v)["speed"]) / 3.6
 	var emergency: bool = v["emergency"]

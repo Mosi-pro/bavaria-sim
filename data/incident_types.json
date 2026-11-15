@@ -1798,7 +1798,7 @@
   "med_notfall": {
    "name": "Medizinischer Notfall",
    "keyword": "RD 1",
-   "weight": 26,
+   "weight": 24,
    "cat": "rd",
    "call": "med_notfall",
    "loc": {
@@ -1868,7 +1868,7 @@
   "med_bewusstlos": {
    "name": "Bewusstlose Person",
    "keyword": "RD 2",
-   "weight": 8,
+   "weight": 5,
    "cat": "rd",
    "call": "med_bewusstlos",
    "loc": {
@@ -1932,7 +1932,7 @@
   "med_herz": {
    "name": "Akuter Brustschmerz / Atemnot",
    "keyword": "RD 2",
-   "weight": 9,
+   "weight": 3.5,
    "cat": "rd",
    "call": "med_herz",
    "loc": {
@@ -4110,7 +4110,7 @@
    "kw_ok": [
     "RD 2"
    ],
-   "weight": 3.0,
+   "weight": 0.9,
    "cat": "rd",
    "call": "rd_kind",
    "loc": {
@@ -4141,12 +4141,14 @@
     {
      "p": 0.5,
      "name": "Fieberkrampf",
-     "lage": "Kleinkind nach Fieberkrampf, wieder ansprechbar, Eltern sehr aufgeregt."
+     "lage": "Kleinkind nach Fieberkrampf, wieder ansprechbar, Eltern sehr aufgeregt.",
+     "case": 0
     },
     {
      "p": 0.3,
      "name": "Atemnot Kind",
-     "lage": "Kind mit Pseudokrupp, hörbares Atemgeräusch, Sauerstoffgabe läuft."
+     "lage": "Kind mit Pseudokrupp, hörbares Atemgeräusch, Sauerstoffgabe läuft.",
+     "case": 1
     },
     {
      "p": 0.2,
@@ -4158,7 +4160,8 @@
      "sev": [
       4,
       4
-     ]
+     ],
+     "case": 2
     }
    ],
    "reports": {

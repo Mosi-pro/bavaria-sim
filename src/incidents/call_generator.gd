@@ -194,6 +194,8 @@ static func spawn_event(type_id: String, opts: Dictionary = {}) -> String:
 	var loc := pick_location(type_id, opts)
 	var tid := IL.make_truth(type_id, loc, int(opts.get("variant", -1)))
 	var tr: Dictionary = State.truths[tid]
+	if opts.has("case"):
+		tr["case"] = int(opts["case"])
 	tr["next_call"] = State.clock + Sim.rng.randf_range(35.0, 90.0)
 	return make_call(tid, false, int(opts.get("loc_level", -1)))
 
@@ -268,6 +270,9 @@ static func make_call(tid: String, recall: bool, force_level := -1) -> String:
 	_set_loc_level(c, tr, level)
 	var prefix := _pick(persona.get("prefix", [""]))
 	var open := _pick(script.get("open", ["Ich brauche Hilfe!"]))
+	var ci := _case_index(script, tr)
+	if ci >= 0:
+		open = script["cases"][ci]["open"]
 	if recall:
 		open = _pick(["Ich habe schon einmal angerufen! Wo bleibt denn die Hilfe?! ", "Hallo?! Hier ist immer noch niemand gekommen! ", "Es wird immer schlimmer, bitte beeilen Sie sich! "]) + open
 	c["pending"] = [
@@ -278,6 +283,17 @@ static func make_call(tid: String, recall: bool, force_level := -1) -> String:
 	Sim.sound("phone")
 	State.touch_call(c["id"])
 	return c["id"]
+
+## Zusammengehörige Fallbeschreibung (Eröffnung + Antwort auf „Was?“) – je Notfall fest.
+static func _case_index(script: Dictionary, tr: Dictionary) -> int:
+	var cases: Array = script.get("cases", [])
+	if cases.is_empty():
+		return -1
+	var ci := int(tr.get("case", -1))
+	if ci < 0 or ci >= cases.size():
+		ci = Sim.rng.randi() % cases.size()
+		tr["case"] = ci
+	return ci
 
 static func make_nuisance_call() -> String:
 	var list: Array = scripts().get("nuisance", [])
@@ -375,7 +391,11 @@ static func ask(c: Dictionary, q: String) -> String:
 					_set_loc_level(c, tr, int(c["loc_level"]) + 1)
 				answer = _loc_phrase(c, tr)
 			"q_was":
-				answer = _fmt(_pick(script.get("what", ["Das habe ich doch gesagt!"])), c, tr)
+				var wci := _case_index(script, tr)
+				if wci >= 0:
+					answer = _fmt(script["cases"][wci]["what"], c, tr)
+				else:
+					answer = _fmt(_pick(script.get("what", ["Das habe ich doch gesagt!"])), c, tr)
 				c["known"]["what"] = answer
 				_set_hint(c, tr)
 			"q_personen":
@@ -388,7 +408,7 @@ static func ask(c: Dictionary, q: String) -> String:
 					elif script.get("many", false):
 						answer = _fmt(_pick(g.get("persons_many", [""])), c, tr)
 					else:
-						answer = _fmt(_pick(g.get("persons", [""])), c, tr)
+						answer = _fmt(_pick(g.get("persons1" if n == 1 else "persons", [""])), c, tr)
 					c["known"]["persons"] = answer
 			"q_gefahr":
 				if Sim.rng.randf() < unsure * 0.5:

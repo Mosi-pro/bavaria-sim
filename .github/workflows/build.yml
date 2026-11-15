@@ -43,13 +43,14 @@ jobs:
           ./godot --headless --path . --export-release "Linux" wyse/leitstelle112.x86_64
           cp tools/wyse/* docs/VERMITTLUNGSDIENST.md wyse/
           test -s wyse/leitstelle112.x86_64
+          echo "APP_VERSION=$(grep -oP '^config/version="\K[^"]+' project.godot)" >> $GITHUB_ENV
       - name: Start des Vermittlungsdienstes prüfen
         run: |
           (timeout 8 wyse/leitstelle112.x86_64 --headless -- --vermittlung --port=24180 || true) | tee relay.log
           grep -q "Vermittlungsdienst LEITSTELLE 112 gestartet" relay.log
       - uses: actions/upload-artifact@v4
         with:
-          name: LEITSTELLE112-Wyse-Vermittlung
+          name: LEITSTELLE112-Wyse-Vermittlung-${{ env.APP_VERSION }}
           path: wyse/
 
   windows:
@@ -79,6 +80,11 @@ jobs:
           Copy-Item packaging\config_README.txt build\windows\config\LIESMICH.txt
           Copy-Item packaging\LIESMICH.txt, packaging\LIZENZHINWEISE.txt build\windows\
           if (!(Test-Path build\windows\LEITSTELLE112.exe)) { throw "Export fehlgeschlagen" }
+      - name: Versionsnummer ermitteln
+        shell: pwsh
+        run: |
+          $v = (Select-String -Path project.godot -Pattern '^config/version="(.*)"').Matches[0].Groups[1].Value
+          "APP_VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Installer (Inno Setup)
         shell: pwsh
         run: |
@@ -86,7 +92,7 @@ jobs:
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\LEITSTELLE112.iss
       - uses: actions/upload-artifact@v4
         with:
-          name: LEITSTELLE112-Windows
+          name: LEITSTELLE112-Windows-${{ env.APP_VERSION }}
           path: |
             build/windows/
             build/installer/*.exe

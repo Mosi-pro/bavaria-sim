@@ -63,6 +63,9 @@ rw("rw19", 19, "Krankentransportzentrale Süd", [-1050, 3250], ["KTW", "KTW", "K
 rw("rw20", 20, "Führungs- und SEG-Standort Rettungsdienst", [2150, 3650], ["ELRD", "ELRD", "GWSAN", "SEGKTW", "SEGKTW", "SEGKTW", "GRTW"], 9)
 rw("rw21", 21, "Rettungswache 21 – Südstadt West", [-1900, 6100], ["RTW", "RTW"])
 rw("rw22", 22, "Rettungswache 22 – Nordstadt West", [-2600, -4100], ["RTW", "RTW"])
+# Luftrettung (Christoph 1 nur bei Tageslicht, Christoph Bavaria rund um die Uhr inkl. Intensivtransport)
+st("rth1", 51, "Luftrettungsstation Klinikum Süd", "rd", "rth", [-250, 6200], ["RTH"], 1, callsign="Christoph 1", flight="day", operator="Luftrettung Bavaria")
+st("rth2", 52, "Luftrettungsstation Universitätsklinikum", "rd", "rth", [3000, -3400], ["RTH"], 1, callsign="Christoph Bavaria", flight="24h", operator="Luftrettung Bavaria")
 # Polizei
 st("pp", 1, "Polizeipräsidium Bavaria", "pol", "pol", [-420, -950], ["POLELW", "FUSTW", "FUSTW", "KRIPO", "KRIPO", "SEK", "DHF", "DHF"], 10)
 PI = ["FUSTW", "FUSTW", "FUSTW", "FUSTW"]

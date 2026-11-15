@@ -127,9 +127,9 @@
    "Personen sind keine betroffen."
   ],
   "persons": [
-   "{n} Person(en), so wie ich das sehe.",
    "Ich sehe {n} Verletzte.",
-   "Es sind {n} Leute betroffen."
+   "Es sind {n} Personen betroffen.",
+   "{n} Leute, soweit ich das sehe."
   ],
   "persons_many": [
    "Viele! Mindestens {n}, vielleicht mehr!",
@@ -165,7 +165,12 @@
    "Das trifft hier nicht zu.",
    "Es geht nicht um eine kranke Person."
   ],
-  "hangup": "— Anrufer hat aufgelegt —"
+  "hangup": "— Anrufer hat aufgelegt —",
+  "persons1": [
+   "Es ist eine Person.",
+   "Nur eine Person, soweit ich sehe.",
+   "Eine Person ist betroffen."
+  ]
  },
  "scripts": {
   "brand_klein": {
@@ -300,15 +305,50 @@
     "Mein Mann hat starke Bauchschmerzen, er krümmt sich.",
     "Hier ist jemand auf dem Gehweg gestürzt und blutet am Kopf.",
     "Meiner Kollegin ist ganz schwindlig, sie kann nicht mehr stehen.",
-    "Mein Kind hat hohes Fieber und einen Krampfanfall gehabt.",
     "Ich habe mir in die Hand geschnitten, es hört nicht auf zu bluten.",
-    "Mein Vater bekommt schlecht Luft, er hat Asthma."
+    "Meine Frau hat sich das Knie verdreht und kann nicht mehr laufen.",
+    "Mein Nachbar ist ganz durcheinander und weiß nicht, wo er ist.",
+    "Mein Vater hat hohes Fieber und ist ganz schwach."
    ],
    "what": [
     "Die Person ist hier: {objekt}. Sie hat starke Schmerzen.",
     "{objekt}. Es ist vor ein paar Minuten passiert."
    ],
-   "danger": "no"
+   "danger": "no",
+   "cases": [
+    {
+     "open": "Ich brauche einen Krankenwagen, meine Mutter ist gestürzt.",
+     "what": "Meine Mutter ist in der Küche gestürzt und kommt nicht mehr hoch, die Hüfte tut ihr weh. Wir sind hier: {objekt}."
+    },
+    {
+     "open": "Mein Mann hat starke Bauchschmerzen, er krümmt sich.",
+     "what": "Er hat seit einer Stunde starke Bauchschmerzen und hat sich übergeben. Wir sind hier: {objekt}."
+    },
+    {
+     "open": "Hier ist jemand auf dem Gehweg gestürzt und blutet am Kopf.",
+     "what": "Ein älterer Herr ist gestolpert und hat eine Platzwunde an der Stirn. Er ist wach. Ort: {objekt}."
+    },
+    {
+     "open": "Meiner Kollegin ist ganz schwindlig, sie kann nicht mehr stehen.",
+     "what": "Ihr ist plötzlich schwindlig geworden, sie ist blass und muss sich hinlegen. Wir sind hier: {objekt}."
+    },
+    {
+     "open": "Ich habe mir in die Hand geschnitten, es hört nicht auf zu bluten.",
+     "what": "Ich habe mich beim Kochen tief in die Hand geschnitten, das blutet durch das Handtuch. Ich bin hier: {objekt}."
+    },
+    {
+     "open": "Meine Frau hat sich das Knie verdreht und kann nicht mehr laufen.",
+     "what": "Sie ist auf der Treppe umgeknickt, das Knie ist dick geschwollen. Wir sind hier: {objekt}."
+    },
+    {
+     "open": "Mein Nachbar ist ganz durcheinander und weiß nicht, wo er ist.",
+     "what": "Er ist Diabetiker, schwitzt stark und redet wirr. Wir sind hier: {objekt}."
+    },
+    {
+     "open": "Mein Vater hat hohes Fieber und ist ganz schwach.",
+     "what": "Er hat seit zwei Tagen Fieber, heute fast 40 Grad, und kommt kaum aus dem Bett. Wir sind hier: {objekt}."
+    }
+   ]
   },
   "med_bewusstlos": {
    "open": [
@@ -321,20 +361,56 @@
     "{objekt}. Die Person ist einfach umgefallen.",
     "{objekt} – plötzlich zusammengesackt."
    ],
-   "danger": "no"
+   "danger": "no",
+   "cases": [
+    {
+     "open": "Hier liegt jemand bewusstlos am Boden!",
+     "what": "Ein Mann ist einfach umgefallen und reagiert nicht, wenn ich ihn anspreche. Ort: {objekt}."
+    },
+    {
+     "open": "Mein Mann ist umgekippt und reagiert nicht mehr!",
+     "what": "Er ist plötzlich vom Stuhl gerutscht und rührt sich nicht. Wir sind hier: {objekt}."
+    },
+    {
+     "open": "Eine Frau ist zusammengebrochen, sie bewegt sich nicht!",
+     "what": "Eine junge Frau ist zusammengesackt und liegt am Boden, die Augen sind zu. Ort: {objekt}."
+    },
+    {
+     "open": "Hier liegt ein Mann, ich glaube, der atmet nicht richtig!",
+     "what": "Er liegt auf dem Rücken und schnappt nur ab und zu nach Luft. Ort: {objekt}."
+    }
+   ]
   },
   "med_herz": {
    "open": [
     "Mein Mann hat starke Schmerzen in der Brust!",
     "Meine Frau bekommt keine Luft und hat Druck auf der Brust!",
-    "Ich habe starke Brustschmerzen, die ziehen in den linken Arm ...",
-    "Unser Bewohner klagt über Atemnot und ist ganz grau im Gesicht."
+    "Ich habe starke Brustschmerzen, die ziehen in den linken Arm …",
+    "Unser Bewohner hat Atemnot und ist ganz grau im Gesicht."
    ],
    "what": [
     "{objekt}. Die Schmerzen haben vor zwanzig Minuten angefangen.",
     "{objekt}. Er schwitzt stark und ist ganz blass."
    ],
-   "danger": "no"
+   "danger": "no",
+   "cases": [
+    {
+     "open": "Mein Mann hat starke Schmerzen in der Brust!",
+     "what": "Er hat seit zwanzig Minuten Druck auf der Brust, der zieht in den linken Arm. Wir sind hier: {objekt}."
+    },
+    {
+     "open": "Meine Frau bekommt keine Luft und hat Druck auf der Brust!",
+     "what": "Sie ringt nach Luft und hat ein Engegefühl in der Brust. Wir sind hier: {objekt}."
+    },
+    {
+     "open": "Ich habe starke Brustschmerzen, die ziehen in den linken Arm …",
+     "what": "Seit einer halben Stunde, und mir ist kalt und übel. Ich bin hier: {objekt}."
+    },
+    {
+     "open": "Unser Bewohner hat Atemnot und ist ganz grau im Gesicht.",
+     "what": "Er bekommt kaum Luft, schwitzt stark und hat Schmerzen in der Brust. Wir sind hier: {objekt}."
+    }
+   ]
   },
   "wohnungsoeffnung": {
    "open": [
@@ -652,14 +728,28 @@
   "rd_kind": {
    "open": [
     "Mein Kind krampft, bitte kommen Sie schnell!",
-    "Mein Baby atmet ganz komisch!",
-    "Hilfe, mein Sohn bekommt keine Luft!"
+    "Mein Sohn bekommt keine Luft, er bellt beim Husten!",
+    "Mein Baby atmet ganz komisch!"
    ],
    "what": [
     "{objekt}. Es ist zwei Jahre alt.",
     "{objekt}. Das Kind ist ganz blau um die Lippen!"
    ],
-   "danger": "no"
+   "danger": "no",
+   "cases": [
+    {
+     "open": "Mein Kind krampft, bitte kommen Sie schnell!",
+     "what": "Meine Tochter, zwei Jahre, hat Fieber und hat gerade am ganzen Körper gezuckt. Jetzt ist sie ganz schlapp. Wir sind hier: {objekt}."
+    },
+    {
+     "open": "Mein Sohn bekommt keine Luft, er bellt beim Husten!",
+     "what": "Er ist drei, hustet ganz hohl und pfeift beim Einatmen. Wir sind hier: {objekt}."
+    },
+    {
+     "open": "Mein Baby atmet ganz komisch!",
+     "what": "Unser Baby ist vier Monate alt und reagiert kaum, die Lippen sind bläulich! Wir sind hier: {objekt}."
+    }
+   ]
   },
   "geburt": {
    "open": [

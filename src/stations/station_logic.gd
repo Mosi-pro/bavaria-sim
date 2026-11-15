@@ -30,6 +30,9 @@ static func add_station_from_def(def: Dictionary) -> void:
 	var p := Vector2(def["pos"][0], def["pos"][1])
 	var id: String = def["id"]
 	_create_station(id, int(def["nr"]), def["name"], def["org"], def["kind"], p, int(def["slots"]), false)
+	for k in ["callsign", "flight", "operator"]:
+		if def.has(k):
+			State.stations[id][k] = def[k]
 	for t in def["vehicles"]:
 		add_vehicle(id, t)
 	State.stations[id]["staff"] = Personnel.compute_staff(id)
@@ -55,6 +58,8 @@ static func new_station(name: String, org: String, kind: String, p: Vector2, slo
 
 static func make_callsign(st: Dictionary, type_id: String, exclude := "") -> String:
 	var t: Dictionary = Data.vehicle_types[type_id]
+	if String(st.get("callsign", "")) != "":
+		return st["callsign"]
 	var pattern: String = Data.organisations[t["org"]]["callsign"]
 	var used := {}
 	for vid in State.vehicles:

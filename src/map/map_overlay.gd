@@ -309,6 +309,18 @@ func _draw_vehicles(vr: Rect2, z: float) -> void:
 		var sp: Vector2 = view.w2s(wp)
 		var col := Data.org_color(v["org"])
 		var selected: bool = view.sel["kind"] == "vehicle" and view.sel["id"] == id
+		if bool(Data.vehicle_types[v["type"]].get("air", false)):
+			var r := 9.0 if z >= 0.1 else 6.0
+			draw_circle(sp, r + 1.5, Color.WHITE if selected else Color("#111315"))
+			draw_circle(sp, r, Color("#e8c45a"))
+			var rot := float(Time.get_ticks_msec()) / 90.0 if v["state"] in ["enroute", "returning"] else 0.0
+			for k in 2:
+				var a := rot + k * PI * 0.5
+				draw_line(sp - Vector2.from_angle(a) * (r + 6), sp + Vector2.from_angle(a) * (r + 6), Color(0.1, 0.1, 0.1, 0.7), 1.5)
+			draw_string(_font, sp + Vector2(-4, 4), "H", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#16181a"))
+			if z >= 0.04 or selected:
+				_txt(sp + Vector2(r + 6, 4), v["callsign"], 10, Color("#f0d68a"))
+			continue
 		if z < 0.1:
 			draw_rect(Rect2(sp - Vector2(3.5, 3.5), Vector2(7, 7)), Color.WHITE if selected else Color("#111315"))
 			draw_rect(Rect2(sp - Vector2(2.5, 2.5), Vector2(5, 5)), col)

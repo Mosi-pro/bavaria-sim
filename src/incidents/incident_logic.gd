@@ -43,7 +43,7 @@ static func make_truth(type_id: String, loc: Dictionary, forced_variant := -1) -
 		"id": tid, "type": type_id, "t0": State.clock, "x": p.x, "y": p.y, "node": int(loc["node"]),
 		"address": loc["address"], "district": loc.get("district", ""), "street": loc.get("street", ""),
 		"object": objects[rng.randi() % objects.size()], "vname": va.get("name", t["name"]), "lage": va.get("lage", ""),
-		"kw": va.get("keyword", t["keyword"]),
+		"kw": va.get("keyword", t["keyword"]), "case": int(va.get("case", -1)),
 		"reqs": reqs, "known": {}, "work_total": float(va.get("work", t.get("work", 0))), "work_done": 0.0,
 		"gate": float(va.get("gate", t.get("gate", 0.0))), "patients": [], "devs": [], "strain_t": 0.0, "strain_i": 0, "strain_n": 0,
 		"reports": {}, "incident": "", "calls": 0, "dup_calls": 0, "next_call": 0.0, "closure": -1, "state": "open",

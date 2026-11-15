@@ -53,7 +53,8 @@
   "kindernotarzt": "Kindernotarzt",
   "diensthund": "Diensthundeführer",
   "pol_krad": "Motorradstreife",
-  "betreuung_psnv": "Psychosoziale Notfallversorgung (KIT)"
+  "betreuung_psnv": "Psychosoziale Notfallversorgung (KIT)",
+  "rth": "Rettungshubschrauber"
  },
  "types": {
   "KDOW": {
@@ -1194,6 +1195,31 @@
    "price": 45000,
    "equip": [
     "Betreuungsmaterial"
+   ]
+  },
+  "RTH": {
+   "short": "RTH",
+   "name": "Rettungshubschrauber (Airbus H145)",
+   "org": "rd",
+   "kenn": "",
+   "speed": 230,
+   "air": true,
+   "crew": 3,
+   "min": 3,
+   "quals": {
+    "NA": 1,
+    "NFS": 1
+   },
+   "caps": {
+    "notarzt": 1,
+    "rth": 1
+   },
+   "price": 0,
+   "equip": [
+    "Notarztausstattung",
+    "Beatmungsgerät",
+    "Vakuummatratze",
+    "Winde (nur Christoph Bavaria)"
    ]
   }
  }

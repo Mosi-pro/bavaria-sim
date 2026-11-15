@@ -50,6 +50,8 @@
   {"id": "rw20", "nr": 20, "name": "Führungs- und SEG-Standort Rettungsdienst", "org": "rd", "kind": "rw", "pos": [2150, 3650], "vehicles": ["ELRD", "ELRD", "GWSAN", "SEGKTW", "SEGKTW", "SEGKTW", "GRTW"], "slots": 9},
   {"id": "rw21", "nr": 21, "name": "Rettungswache 21 – Südstadt West", "org": "rd", "kind": "rw", "pos": [-1900, 6100], "vehicles": ["RTW", "RTW"], "slots": 3},
   {"id": "rw22", "nr": 22, "name": "Rettungswache 22 – Nordstadt West", "org": "rd", "kind": "rw", "pos": [-2600, -4100], "vehicles": ["RTW", "RTW"], "slots": 3},
+  {"id": "rth1", "nr": 51, "name": "Luftrettungsstation Klinikum Süd", "org": "rd", "kind": "rth", "pos": [-250, 6200], "vehicles": ["RTH"], "slots": 1, "callsign": "Christoph 1", "flight": "day", "operator": "Luftrettung Bavaria"},
+  {"id": "rth2", "nr": 52, "name": "Luftrettungsstation Universitätsklinikum", "org": "rd", "kind": "rth", "pos": [3000, -3400], "vehicles": ["RTH"], "slots": 1, "callsign": "Christoph Bavaria", "flight": "24h", "operator": "Luftrettung Bavaria"},
   {"id": "pp", "nr": 1, "name": "Polizeipräsidium Bavaria", "org": "pol", "kind": "pol", "pos": [-420, -950], "vehicles": ["POLELW", "FUSTW", "FUSTW", "KRIPO", "KRIPO", "SEK", "DHF", "DHF"], "slots": 10},
   {"id": "pi11", "nr": 11, "name": "Polizeiinspektion 11 – Altstadt", "org": "pol", "kind": "pol", "pos": [330, 230], "vehicles": ["FUSTW", "FUSTW", "FUSTW", "FUSTW", "FUSTW"], "slots": 7},
   {"id": "pi12", "nr": 12, "name": "Polizeiinspektion 12 – Nordstadt", "org": "pol", "kind": "pol", "pos": [-520, -4300], "vehicles": ["FUSTW", "FUSTW", "FUSTW", "FUSTW"], "slots": 6},

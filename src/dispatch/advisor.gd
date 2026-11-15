@@ -19,6 +19,8 @@ static func suggest(inc: Dictionary, org_filter: Array = []) -> Dictionary:
 		var reason := VL.block_reason(v)
 		var n := VL.node_of(v)
 		var eta: float = times[n] if n >= 0 else INF
+		if VL.is_air(v):
+			eta = VL.air_eta(v, target)
 		if reason == "":
 			eta += VL.turnout_mean(v)
 		rows.append({"id": vid, "eta": eta, "dist": State.veh_pos(v).distance_to(target), "reason": reason, "caps": VL.caps(v), "crew": int(Data.vehicle_types[v["type"]]["crew"])})
@@ -51,6 +53,9 @@ static func suggest(inc: Dictionary, org_filter: Array = []) -> Dictionary:
 				if int(r["caps"].get(k, 0)) > 0 and r["eta"] < INF:
 					# Sonderfahrzeuge nur, wenn ihre Sonderfähigkeit gebraucht wird oder nichts anderes in Reichweite ist
 					var eff: float = r["eta"]
+					# Hubschrauber nur, wenn er mindestens 2 Minuten schneller ist als bodengebundene Notärzte
+					if int(r["caps"].get("rth", 0)) > 0 and not need.has("rth"):
+						eff += 120.0
 					for sc in SPECIAL:
 						if int(r["caps"].get(sc, 0)) > 0 and not need.has(sc):
 							eff += 1200.0
