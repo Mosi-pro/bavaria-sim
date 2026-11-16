@@ -256,7 +256,13 @@ func act(a: Dictionary, player: Dictionary) -> Dictionary:
 							ids.append(vid)
 						else:
 							denied.append("%s: keine Berechtigung für %s" % [State.vehicles[vid]["callsign"], Data.org_name(State.vehicles[vid]["org"])])
-					var res := IL.alarm(inc, ids, who)
+					var mods: Dictionary = {}
+					var am = a.get("modules", {})
+					if am is Dictionary:
+						for mk in am:
+							if ids.has(mk):
+								mods[String(mk)] = String(am[mk])
+					var res := IL.alarm(inc, ids, who, mods)
 					res["failed"].append_array(denied)
 					return {"ok": res["ok"].size() > 0, "err": "\n".join(res["failed"]), "alarmed": res["ok"], "failed": res["failed"]}
 				"inc_close":

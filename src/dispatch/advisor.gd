@@ -23,7 +23,11 @@ static func suggest(inc: Dictionary, org_filter: Array = []) -> Dictionary:
 			eta = VL.air_eta(v, target)
 		if reason == "":
 			eta += VL.turnout_mean(v)
-		rows.append({"id": vid, "eta": eta, "dist": State.veh_pos(v).distance_to(target), "reason": reason, "caps": VL.caps(v), "crew": int(Data.vehicle_types[v["type"]]["crew"])})
+		var row := {"id": vid, "eta": eta, "dist": State.veh_pos(v).distance_to(target), "reason": reason, "caps": VL.caps(v), "crew": int(Data.vehicle_types[v["type"]]["crew"])}
+		if VL.has_modules(v):
+			row["module"] = VL.module_of(v)
+			row["can_change"] = VL.can_change_module(v) and reason == ""
+		rows.append(row)
 	rows.sort_custom(func(a, b):
 		if absf(a["eta"] - b["eta"]) > 20.0:
 			return a["eta"] < b["eta"]
@@ -43,14 +47,19 @@ static func suggest(inc: Dictionary, org_filter: Array = []) -> Dictionary:
 	for k in open.keys():
 		open[k] = int(open[k]) - int(have.get(k, 0))
 	var suggested: Array = []
+	var modules := {}
 	for k in open.keys():
 		while int(open[k]) > 0:
 			var pick := {}
+			var pick_mod := ""
 			var best := INF
 			for r in rows:
 				if r["reason"] != "" or suggested.has(r["id"]):
 					continue
-				if int(r["caps"].get(k, 0)) > 0 and r["eta"] < INF:
+				var mod_for := ""
+				if int(r["caps"].get(k, 0)) <= 0 and r.get("can_change", false):
+					mod_for = _module_for(r["id"], k)
+				if (int(r["caps"].get(k, 0)) > 0 or mod_for != "") and r["eta"] < INF:
 					# Sonderfahrzeuge nur, wenn ihre Sonderfähigkeit gebraucht wird oder nichts anderes in Reichweite ist
 					var eff: float = r["eta"]
 					# Hubschrauber nur, wenn er mindestens 2 Minuten schneller ist als bodengebundene Notärzte
@@ -59,12 +68,20 @@ static func suggest(inc: Dictionary, org_filter: Array = []) -> Dictionary:
 					for sc in SPECIAL:
 						if int(r["caps"].get(sc, 0)) > 0 and not need.has(sc):
 							eff += 1200.0
+					if mod_for != "":
+						eff += float(Data.vehicle_types[State.vehicles[r["id"]]["type"]].get("module_change", 120))
 					if eff < best:
 						best = eff
 						pick = r
+						pick_mod = mod_for
 			if pick.is_empty():
 				break
 			suggested.append(pick["id"])
+			if pick_mod != "":
+				# Vorschlag: GW-L mit passendem Rollcontainer
+				pick["module"] = pick_mod
+				pick["caps"] = VL.caps_with_module(State.vehicles[pick["id"]], pick_mod)
+				modules[pick["id"]] = pick_mod
 			for c in pick["caps"]:
 				if open.has(c):
 					open[c] = int(open[c]) - int(pick["caps"][c])
@@ -72,4 +89,13 @@ static func suggest(inc: Dictionary, org_filter: Array = []) -> Dictionary:
 	for k in open:
 		if int(open[k]) > 0:
 			missing[k] = int(open[k])
-	return {"rows": rows, "suggested": suggested, "missing": missing, "need": need}
+	return {"rows": rows, "suggested": suggested, "missing": missing, "need": need, "modules": modules}
+
+## Rollcontainer, der die Fähigkeit cap liefert ("" = keiner).
+static func _module_for(vid: String, cap: String) -> String:
+	var t: Dictionary = Data.vehicle_types[State.vehicles[vid]["type"]]
+	var mods: Dictionary = t.get("modules", {})
+	for m in mods:
+		if int(mods[m].get("caps", {}).get(cap, 0)) > 0:
+			return m
+	return ""

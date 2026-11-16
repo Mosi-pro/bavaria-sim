@@ -26,6 +26,7 @@ var tabs: TabContainer
 var _t := 1.0
 var _checked := {}
 var _suggested: Array = []
+var _modules := {}   # Fahrzeug-ID -> gewählter Rollcontainer (GW-L)
 var _sugg_sig := ""
 var _orgs: Array = []
 var _details := ""
@@ -74,7 +75,7 @@ func setup(id: String) -> void:
 	sugg_label = UI.label("", UI.TEXT2)
 	sugg_label.clip_text = true
 	sugg_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	disp_tree = UI.tree([{"title": "", "width": 26}, {"title": "ETA", "width": 50}, {"title": "Funkrufname", "width": 170}, {"title": "Typ", "width": 70}, {"title": "Wache"}, {"title": "km", "width": 44}, {"title": "Status", "width": 150}])
+	disp_tree = UI.tree([{"title": "", "width": 26}, {"title": "ETA", "width": 50}, {"title": "Funkrufname", "width": 150}, {"title": "Typ", "width": 70}, {"title": "Wache"}, {"title": "km", "width": 44}, {"title": "Status", "width": 120}, {"title": "Rollcontainer", "width": 170}])
 	disp_tree.item_edited.connect(_on_check)
 	disp_tree.item_activated.connect(func():
 		var it := disp_tree.get_selected()
@@ -145,7 +146,7 @@ func _refresh() -> void:
 	var inc: Dictionary = State.incidents[inc_id]
 	var kd: Dictionary = Data.keywords.get(inc["keyword"], {})
 	var t := func(x): return State.time_str(float(x)) if float(x) >= 0.0 else "–"
-	var txt := "[font_size=15][b][color=#d6a83b]%s[/color]  %s[/b][/font_size]    [color=#6b737b]Einsatz %s · Priorität %d[/color]\n" % [inc["keyword"], kd.get("name", ""), inc["nr"], int(inc["prio"])]
+	var txt := "[font_size=15][b][color=#%s]%s[/color]  %s[/b][/font_size]    [color=#6b737b]Einsatz %s · Priorität %d[/color]\n" % [Data.keyword_color(inc["keyword"]).to_html(false), inc["keyword"], kd.get("name", ""), inc["nr"], int(inc["prio"])]
 	txt += "[color=#a4adb5]Ort:[/color]  %s%s\n" % [inc["address"], "   [color=#d6a83b](ungenau – Kräfte müssen suchen)[/color]" if float(inc["radius"]) > 0.0 else ""]
 	txt += "[color=#a4adb5]Stand:[/color]  [b]%s[/b]\n" % _plain_status(inc)
 	if inc["revealed"]:
@@ -235,12 +236,16 @@ func _fill_forces() -> void:
 		it.set_custom_bg_color(0, Color(Data.fms_color(st), 0.75))
 		it.set_text(1, v["callsign"])
 		it.set_text(2, Data.vehicle_types[v["type"]]["short"])
+		if VL.has_modules(v):
+			it.set_tooltip_text(2, "Rollcontainer: " + VL.module_name(v))
 		var z := ""
 		match v["state"]:
 			"alarmed": z = "alarmiert, rückt aus in %s" % State.dur_str(float(v["timer"]))
 			"enroute": z = "Anfahrt, Ankunft in ca. %s" % State.dur_str(float(v["eta"]) - State.clock)
 			"onscene": z = "an der Einsatzstelle" + ("  –  SPRECHWUNSCH" if v["talk"] != "" else "")
 			_: z = v["state"]
+		if VL.has_modules(v):
+			z += "  ·  Rollcontainer: " + VL.module_name(v)
 		it.set_text(3, z)
 		it.set_text(4, Sim.Personnel.crew_text(v))
 		if vid == sel:
@@ -256,8 +261,12 @@ func _fill_disposition(apply_suggestion: bool) -> void:
 	_suggested = res["suggested"]
 	if apply_suggestion:
 		_checked = {}
+		_modules = {}
 		for vid in _suggested:
 			_checked[vid] = true
+	for vid in res.get("modules", {}):
+		if apply_suggestion or not _modules.has(vid):
+			_modules[vid] = res["modules"][vid]
 	var org: String = _orgs[org_filter.selected]
 	var vt: String = _types[type_filter.selected] if type_filter != null else ""
 	disp_tree.clear()
@@ -302,6 +311,8 @@ func _fill_disposition(apply_suggestion: bool) -> void:
 		it.set_text(6, ("%d %s" % [int(v["status"]), "frei" if int(v["status"]) == 1 else "auf Wache"]) if free else r["reason"])
 		if not free:
 			it.set_custom_color(6, UI.TEXT2)
+		if VL.has_modules(v):
+			_module_cell(it, v)
 		if _suggested.has(r["id"]):
 			for col in [1, 2, 3]:
 				it.set_custom_bg_color(col, Color(0.29, 0.5, 0.66, 0.28))
@@ -315,11 +326,44 @@ func _fill_disposition(apply_suggestion: bool) -> void:
 	sugg_label.add_theme_color_override("font_color", UI.YELLOW if not res["missing"].is_empty() else UI.TEXT2)
 	_update_alarm_btn()
 
+## Rollcontainer-Auswahl (Dropdown in der Tabelle) für Fahrzeuge mit Wechselbeladung
+func _module_cell(it: TreeItem, v: Dictionary) -> void:
+	var mods: Dictionary = Data.vehicle_types[v["type"]]["modules"]
+	var keys: Array = mods.keys()
+	var cur: String = String(_modules.get(v["id"], VL.module_of(v)))
+	var tip := "Rollcontainer wählen – Umladen auf der Wache dauert %s.\n" % State.dur_str(float(Data.vehicle_types[v["type"]].get("module_change", 120)))
+	for m in keys:
+		tip += "\n%s: %s" % [mods[m]["name"], mods[m].get("equip", "")]
+	if VL.can_change_module(v):
+		var names: Array = []
+		for m in keys:
+			names.append(String(mods[m]["name"]) + ("" if m != VL.module_of(v) else " ✓"))
+		it.set_cell_mode(7, TreeItem.CELL_MODE_RANGE)
+		it.set_text(7, ",".join(names))
+		it.set_range(7, max(0, keys.find(cur)))
+		it.set_editable(7, true)
+		it.set_tooltip_text(7, tip + "\n\n✓ = derzeit geladen")
+		if cur != VL.module_of(v):
+			it.set_custom_color(7, UI.YELLOW)
+	else:
+		it.set_text(7, VL.module_name(v))
+		it.set_custom_color(7, UI.TEXT2)
+		it.set_tooltip_text(7, "Umladen nur auf der Wache möglich.\n" + tip)
+
 func _on_check() -> void:
 	var it := disp_tree.get_edited()
-	if it != null:
-		_checked[it.get_metadata(0)] = it.is_checked(0)
-		_update_alarm_btn()
+	if it == null:
+		return
+	var vid: String = it.get_metadata(0)
+	if disp_tree.get_edited_column() == 7 and State.vehicles.has(vid):
+		var keys: Array = Data.vehicle_types[State.vehicles[vid]["type"]].get("modules", {}).keys()
+		var i := int(it.get_range(7))
+		if i >= 0 and i < keys.size():
+			_modules[vid] = keys[i]
+			it.set_custom_color(7, UI.YELLOW if keys[i] != VL.module_of(State.vehicles[vid]) else UI.TEXT)
+		return
+	_checked[vid] = it.is_checked(0)
+	_update_alarm_btn()
 
 func _selected_ids() -> Array:
 	var out: Array = []
@@ -337,8 +381,13 @@ func _alarm() -> void:
 	if ids.is_empty():
 		UI.message(self, "Alarmierung", "Es sind keine Einsatzmittel ausgewählt.")
 		return
-	Game.act({"a": "inc_alarm", "id": inc_id, "vehicles": ids}, func(res):
+	var mods := {}
+	for vid in ids:
+		if _modules.has(vid):
+			mods[vid] = _modules[vid]
+	Game.act({"a": "inc_alarm", "id": inc_id, "vehicles": ids, "modules": mods}, func(res):
 		_checked = {}
+		_modules = {}
 		if not is_inside_tree():
 			return
 		_fill_disposition(false)

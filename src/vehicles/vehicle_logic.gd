@@ -8,7 +8,44 @@ static func vtype(v: Dictionary) -> Dictionary:
 	return Data.vehicle_types[v["type"]]
 
 static func caps(v: Dictionary) -> Dictionary:
-	return vtype(v).get("caps", {})
+	var t := vtype(v)
+	if not t.has("modules"):
+		return t.get("caps", {})
+	return caps_with_module(v, module_of(v))
+
+# ---------------------------------------------------------------- Wechselbeladung (GW-L)
+## Fahrzeuge mit wechselbarer Beladung (Rollcontainer) haben in vehicle_types "modules".
+static func has_modules(v: Dictionary) -> bool:
+	return vtype(v).has("modules")
+
+static func module_of(v: Dictionary) -> String:
+	var t := vtype(v)
+	var m: String = String(v.get("module", t.get("module_default", "")))
+	return m if t.get("modules", {}).has(m) else String(t.get("module_default", ""))
+
+static func module_name(v: Dictionary, m := "") -> String:
+	if m == "":
+		m = module_of(v)
+	return String(vtype(v).get("modules", {}).get(m, {}).get("name", m))
+
+static func caps_with_module(v: Dictionary, m: String) -> Dictionary:
+	var t := vtype(v)
+	var out: Dictionary = t.get("caps", {}).duplicate()
+	var mc: Dictionary = t.get("modules", {}).get(m, {}).get("caps", {})
+	for k in mc:
+		out[k] = int(out.get(k, 0)) + int(mc[k])
+	return out
+
+## Beladung kann nur auf der Wache gewechselt werden.
+static func can_change_module(v: Dictionary) -> bool:
+	return has_modules(v) and v["state"] == "station"
+
+## Setzt die Beladung. Rückgabe: true, wenn tatsächlich umgeladen wurde.
+static func set_module(v: Dictionary, m: String) -> bool:
+	if not can_change_module(v) or not vtype(v)["modules"].has(m) or m == module_of(v):
+		return false
+	v["module"] = m
+	return true
 
 static func has_cap(v: Dictionary, cap: String) -> bool:
 	return int(caps(v).get(cap, 0)) > 0

@@ -2,7 +2,7 @@
 ; Kompilieren: ISCC.exe installer\LEITSTELLE112.iss   (erwartet den fertigen Build unter build\windows)
 
 #define AppName "LEITSTELLE 112"
-#define AppVersion "1.1.1"
+#define AppVersion "1.2.0"
 #define AppExe "LEITSTELLE112.exe"
 
 [Setup]

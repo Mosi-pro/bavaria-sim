@@ -124,14 +124,27 @@ static func add_note(inc: Dictionary, who: String, text: String) -> void:
 	Sim.radio(who, "Notiz zu %s: %s" % [inc["nr"], text], -1, "note", inc["id"])
 	State.touch_incident(inc["id"])
 
-static func alarm(inc: Dictionary, vehicle_ids: Array, by: String) -> Dictionary:
+static func alarm(inc: Dictionary, vehicle_ids: Array, by: String, modules: Dictionary = {}) -> Dictionary:
 	var ok: Array = []
 	var failed: Array = []
+	var loaded: Array = []
 	for vid in vehicle_ids:
 		if not State.vehicles.has(vid):
 			continue
 		var v: Dictionary = State.vehicles[vid]
+		# Wechselbeladung (GW-L): vor dem Ausrücken Rollcontainer tauschen
+		var old_module: String = VL.module_of(v) if VL.has_modules(v) else ""
+		var changed := false
+		if modules.has(vid) and VL.block_reason(v) == "":
+			changed = VL.set_module(v, String(modules[vid]))
 		var err := VL.alarm(v, inc["id"])
+		if err != "" and changed:
+			v["module"] = old_module
+			changed = false
+		if changed:
+			v["timer"] = float(v["timer"]) + float(VL.vtype(v).get("module_change", 120))
+		if err == "" and VL.has_modules(v):
+			loaded.append("%s mit Rollcontainer %s%s" % [v["callsign"], VL.module_name(v), " (wird umgeladen)" if changed else ""])
 		if err == "":
 			ok.append(v["callsign"])
 		else:
@@ -141,6 +154,8 @@ static func alarm(inc: Dictionary, vehicle_ids: Array, by: String) -> Dictionary
 			inc["t_alarm"] = State.clock
 		inc["alarmed_n"] = int(inc["alarmed_n"]) + ok.size()
 		Sim.radio("Leitstelle", "Alarm %s, %s, %s – für: %s" % [inc["keyword"], inc["address"], inc["object"], ", ".join(ok)], -1, "alarm", inc["id"])
+		for l in loaded:
+			Sim.radio("Leitstelle", "Beladung: %s." % l, -1, "alarm", inc["id"])
 		Sim.sound("alarm")
 		_derive_status(inc)
 		State.touch_incident(inc["id"])
@@ -379,6 +394,10 @@ static func _reveal(inc: Dictionary, tr: Dictionary, on: Array) -> void:
 		text += " %d Verletzte/Betroffene." % n
 	inc["lage"] = text
 	_say(inc, on, text)
+	if needs_light(tr):
+		tr["reqs"]["licht"] = 1
+		inc["lage"] = String(inc["lage"]) + " Dunkelheit – Einsatzstelle muss ausgeleuchtet werden."
+		_say(inc, on, "Es ist dunkel – benötigen Beleuchtung für die Einsatzstelle (RW, GKW oder GW-L mit Rollcontainer Strom & Licht).")
 	tr["known"] = tr["reqs"].duplicate()
 	_publish(inc, tr, on)
 	var miss := shortage(known_need(tr), caps_assigned(inc["id"]))
@@ -386,6 +405,17 @@ static func _reveal(inc: Dictionary, tr: Dictionary, on: Array) -> void:
 		_say(inc, on, "Nachforderung: benötigen %s." % need_text(miss), true)
 	_derive_status(inc)
 	State.touch_incident(inc["id"])
+
+## Längere Einsätze von Feuerwehr/THW bei Dunkelheit brauchen Beleuchtung.
+static func needs_light(tr: Dictionary) -> bool:
+	if tr["reqs"].has("licht") or float(tr["work_total"]) < 2400.0:
+		return false
+	var cat: String = String(Data.incident_types[tr["type"]].get("cat", ""))
+	if not cat in ["brand", "thl", "vu", "abc"]:
+		return false
+	var dl := VL.daylight()
+	var hf: float = State.hour_f()
+	return hf < float(dl[0]) - 0.25 or hf > float(dl[1]) + 0.25
 
 static func _work(inc: Dictionary, tr: Dictionary, on: Array, h: float) -> void:
 	var total := float(tr["work_total"])

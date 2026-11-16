@@ -95,6 +95,17 @@ func keywords_in(cat: String) -> Array:
 			out.append(k)
 	return out
 
+## Farbe eines Stichworts nach Fachbereich: Feuerwehr rot, Rettungsdienst orange,
+## Polizei blau, Sonstiges grau.
+const KW_COLORS := {"brand": "#d9534a", "thl": "#d9534a", "abc": "#d9534a", "vu": "#d9534a", "rd": "#e58a2e", "pol": "#5b95c8", "sonst": "#a4adb5"}
+
+func keyword_color(kw: String) -> Color:
+	var cat: String = String(keywords.get(kw, {}).get("cat", ""))
+	if cat == "":
+		var p := kw.get_slice(" ", 0)
+		cat = {"B": "brand", "THL": "thl", "ABC": "abc", "RD": "rd", "POL": "pol"}.get(p, "sonst")
+	return Color(KW_COLORS.get(cat, "#a4adb5"))
+
 func category_name(cat: String) -> String:
 	return categories.get(cat, {}).get("name", cat)
 

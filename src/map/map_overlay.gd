@@ -280,7 +280,7 @@ func _draw_incidents(z: float) -> void:
 	for id in State.incidents:
 		var inc: Dictionary = State.incidents[id]
 		var sp: Vector2 = view.w2s(Vector2(inc["x"], inc["y"]))
-		var col: Color = [Color("#c83d3d"), Color("#c83d3d"), Color("#d6a83b"), Color("#497fa8")][clampi(int(inc["prio"]), 1, 3)]
+		var col: Color = Data.keyword_color(inc["keyword"])
 		if inc["done"]:
 			col = Color("#6b737b")
 		var r: float = float(inc["radius"]) * z

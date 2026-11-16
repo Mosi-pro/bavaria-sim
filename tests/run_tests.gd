@@ -49,6 +49,8 @@ func _ready() -> void:
 	test_all_types()
 	print("== Rettungshubschrauber ==")
 	test_rth()
+	print("== GW-L Rollcontainer und Stichwortfarben ==")
+	test_gwl_modules()
 	print("== Notrufgespräche und Häufigkeiten ==")
 	test_calls_consistency()
 	print("== Einweisung ==")
@@ -415,6 +417,46 @@ func test_rth() -> void:
 	check(VL.block_reason(c1).find("Tageslicht") >= 0 and VL.block_reason(c2) == "", "Nachts fliegt nur Christoph Bavaria (24 h)")
 	State.env["weather"] = "nebel"
 	check(VL.block_reason(c2).find("Wetter") >= 0, "Bei Nebel kein Flugbetrieb")
+
+func test_gwl_modules() -> void:
+	Sim.new_game({"mode": "frei", "seed": 21, "start_hour": 13})
+	Sim.running = false
+	State.meta["next_call"] = 1e12
+	var gwl := ""
+	for vid in State.vehicles:
+		if State.vehicles[vid]["type"] == "GWL":
+			gwl = vid
+			break
+	check(gwl != "", "GW-L vorhanden")
+	var g: Dictionary = State.vehicles[gwl]
+	check(VL.module_of(g) == "gitterbox" and int(VL.caps(g).get("logistik", 0)) == 1, "GW-L startet mit Gitterbox, Fähigkeit Logistik")
+	check(Data.vehicle_types["GWL"]["modules"].size() == 7, "7 Rollcontainer wählbar")
+	check(int(VL.caps_with_module(g, "hochwasser").get("pumpen", 0)) == 1 and int(VL.caps_with_module(g, "atemschutz").get("atemschutz", 0)) == 1, "Rollcontainer liefern Zusatzfähigkeiten (Pumpen, Atemschutz)")
+	# Bedarf an Pumpen: Vorschlag lädt den Rollcontainer Hochwasser
+	var res: Dictionary = Sim.act({"a": "inc_create", "form": {"keyword": "THL UNWETTER", "x": float(g["x"]) + 300.0, "y": float(g["y"])}}, me)
+	var inc: Dictionary = State.incidents[res["id"]]
+	inc["revealed"] = true
+	inc["need"] = {"pumpen": 2}
+	var sg: Dictionary = Advisor.suggest(inc)
+	var mod_vid := ""
+	for vid in sg["modules"]:
+		if sg["modules"][vid] == "hochwasser":
+			mod_vid = vid
+	check(mod_vid != "" and sg["suggested"].has(mod_vid), "Vorschlag: GW-L mit Rollcontainer Hochwasser/Unwetter für fehlende Pumpen")
+	if mod_vid != "":
+		var before := State.radio.size()
+		var ar: Dictionary = Sim.act({"a": "inc_alarm", "id": inc["id"], "vehicles": [mod_vid], "modules": sg["modules"]}, me)
+		var v: Dictionary = State.vehicles[mod_vid]
+		check(ar["ok"] and VL.module_of(v) == "hochwasser" and int(VL.caps(v).get("pumpen", 0)) == 1, "Alarmierung lädt Rollcontainer um")
+		check(float(v["timer"]) >= 120.0, "Umladen verlängert die Ausrückzeit (%d s)" % int(v["timer"]))
+		var said := false
+		for i in range(before, State.radio.size()):
+			if String(State.radio[i]["text"]).find("Hochwasser") >= 0:
+				said = true
+		check(said, "Funkprotokoll nennt die Beladung")
+		check(not VL.set_module(v, "licht"), "Unterwegs kein Umladen möglich")
+	# Stichwortfarben nach Fachbereich
+	check(Data.keyword_color("RD 2") == Color("#e58a2e") and Data.keyword_color("B 2") == Color("#d9534a") and Data.keyword_color("THL 4") == Color("#d9534a") and Data.keyword_color("POL 1") == Color("#5b95c8"), "Stichwortfarben: RD orange, Feuerwehr rot, Polizei blau")
 
 func test_calls_consistency() -> void:
 	Sim.new_game({"mode": "frei", "seed": 44})

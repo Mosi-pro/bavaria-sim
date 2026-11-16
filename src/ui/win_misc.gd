@@ -148,6 +148,12 @@ Dort steht immer, was als Nächstes erledigt werden muss – mit einem Knopf fü
 [b]Fahrzeugstatus (Farben in der rechten Liste)[/b]
 1/2 frei · 3 auf der Anfahrt · 4 an der Einsatzstelle · 5 Sprechwunsch · 7/8 Patiententransport · 6 außer Dienst
 
+[b]Stichwortfarben[/b]
+[color=#d9534a]Feuerwehr (B, THL, ABC)[/color] · [color=#e58a2e]Rettungsdienst (RD)[/color] · [color=#5b95c8]Polizei (POL)[/color] · [color=#a4adb5]Sonstiges[/color]
+
+[b]GW-L mit Rollcontainern[/b]
+Der Gerätewagen Logistik hat einen wechselbaren Rollcontainer: Schlauch/Wasserversorgung, Tragkraftspritze, Hochwasser/Unwetter (Pumpen), Strom & Licht, Atemschutz, Gefahrgut/Ölspur oder Gitterbox/Transport. Beim Alarmieren in der Spalte »Rollcontainer« auswählen – Umladen geht nur auf der Wache und dauert 2 Minuten. Nachts brauchen längere Feuerwehreinsätze Beleuchtung (RW, GKW oder GW-L mit Strom & Licht).
+
 [b]Schwierigkeit[/b]
 Leicht: Das passende Stichwort wird vorgeschlagen.  Mittel: Nur die Einsatzart wird angedeutet.  Schwer/Experte: keine Hinweise, mehr und hektischere Notrufe.
 
@@ -163,7 +169,7 @@ F2 Notruf annehmen · F6 Sprechwunsch · F5 Speichern · Pause · Num +/− Zeit
 				t += "\n[b]%s[/b]\n" % Data.category_name(cat)
 				for k in Data.keywords_in(cat):
 					var kd: Dictionary = Data.keywords[k]
-					t += "[color=#d6a83b]%s[/color] – %s\n" % [k, kd["name"]]
+					t += "[color=#%s]%s[/color] – %s\n" % [Data.keyword_color(k).to_html(false), k, kd["name"]]
 					if String(kd.get("schlagworte", "")) != "":
 						t += "    [color=#a4adb5]Typisch:[/color] %s\n" % kd["schlagworte"]
 					if String(kd.get("min", "")) != "":

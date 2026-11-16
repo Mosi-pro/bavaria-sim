@@ -1,5 +1,17 @@
 # Änderungen – LEITSTELLE 112
 
+## Version 1.2.0 (16.11.2026)
+
+**Neue Funktionen**
+- **GW-L mit Rollcontainern:** Der Gerätewagen Logistik hat jetzt einen wechselbaren Rollcontainer: Schlauch / Wasserversorgung, Tragkraftspritze (TS), Hochwasser / Unwetter, Strom & Licht, Atemschutz, Gefahrgut / Ölspur und Gitterbox / Transport. Jeder Container bringt eigene Fähigkeiten mit (z. B. Pumpen, Atemschutz-Nachschub, Löschwasserförderung, Beleuchtung).
+  - Auswahl beim Alarmieren in der neuen Spalte »Rollcontainer« (Dropdown). Umladen geht nur auf der Wache und verlängert das Ausrücken um 2 Minuten.
+  - Der Alarmierungsvorschlag wählt den passenden Container selbst, wenn eine Fähigkeit fehlt (z. B. Pumpen bei vollgelaufener Tiefgarage).
+  - Funkprotokoll und Einsatzakte zeigen, welcher Container geladen ist.
+- **Ausleuchtung bei Nacht:** Längere Einsätze von Feuerwehr und THW brauchen bei Dunkelheit Beleuchtung. Das leisten Rüstwagen, THW-GKW oder ein GW-L mit Rollcontainer Strom & Licht.
+
+**Fehlerbehebungen**
+- Stichwortfarben nach Fachbereich statt nach Priorität: Feuerwehr (B, THL, ABC) rot, Rettungsdienst (RD) orange, Polizei (POL) blau. Gilt für Einsatzliste, Lagekarte, Einsatzakte und Hilfe. Bisher war z. B. RD 2 rot und B 2 gelb.
+
 ## Version 1.1.1 (15.11.2026)
 
 **Fehlerbehebungen**

@@ -54,7 +54,8 @@
   "diensthund": "Diensthundeführer",
   "pol_krad": "Motorradstreife",
   "betreuung_psnv": "Psychosoziale Notfallversorgung (KIT)",
-  "rth": "Rettungshubschrauber"
+  "rth": "Rettungshubschrauber",
+  "licht": "Beleuchtung / Stromerzeuger"
  },
  "types": {
   "KDOW": {
@@ -307,7 +308,8 @@
    "caps": {
     "thl": 1,
     "rw": 1,
-    "thl_klein": 1
+    "thl_klein": 1,
+    "licht": 1
    },
    "price": 520000,
    "equip": [
@@ -334,9 +336,59 @@
    "price": 210000,
    "equip": [
     "Ladebordwand",
-    "Rollcontainer",
-    "Schlauchmaterial"
-   ]
+    "1 Rollcontainer-Stellplatz (wechselbar)"
+   ],
+   "module_default": "gitterbox",
+   "module_change": 120,
+   "modules": {
+    "schlauch": {
+     "name": "Schlauch / Wasserversorgung",
+     "caps": {
+      "wasser": 1
+     },
+     "equip": "Bis zu 500 m B-Druckschläuche in Buchten (während der Langsamfahrt verlegbar), wasserführende Armaturen"
+    },
+    "ts": {
+     "name": "Tragkraftspritze (TS)",
+     "caps": {
+      "wasser": 1
+     },
+     "equip": "Tragkraftspritze PFPN 10-1000/1500, Saugschläuche und Zubehör zur Löschwasserförderung"
+    },
+    "hochwasser": {
+     "name": "Hochwasser / Unwetter",
+     "caps": {
+      "pumpen": 1
+     },
+     "equip": "Tauchpumpen, Wassersauger, Stromerzeuger, Wathosen, Schmutzwasserpumpen"
+    },
+    "licht": {
+     "name": "Strom & Licht",
+     "caps": {
+      "licht": 1
+     },
+     "equip": "Tragbarer Stromerzeuger, Flutlichtstrahler, Stative, Kabeltrommeln, Beleuchtungsballons"
+    },
+    "atemschutz": {
+     "name": "Atemschutz",
+     "caps": {
+      "atemschutz": 1
+     },
+     "equip": "Pressluftatmer, Ersatzflaschen, Atemschutzmasken, Überwachungstafeln zur Nachschubversorgung"
+    },
+    "oel": {
+     "name": "Gefahrgut / Ölspur",
+     "caps": {
+      "thl_klein": 1
+     },
+     "equip": "Ölbindemittel, Streuwagen, Auffangwannen, Dichtmaterial, Chemikalienschutzanzüge"
+    },
+    "gitterbox": {
+     "name": "Gitterbox / Transport",
+     "caps": {},
+     "equip": "Leere Gitter- oder Wannen-Container zum Abtransport kontaminierter Schläuche, Einsatzkleidung oder Müll"
+    }
+   }
   },
   "GWG": {
    "short": "GW-G",
@@ -929,7 +981,8 @@
    "caps": {
     "thw": 1,
     "thl": 1,
-    "thl_klein": 1
+    "thl_klein": 1,
+    "licht": 1
    },
    "price": 380000,
    "equip": [

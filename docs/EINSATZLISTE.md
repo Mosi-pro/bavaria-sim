@@ -1,4 +1,4 @@
-# Einsatzliste – LEITSTELLE 112 (Version 1.1.1)
+# Einsatzliste – LEITSTELLE 112 (Version 1.2.0)
 
 Alle Einsätze, die im Spiel vorkommen können. Die Häufigkeit ist der Anteil an allen
 zufälligen Notrufen (gerundet). Jede Einsatzart hat Varianten: Was der Anrufer meldet

@@ -73,7 +73,7 @@ func _rebuild() -> void:
 		var it := inc_tree.create_item(root)
 		it.set_metadata(0, id)
 		it.set_text(0, inc["keyword"])
-		it.set_custom_color(0, [UI.RED, UI.RED, UI.YELLOW, UI.BLUE][clampi(int(inc["prio"]), 1, 3)])
+		it.set_custom_color(0, Data.keyword_color(inc["keyword"]))
 		it.set_tooltip_text(0, "%s – Priorität %d" % [Data.keywords.get(inc["keyword"], {}).get("name", ""), int(inc["prio"])])
 		it.set_text(1, String(inc["address"]).get_slice(",", 0))
 		it.set_tooltip_text(1, "Einsatz %s\n%s\n%s" % [inc["nr"], inc["address"], inc["lage"]])
