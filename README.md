@@ -12,6 +12,8 @@ Die aktuelle Version gibt es unter **[Releases](https://github.com/Mosi-pro/bava
 (Anmeldung bei GitHub nötig, solange das Repository privat ist): `LEITSTELLE112_Setup_<Version>.exe` herunterladen und auf dem
 Windows-PC ausführen.
 
+Eine Übersicht aller möglichen Einsätze steht in [docs/EINSATZLISTE.md](docs/EINSATZLISTE.md).
+
 Alle Orte, Straßen, Wachen, Funkrufnamen, Personen und Telefonnummern sind frei erfunden.
 
 ## Funktionsumfang
