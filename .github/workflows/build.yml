@@ -96,6 +96,23 @@ jobs:
           path: |
             build/windows/
             build/installer/*.exe
+      - name: Beta-Version exportieren (getrennt, mit Zugangscode)
+        shell: pwsh
+        run: |
+          $g = (Get-ChildItem godot\*_console.exe).FullName
+          New-Item -ItemType Directory -Force build\windows_beta\config, build\windows_beta\config_standard\world | Out-Null
+          & $g --headless --path . --export-release "Windows Beta" build\windows_beta\LEITSTELLE112_BETA.exe
+          Copy-Item data\*.json build\windows_beta\config_standard\
+          Copy-Item data\world\*.json build\windows_beta\config_standard\world\
+          Copy-Item packaging\config_README.txt build\windows_beta\config\LIESMICH.txt
+          Copy-Item packaging\LIESMICH_BETA.txt build\windows_beta\LIESMICH.txt
+          Copy-Item packaging\LIZENZHINWEISE.txt build\windows_beta\
+          if (!(Test-Path build\windows_beta\LEITSTELLE112_BETA.exe)) { throw "Beta-Export fehlgeschlagen" }
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\LEITSTELLE112_Beta.iss
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LEITSTELLE112-BETA-Windows-${{ env.APP_VERSION }}
+          path: build/installer_beta/*.exe
       - name: Selbsttest der EXE unter Windows
         shell: pwsh
         run: |
@@ -106,6 +123,14 @@ jobs:
           $ulog = Join-Path $env:APPDATA "LEITSTELLE112\logs\godot.log"
           if (Test-Path $ulog) { Get-Content $ulog -Tail 40 }
           if ($p.ExitCode -ne 0) { throw "Selbsttest fehlgeschlagen" }
+      - name: Selbsttest der Beta-EXE
+        shell: pwsh
+        run: |
+          $log = Join-Path $PWD "selbsttest_beta.log"
+          $p = Start-Process build\windows_beta\LEITSTELLE112_BETA.exe -ArgumentList "--headless","--selbsttest","--log-file","`"$log`"" -Wait -PassThru
+          Write-Host "Exit-Code: $($p.ExitCode)"
+          if (Test-Path $log) { Get-Content $log | Select-String "OK|FEHLER|SELBSTTEST|ERROR" }
+          if ($p.ExitCode -ne 0) { throw "Selbsttest der Beta fehlgeschlagen" }
 
   release:
     # Veröffentlicht die geprüften Dateien als GitHub-Release:
@@ -145,4 +170,20 @@ jobs:
             gh release upload "$TAG" out/* --clobber
           else
             gh release create "$TAG" out/* --target "$GITHUB_SHA" --title "LEITSTELLE 112 – Version ${APP_VERSION}" --notes-file notes.md
+          fi
+      - uses: actions/download-artifact@v4
+        with:
+          name: LEITSTELLE112-BETA-Windows-${{ env.APP_VERSION }}
+          path: beta
+      - name: Beta getrennt als Vorabversion veröffentlichen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${APP_VERSION}-beta"
+          (cd beta && sha256sum *.exe > SHA256SUMMEN_BETA.txt)
+          printf 'BETA-Version %s – nur für eingeladene Tester.\nStart nur mit persönlichem Zugangscode. Eigener Installationsordner und eigene Spielstände, getrennt von der normalen Version.\n' "$APP_VERSION" > beta_notes.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" beta/* --clobber
+          else
+            gh release create "$TAG" beta/* --target "$GITHUB_SHA" --prerelease --title "LEITSTELLE 112 BETA – ${APP_VERSION}" --notes-file beta_notes.md
           fi

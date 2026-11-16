@@ -3,3 +3,5 @@ build/
 *.tmp
 *.import.bak
 __pycache__/
+beta_codes*.txt
+*Zugangscodes*.txt

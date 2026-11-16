@@ -4,6 +4,8 @@ extends Control
 const UI = preload("res://src/ui/kit.gd")
 const MainMenu = preload("res://src/ui/main_menu.gd")
 const Workstation = preload("res://src/ui/workstation.gd")
+const Beta = preload("res://src/core/beta.gd")
+const BetaGate = preload("res://src/ui/beta_gate.gd")
 
 var screen: Control
 
@@ -14,6 +16,8 @@ func _ready() -> void:
 		return
 	theme = UI.theme()
 	get_window().title = "LEITSTELLE 112 – Integrierte Leitstelle Bavaria – Version %s" % ProjectSettings.get_setting("application/config/version", "")
+	if Beta.is_beta():
+		get_window().title += "  –  BETA (nur für Tester)"
 	get_window().min_size = Vector2i(1280, 720)
 	var bg := ColorRect.new()
 	bg.color = UI.BG
@@ -34,6 +38,12 @@ func _ready() -> void:
 	Net.connection_lost.connect(func(text): Game.leave(text))
 	Net.game_started.connect(func(): pass)
 	get_tree().set_auto_accept_quit(false)
+	if Beta.is_beta() and Beta.unlocked_nr() < 0:
+		var gate := Control.new()
+		gate.set_script(BetaGate)
+		gate.unlocked.connect(_show_menu)
+		_swap(gate)
+		return
 	_show_menu()
 
 func _notification(what: int) -> void:
@@ -103,6 +113,9 @@ func _selftest() -> void:
 	report.call(inc["revealed"], "Fahrzeuge an der Einsatzstelle eingetroffen, Lagemeldung erhalten")
 	report.call(SaveSystem.save("Selbsttest") == "" and SaveSystem.load_game("selbsttest") == "", "Spielstand gespeichert und geladen")
 	SaveSystem.delete("selbsttest")
+	if Beta.is_beta():
+		var codes: Dictionary = Beta._list().get("codes", {})
+		report.call(OS.get_user_data_dir().ends_with("LEITSTELLE112_Beta") and codes.size() > 0 and Beta.check("LB-AAAA-AAAA-AAAA") < 0, "Beta-Version: eigener Datenordner (%s), %d Zugangscodes, ungültige Codes abgelehnt" % [OS.get_user_data_dir(), codes.size()])
 	var key := Sim.Personnel != null
 	report.call(key, "Module vollständig")
 	print("SELBSTTEST " + ("BESTANDEN" if ok else "FEHLGESCHLAGEN"))

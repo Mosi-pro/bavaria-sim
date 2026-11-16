@@ -59,6 +59,8 @@ func _ready() -> void:
 	test_scenarios()
 	print("== Speichern und Laden ==")
 	test_save_load()
+	print("== Beta-Zugangscodes ==")
+	test_beta()
 	print("== Authentifizierung ==")
 	test_auth()
 	print("\nErgebnis: %d bestanden, %d fehlgeschlagen" % [passed, failed])
@@ -478,6 +480,16 @@ func test_gwl_modules() -> void:
 	check(ks.size() == 1 and State.vehicles[ks[0]]["type"] == "FWK", "Bei Kranbedarf wird ein Feuerwehrkran vorgeschlagen")
 	# Stichwortfarben nach Fachbereich
 	check(Data.keyword_color("RD 2") == Color("#e58a2e") and Data.keyword_color("B 2") == Color("#d9534a") and Data.keyword_color("THL 4") == Color("#d9534a") and Data.keyword_color("POL 1") == Color("#5b95c8"), "Stichwortfarben: RD orange, Feuerwehr rot, Polizei blau")
+
+func test_beta() -> void:
+	const Beta = preload("res://src/core/beta.gd")
+	var l := {"salt": "testsalz", "codes": {"7": ("testsalz:ABCDEFGHJKLM").sha256_text()}}
+	check(Beta.check("LB-ABCD-EFGH-JKLM", l) == 7, "Gültiger Code erkennt Tester 7")
+	check(Beta.check("lb abcd efgh jklm", l) == 7 and Beta.check("ABCDEFGHJKLM", l) == 7, "Schreibweise egal (klein, Leerzeichen, ohne Präfix)")
+	check(Beta.check("LB-ABCD-EFGH-JKLN", l) == -1 and Beta.check("", l) == -1, "Falscher Code abgelehnt")
+	var real: Dictionary = Beta._list()
+	check(real.get("codes", {}).size() >= 50 and String(real.get("salt", "")).length() >= 16, "Beta-Codeliste vorhanden (nur Prüfwerte)")
+	check(not Beta.is_beta(), "Normale Version verlangt keinen Code")
 
 func test_calls_consistency() -> void:
 	Sim.new_game({"mode": "frei", "seed": 44})

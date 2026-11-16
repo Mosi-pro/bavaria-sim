@@ -1,0 +1,23 @@
+LEITSTELLE 112 – BETA-VERSION (nur für eingeladene Tester)
+==========================================================
+
+Diese Version ist eine Vorabversion zum Testen. Sie ist vollständig getrennt
+von der normalen Version:
+  - eigener Installationsordner  (C:\Program Files\LEITSTELLE 112 BETA)
+  - eigene Spielstände/Einstellungen  (%APPDATA%\LEITSTELLE112_Beta)
+  - eigener Eintrag im Startmenü und bei "Apps & Features"
+Beide Versionen können gleichzeitig installiert sein.
+
+Zugangscode
+  Beim ersten Start fragt das Spiel nach deinem persönlichen Zugangscode
+  (Format LB-XXXX-XXXX-XXXX). Du bekommst ihn vom Entwicklerteam.
+  Bitte gib den Code nicht weiter – jeder Code gehört genau einem Tester und
+  kann gesperrt werden.
+
+Fehler melden
+  Bitte im Discord im Bereich für Beta-Tester: Was hast du gemacht, was ist
+  passiert, was hättest du erwartet? Screenshots helfen sehr.
+  Protokolldatei: %APPDATA%\LEITSTELLE112_Beta\logs\godot.log
+
+Start:          LEITSTELLE112_BETA.exe (oder Startmenü / Desktopverknüpfung)
+Systemvoraus.:  Windows 10/11, 64 Bit, Grafikkarte mit Vulkan-Unterstützung

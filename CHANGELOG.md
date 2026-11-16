@@ -1,5 +1,15 @@
 # Änderungen – LEITSTELLE 112
 
+## Version 1.3.1 (16.11.2026)
+
+**Neu**
+- **Beta-Tester-Version:** Zusätzlich zur normalen Version wird eine getrennte BETA-Version gebaut (`LEITSTELLE112_BETA_Setup_<Version>.exe`, eigene Vorabversion auf GitHub).
+  - Startet nur mit einem persönlichen Zugangscode (Format LB-XXXX-XXXX-XXXX). Im Spiel liegen nur gesalzene SHA-256-Prüfwerte, nicht die Codes selbst.
+  - Codes erzeugen und sperren mit `tools/beta_codes.py`; gesperrte Codes gelten ab dem nächsten Beta-Build nicht mehr.
+  - Eigener Installationsordner, eigene Spielstände (%APPDATA%\LEITSTELLE112_Beta), eigener Startmenü-Eintrag – beide Versionen können parallel installiert sein.
+  - Gekennzeichnet als BETA im Fenstertitel und im Hauptmenü (mit Testernummer).
+- Die normale Version ist unverändert und verlangt keinen Code.
+
 ## Version 1.3.0 (16.11.2026)
 
 **Neue Funktionen**

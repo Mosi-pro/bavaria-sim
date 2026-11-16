@@ -36,6 +36,11 @@ func _ready() -> void:
 	title.add_theme_font_override("font", UI.bold())
 	v.add_child(title)
 	v.add_child(UI.label("Integrierte Leitstelle Bavaria", UI.TEXT2, 14))
+	const Beta = preload("res://src/core/beta.gd")
+	if Beta.is_beta():
+		var b := UI.label("BETA-VERSION  ·  Tester #%d" % Beta.unlocked_nr(), UI.YELLOW, 13)
+		b.add_theme_font_override("font", UI.bold())
+		v.add_child(b)
 	v.add_child(UI.label("Feuerwehr  ·  Rettungsdienst  ·  Polizei  ·  Katastrophenschutz", Color("#6b737b"), 11))
 	var gap := Control.new()
 	gap.custom_minimum_size.y = 18
