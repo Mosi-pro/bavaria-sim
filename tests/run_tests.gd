@@ -455,6 +455,27 @@ func test_gwl_modules() -> void:
 				said = true
 		check(said, "Funkprotokoll nennt die Beladung")
 		check(not VL.set_module(v, "licht"), "Unterwegs kein Umladen möglich")
+	# Feuerwehrkräne, Werkfeuerwehr, TLF-Verteilung
+	var kran_st: Array = []
+	var tlf_bf := 0
+	for sid in State.stations:
+		var st: Dictionary = State.stations[sid]
+		for vid in State.station_vehicles(sid):
+			var vt: String = State.vehicles[vid]["type"]
+			if vt == "FWK":
+				kran_st.append(sid)
+			if st["kind"] == "bf" and vt.begins_with("TLF"):
+				tlf_bf += 1
+	kran_st.sort()
+	check(kran_st == ["fw6", "fw9"], "Feuerwehrkräne an Feuerwache 6 und 9")
+	check(tlf_bf == 4, "Nur 4 Berufsfeuerwehr-Wachen mit TLF")
+	check(State.stations.has("werk1") and State.station_vehicles("werk1").size() >= 4, "Werkfeuerwehr vorhanden")
+	var kr: Dictionary = Sim.act({"a": "inc_create", "form": {"keyword": "THL 2", "x": 0.0, "y": 0.0}}, me)
+	var kinc: Dictionary = State.incidents[kr["id"]]
+	kinc["revealed"] = true
+	kinc["need"] = {"kran": 1}
+	var ks: Array = Advisor.suggest(kinc)["suggested"]
+	check(ks.size() == 1 and State.vehicles[ks[0]]["type"] == "FWK", "Bei Kranbedarf wird ein Feuerwehrkran vorgeschlagen")
 	# Stichwortfarben nach Fachbereich
 	check(Data.keyword_color("RD 2") == Color("#e58a2e") and Data.keyword_color("B 2") == Color("#d9534a") and Data.keyword_color("THL 4") == Color("#d9534a") and Data.keyword_color("POL 1") == Color("#5b95c8"), "Stichwortfarben: RD orange, Feuerwehr rot, Polizei blau")
 

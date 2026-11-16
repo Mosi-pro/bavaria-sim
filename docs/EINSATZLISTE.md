@@ -1,10 +1,10 @@
-# Einsatzliste – LEITSTELLE 112 (Version 1.2.0)
+# Einsatzliste – LEITSTELLE 112 (Version 1.3.0)
 
 Alle Einsätze, die im Spiel vorkommen können. Die Häufigkeit ist der Anteil an allen
 zufälligen Notrufen (gerundet). Jede Einsatzart hat Varianten: Was der Anrufer meldet
 und was die erste Einheit vor Ort vorfindet, kann sich unterscheiden.
 
-**46 Einsatzarten** in 6 Kategorien, 123 Varianten, 51 Stichwörter.
+**50 Einsatzarten** in 6 Kategorien, 135 Varianten, 51 Stichwörter.
 
 ## Brand
 
@@ -12,10 +12,10 @@ _Feuer, Rauch, Brandmeldeanlage_
 
 | Einsatz | Stichwort | Häufigkeit | Mögliche Lagen vor Ort |
 |---|---|---|---|
-| Brennender Müllcontainer | B 1 | 4.7 % | Containerbrand; Brand greift über; Bereits erloschen |
-| Auslösung Brandmeldeanlage | B BMA | 4.7 % | Fehlalarm; Böswillige Auslösung; Kleinbrand; Bestätigtes Feuer (→ B 4) |
+| Brennender Müllcontainer | B 1 | 4.6 % | Containerbrand; Brand greift über; Bereits erloschen |
+| Auslösung Brandmeldeanlage | B BMA | 4.6 % | Fehlalarm; Böswillige Auslösung; Kleinbrand; Bestätigtes Feuer (→ B 4) |
 | Zimmerbrand im Mehrfamilienhaus | B 3 | 3.7 % | Angebranntes Essen (→ B 2); Zimmerbrand; Wohnung in Vollbrand (→ B 3 PERSON); Treppenraum verraucht (→ B 4) |
-| PKW-Brand | B 2 | 3.3 % | Motorraumbrand; Vollbrand; Elektrofahrzeug |
+| PKW-Brand | B 2 | 3.2 % | Motorraumbrand; Vollbrand; Elektrofahrzeug |
 | Brand in einem Einfamilienhaus | B 3 | 2.3 % | Kellerbrand; Küchenbrand; Dachstuhlbrand; Kaminbrand (→ B 2) |
 | Brand Gartenhütte / Schuppen | B 2 | 1.7 % | Hütte in Vollbrand; Gasflasche im Schuppen; Person verletzt (→ B 2 PERSON) |
 | Rauchentwicklung in einem Industriegebäude | B 4 | 1.5 % | Maschinenbrand; Hallenbrand; Ausgedehnter Brand (→ B 5) |
@@ -36,11 +36,14 @@ _Person eingeklemmt/eingeschlossen, Baum, Wasser, Unwetter_
 | Baum auf Fahrbahn | THL 1 | 2.0 % (häufiger bei Sturm, Starkregen, Schnee) | Baum beseitigen; Baum auf PKW; Oberleitung betroffen |
 | Person in Aufzug eingeschlossen | THL P AUFZUG | 1.7 % | Aufzug |
 | Tier in Notlage | THL 1 | 1.1 % | Tierrettung; Großtier (→ THL GROßTIERRETTUNG) |
-| Person im Wasser | THL WASSER | 0.7 % | Person im Wasser; Person untergegangen; Selbst gerettet (→ RD 1) |
-| Rettung aus Höhe oder Tiefe | THL P RETTUNG H/T | 0.7 % | Person droht zu springen; Arbeiter in Höhe; Person in Tiefe |
+| Person im Wasser | THL WASSER | 0.6 % | Person im Wasser; Person untergegangen; Selbst gerettet (→ RD 1) |
+| Rettung aus Höhe oder Tiefe | THL P RETTUNG H/T | 0.6 % | Person droht zu springen; Arbeiter in Höhe; Person in Tiefe |
 | Stromunfall | THL P STROM | 0.4 % | Stromunfall; Bewusstlos; Person noch in Kontakt |
 | Person unter Straßenbahn | THL P STRAßENBAHN | 0.2 % | Person unter Bahn; Person neben Bahn (→ RD 2) |
 | Wasser im Keller | THL UNWETTER | 0.2 % (häufiger bei Starkregen, Sturm, Regen) | Keller auspumpen; Tiefgarage geflutet |
+| PKW in Gewässer | THL WASSER | 0.1 % | Fahrzeug leer; Person im Fahrzeug (→ RD WASSERNOT 3); Fahrer selbst gerettet |
+| Baukran umgestürzt | THL 3 | 0.1 % | Kran auf Gebäude gestürzt; Person unter Last eingeklemmt; Kranführer in Höhe (→ THL P RETTUNG H/T) |
+| Straßenbahn entgleist | THL 2 | 0.1 % | Entgleist ohne Verletzte; Fahrgäste verletzt (→ RD 3); Gegen Gebäude geprallt (→ THL 3) |
 | Sturmschaden an Gebäude | THL UNWETTER | sehr selten (häufiger bei Sturm, Starkregen) | Sicherung; Passant verletzt |
 | Person im Eis eingebrochen | RD EISUNFALL 2 | sehr selten (häufiger bei Schnee) | Person im Eis; Person untergegangen |
 | Hochwasser – Deichverteidigung | THL UNWETTER | nur in Szenarien | Sandsackverbau; Evakuierung |
@@ -51,10 +54,10 @@ _Krankheit, Verletzung, Verkehrsunfall mit Verletzten_
 
 | Einsatz | Stichwort | Häufigkeit | Mögliche Lagen vor Ort |
 |---|---|---|---|
-| Medizinischer Notfall | RD 1 | 22.3 % | Stabil; Kritischer als gemeldet (→ RD 2); Tragehilfe (→ THL TRAGEHILFE) |
-| Krankentransport | RD KTP | 8.4 % | Transport |
-| Bewusstlose Person | RD 2 | 4.7 % | Bewusstlos; Reanimation; Wieder ansprechbar (→ RD 1) |
-| Akuter Brustschmerz / Atemnot | RD 2 | 3.3 % | Akutes Koronarsyndrom; Entwarnung (→ RD 1) |
+| Medizinischer Notfall | RD 1 | 22.2 % | Stabil; Kritischer als gemeldet (→ RD 2); Tragehilfe (→ THL TRAGEHILFE) |
+| Krankentransport | RD KTP | 8.3 % | Transport |
+| Bewusstlose Person | RD 2 | 4.6 % | Bewusstlos; Reanimation; Wieder ansprechbar (→ RD 1) |
+| Akuter Brustschmerz / Atemnot | RD 2 | 3.2 % | Akutes Koronarsyndrom; Entwarnung (→ RD 1) |
 | Geburt | RD 2 | 1.1 % | Wehen (→ RD 1); Geburt läuft; Komplikation |
 | Psychiatrischer Notfall mit Fremdgefährdung | RD 2 | 0.9 % | Verwirrte Person; Suizidandrohung; Beruhigt (→ RD 1) |
 | Notfall Kind | RD 2-KIND | 0.8 % | Fieberkrampf; Atemnot Kind; Säugling leblos |
@@ -80,7 +83,7 @@ _Streit, Einbruch, Gewalt_
 
 | Einsatz | Stichwort | Häufigkeit | Mögliche Lagen vor Ort |
 |---|---|---|---|
-| Ruhestörung / Streitigkeit | POL 1 | 5.6 % | Ruhestörung; Körperverletzung |
+| Ruhestörung / Streitigkeit | POL 1 | 5.5 % | Ruhestörung; Körperverletzung |
 | Schlägerei mit mehreren Beteiligten | POL 2 | 2.3 % | Schlägerei; Größere Gruppe; Messerangriff (→ RD 2) |
 | Einbruch – Täter vor Ort | POL 2 | 2.0 % | Täter flüchtig; Festnahme; Fehlalarm |
 
@@ -90,9 +93,10 @@ _Unfälle auf Straße und Autobahn (Stichwörter THL 2–5, RD)_
 
 | Einsatz | Stichwort | Häufigkeit | Mögliche Lagen vor Ort |
 |---|---|---|---|
-| Verkehrsunfall mit zwei Fahrzeugen | THL 2 | 5.6 % | Leichtverletzte; Nur Sachschaden (→ POL 1); Person eingeschlossen (→ THL 3); Mehrere Verletzte (→ RD 3) |
+| Verkehrsunfall mit zwei Fahrzeugen | THL 2 | 5.5 % | Leichtverletzte; Nur Sachschaden (→ POL 1); Person eingeschlossen (→ THL 3); Mehrere Verletzte (→ RD 3) |
 | Verkehrsunfall, Person eingeklemmt | THL 3 | 1.5 % | Eine Person eingeklemmt; Schwer eingeklemmt; Nicht eingeklemmt (→ THL 2) |
 | Verkehrsunfall mit mehreren Verletzten | THL 4 | 0.5 % | MANV; MANV groß (→ THL 5) |
+| LKW umgestürzt | THL 2 | 0.4 % | LKW auf der Seite; Fahrer eingeklemmt (→ THL 3); Ladung verloren |
 
 ## Stichwörter (Alarmierungsbekanntmachung)
 

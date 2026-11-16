@@ -4505,6 +4505,397 @@
    "reports": {
     "done": "Person gerettet, Einsatz beendet."
    }
+  },
+  "lkw_umgestuerzt": {
+   "name": "LKW umgestürzt",
+   "keyword": "THL 2",
+   "kw_ok": [
+    "THL 3"
+   ],
+   "weight": 0.45,
+   "cat": "vu",
+   "call": "lkw_umgestuerzt",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     0,
+     2,
+     3,
+     6
+    ]
+   },
+   "objects": [
+    "Sattelzug auf der Seite liegend",
+    "Kipplaster in der Böschung",
+    "LKW mit Anhänger umgekippt",
+    "Betonmischer auf die Seite gestürzt"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "thl": 1,
+    "rw": 1,
+    "kran": 1,
+    "loeschen": 1,
+    "polizei": 2
+   },
+   "work": 4200,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    1,
+    2
+   ],
+   "variants": [
+    {
+     "p": 0.55,
+     "name": "LKW auf der Seite",
+     "lage": "LKW liegt auf der Seite, Fahrer leicht verletzt ausgestiegen. Betriebsstoffe laufen aus – Aufrichten nur mit Feuerwehrkran möglich."
+    },
+    {
+     "p": 0.25,
+     "name": "Fahrer eingeklemmt",
+     "keyword": "THL 3",
+     "lage": "Fahrer im Führerhaus eingeklemmt! Kabine muss mit dem Kran gesichert und angehoben werden.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "thl": 2,
+      "rw": 1,
+      "kran": 1,
+      "loeschen": 1,
+      "notarzt": 1,
+      "polizei": 2
+     },
+     "work": 4800,
+     "sev": [
+      3,
+      3
+     ]
+    },
+    {
+     "p": 0.2,
+     "name": "Ladung verloren",
+     "lage": "LKW auf der Fahrbahn gekippt, Ladung (Stahlträger) verstreut. Niemand verletzt – Bergung mit Kran.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "kran": 1,
+      "thl_klein": 1,
+      "polizei": 2
+     },
+     "patients": [
+      0,
+      0
+     ],
+     "work": 3600
+    }
+   ],
+   "strain": [
+    {
+     "after": 600,
+     "text": "Bergung verzögert sich, Rückstau auf mehrere Kilometer – Polizei benötigt Verstärkung!",
+     "add": {
+      "polizei": 1
+     },
+     "work": 300
+    }
+   ],
+   "reports": {
+    "p35": "Einsatzstelle abgesichert, Betriebsstoffe gebunden.",
+    "p75": "Fahrzeug mit Feuerwehrkran aufgerichtet.",
+    "done": "Fahrzeug geborgen, Fahrbahn an Polizei übergeben."
+   },
+   "closure": 1.0
+  },
+  "baukran": {
+   "name": "Baukran umgestürzt",
+   "keyword": "THL 3",
+   "kw_ok": [
+    "THL P RETTUNG H/T"
+   ],
+   "weight": 0.12,
+   "cat": "thl",
+   "call": "baukran",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     8
+    ],
+    "styles": [
+     "altstadt",
+     "zentrum",
+     "wohn_dicht",
+     "wohn",
+     "gewerbe",
+     "industrie"
+    ]
+   },
+   "objects": [
+    "Turmdrehkran auf einer Großbaustelle",
+    "Mobilkran neben einem Rohbau",
+    "Baukran an einer Wohnanlage"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "thl": 2,
+    "rw": 1,
+    "kran": 1,
+    "dlk": 1,
+    "polizei": 2
+   },
+   "work": 5400,
+   "patients": [
+    1,
+    2
+   ],
+   "sev": [
+    2,
+    3
+   ],
+   "variants": [
+    {
+     "p": 0.45,
+     "name": "Kran auf Gebäude gestürzt",
+     "lage": "Kranausleger auf ein Nachbargebäude gestürzt, Dach beschädigt. Ein Bauarbeiter verletzt. Sicherung des Auslegers mit Feuerwehrkran erforderlich."
+    },
+    {
+     "p": 0.3,
+     "name": "Person unter Last eingeklemmt",
+     "lage": "Bauarbeiter unter herabgestürzter Last eingeklemmt! Anheben nur mit Feuerwehrkran möglich.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "thl": 2,
+      "rw": 1,
+      "kran": 1,
+      "notarzt": 1,
+      "polizei": 2
+     },
+     "sev": [
+      3,
+      4
+     ],
+     "patients": [
+      1,
+      1
+     ]
+    },
+    {
+     "p": 0.25,
+     "name": "Kranführer in Höhe",
+     "keyword": "THL P RETTUNG H/T",
+     "lage": "Kran nur in Schieflage, Kranführer sitzt in 40 m Höhe fest. Rettung durch Höhenretter.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "thl": 1,
+      "hoehenrettung": 1,
+      "dlk": 1,
+      "polizei": 1
+     },
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      1,
+      2
+     ],
+     "work": 3000
+    }
+   ],
+   "developments": [
+    {
+     "at": [
+      0.2,
+      0.5
+     ],
+     "p": 0.2,
+     "text": "Kran rutscht weiter ab – Nachbarhaus muss geräumt werden!",
+     "add": {
+      "polizei": 1,
+      "loeschen": 1
+     },
+     "work": 600
+    }
+   ],
+   "reports": {
+    "p35": "Gefahrenbereich abgesperrt, Kran gesichert.",
+    "p75": "Verletzte gerettet und an Rettungsdienst übergeben.",
+    "done": "Einsatzstelle an Bauaufsicht übergeben."
+   }
+  },
+  "strab_entgleist": {
+   "name": "Straßenbahn entgleist",
+   "keyword": "THL 2",
+   "kw_ok": [
+    "THL 3",
+    "RD 3"
+   ],
+   "weight": 0.12,
+   "cat": "thl",
+   "call": "strab_entgleist",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     2,
+     3
+    ],
+    "styles": [
+     "altstadt",
+     "zentrum",
+     "wohn_dicht",
+     "wohn"
+    ]
+   },
+   "objects": [
+    "Straßenbahn in einer Kurve",
+    "Straßenbahn an einer Weiche",
+    "Straßenbahn im Kreuzungsbereich"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "thl": 1,
+    "rw": 1,
+    "kran": 1,
+    "polizei": 2
+   },
+   "work": 6000,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Entgleist ohne Verletzte",
+     "lage": "Straßenbahn mit einem Drehgestell entgleist, Fahrgäste ausgestiegen. Fahrstrom abgeschaltet – Aufgleisen mit Feuerwehrkran."
+    },
+    {
+     "p": 0.3,
+     "name": "Fahrgäste verletzt",
+     "keyword": "RD 3",
+     "lage": "Straßenbahn entgleist und abrupt gebremst, mehrere Fahrgäste gestürzt und verletzt.",
+     "patients": [
+      2,
+      4
+     ],
+     "sev": [
+      1,
+      2
+     ]
+    },
+    {
+     "p": 0.1,
+     "name": "Gegen Gebäude geprallt",
+     "keyword": "THL 3",
+     "lage": "Entgleiste Straßenbahn gegen Hauswand geprallt! Gebäudeschaden, Fahrer eingeklemmt.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "thl": 2,
+      "rw": 1,
+      "kran": 1,
+      "dlk": 1,
+      "polizei": 2
+     },
+     "patients": [
+      1,
+      3
+     ],
+     "sev": [
+      2,
+      3
+     ]
+    }
+   ],
+   "reports": {
+    "p50": "Fahrgäste betreut, Straßenbahn wird angehoben.",
+    "done": "Straßenbahn aufgegleist, Strecke an Verkehrsbetrieb übergeben."
+   },
+   "closure": 1.0
+  },
+  "pkw_gewaesser": {
+   "name": "PKW in Gewässer",
+   "keyword": "THL WASSER",
+   "kw_ok": [
+    "RD WASSERNOT 3"
+   ],
+   "weight": 0.15,
+   "cat": "thl",
+   "call": "pkw_gewaesser",
+   "loc": {
+    "mode": "water"
+   },
+   "objects": [
+    "PKW im Fluss",
+    "Kleintransporter im Kanal",
+    "PKW im Hafenbecken"
+   ],
+   "reqs": {
+    "thl": 1,
+    "wasserrettung": 1,
+    "kran": 1,
+    "polizei": 1
+   },
+   "work": 3600,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.5,
+     "name": "Fahrzeug leer",
+     "lage": "Fahrzeug treibt bzw. liegt im Wasser, keine Personen mehr darin. Bergung mit Feuerwehrkran."
+    },
+    {
+     "p": 0.35,
+     "name": "Person im Fahrzeug",
+     "keyword": "RD WASSERNOT 3",
+     "lage": "Person im sinkenden Fahrzeug! Taucher und Notarzt dringend.",
+     "reqs": {
+      "thl": 1,
+      "wasserrettung": 1,
+      "taucher": 1,
+      "kran": 1,
+      "notarzt": 1,
+      "polizei": 1
+     },
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      3,
+      4
+     ]
+    },
+    {
+     "p": 0.15,
+     "name": "Fahrer selbst gerettet",
+     "lage": "Fahrer hat sich selbst ans Ufer gerettet, unterkühlt. Fahrzeug muss geborgen werden.",
+     "patients": [
+      1,
+      1
+     ],
+     "sev": [
+      1,
+      2
+     ]
+    }
+   ],
+   "reports": {
+    "p75": "Fahrzeug am Kran angeschlagen und aus dem Wasser gehoben.",
+    "done": "Fahrzeug geborgen, Ölsperre kontrolliert."
+   }
   }
  }
 }

@@ -55,7 +55,8 @@
   "pol_krad": "Motorradstreife",
   "betreuung_psnv": "Psychosoziale Notfallversorgung (KIT)",
   "rth": "Rettungshubschrauber",
-  "licht": "Beleuchtung / Stromerzeuger"
+  "licht": "Beleuchtung / Stromerzeuger",
+  "kran": "Feuerwehrkran"
  },
  "types": {
   "KDOW": {
@@ -1273,6 +1274,27 @@
     "Beatmungsgerät",
     "Vakuummatratze",
     "Winde (nur Christoph Bavaria)"
+   ]
+  },
+  "FWK": {
+   "short": "FwK 70",
+   "name": "Feuerwehrkran (70-Tonnen-Klasse)",
+   "org": "fw",
+   "kenn": "64",
+   "speed": 80,
+   "crew": 2,
+   "min": 2,
+   "quals": {
+    "MA": 1
+   },
+   "caps": {
+    "kran": 1
+   },
+   "price": 1100000,
+   "equip": [
+    "Teleskopausleger, Hubkraft bis 70 t",
+    "Front-Seilwinde",
+    "Anschlagmittel und Traversen"
    ]
   }
  }

@@ -1,5 +1,20 @@
 # Änderungen – LEITSTELLE 112
 
+## Version 1.3.0 (16.11.2026)
+
+**Neue Funktionen**
+- **Feuerwehrkräne:** Zwei Kranwagen »FwK 70« (70-Tonnen-Klasse, Front-Seilwinde) an Feuerwache 6 (Güterstadt, Westen) und Feuerwache 9 (Industriehafen, Südosten).
+- **Neue Kran-Einsätze:**
+  - LKW umgestürzt (THL 2; Varianten: Fahrer eingeklemmt → THL 3, Ladung verloren)
+  - Baukran umgestürzt (THL 3; Varianten: Person unter Last, Kranführer in Höhe → THL P RETTUNG H/T)
+  - Straßenbahn entgleist (THL 2; Varianten: Fahrgäste verletzt → RD 3, gegen Gebäude geprallt → THL 3)
+  - PKW in Gewässer (THL WASSER; Variante: Person im Fahrzeug → RD WASSERNOT 3)
+- **Werkfeuerwehr:** »Werkfeuerwehr Bavaria Metallwerke« im Westen (ELW 1, HLF 20, TLF 3000, GW-L) mit eigenem Werksanitätsdienst (RTW), rund um die Uhr besetzt.
+
+**Änderungen**
+- **Wachen neu angeordnet:** Die 10 Feuerwachen der Berufsfeuerwehr liegen jetzt grob so wie in einer echten bayerischen Großstadt: Hauptfeuerwache im Zentrum, Wache 2 im Süden, 3 im Westend, 4 im Norden bei der Leitstelle, 5 im Osten, 6 weit im Westen, 7 im Norden, 8 im Nordosten, 9 im Südosten, 10 an der Messe. Die Flughafen-Wache der BF entfällt (der Flughafen hat seine eigene Flughafenfeuerwehr); dafür gibt es neue Freiwillige Feuerwehren in der Südstadt und am Flughafen-Nord.
+- **Weniger Tanklöschfahrzeuge:** Nur noch 4 der 10 Feuerwachen haben ein TLF (5, 6, 9, 10).
+
 ## Version 1.2.0 (16.11.2026)
 
 **Neue Funktionen**

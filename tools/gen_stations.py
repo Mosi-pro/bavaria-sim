@@ -8,29 +8,35 @@ def st(id, nr, name, org, kind, pos, vehicles, slots=None, **kw):
          "slots": slots or max(len(vehicles) + 1, 3)}
     d.update(kw); S.append(d)
 
-BF_STD = ["ELW1", "HLF20", "HLF20", "DLK", "TLF3000"]
-# Berufsfeuerwehr
-st("fw1", 1, "Feuerwache 1 – Altstadt", "fw", "bf", [-220, 330], ["KDOW", "ELW1", "HLF20", "HLF20", "DLK", "TLF3000", "RW", "KLAF"], 10)
-st("fw2", 2, "Feuerwache 2 – Zentrum Nord", "fw", "bf", [330, -2120], BF_STD + ["ELW2", "GWA"], 9)
-st("fw3", 3, "Feuerwache 3 – Westend", "fw", "bf", [-2950, 480], BF_STD + ["GWL", "KLAF"], 9)
-st("fw4", 4, "Feuerwache 4 – Südstadt", "fw", "bf", [620, 4650], BF_STD + ["RW"], 8)
-st("fw5", 5, "Feuerwache 5 – Industriehafen", "fw", "bf", [5600, 1450], ["ELW1", "HLF20", "HLF20", "DLK", "TLF4000", "GWG", "GWA", "GWW", "GWDEKON"], 11)
-st("fw6", 6, "Feuerwache 6 – Nordstadt", "fw", "bf", [-720, -5180], BF_STD + ["MTF", "KLAF"], 9)
-st("fw7", 7, "Feuerwache 7 – Flughafen", "fw", "bf", [5250, -5950], ["ELW1", "HLF20", "HLF20", "DLK", "TLF4000"], 7)
-st("fw8", 8, "Feuerwache 8 – Ostpark", "fw", "bf", [3420, 130], BF_STD + ["GWW", "GWH"], 9)
-st("fw9", 9, "Feuerwache 9 – Güterstadt", "fw", "bf", [-5380, -1150], ["ELW1", "HLF20", "HLF20", "DLK", "TLF4000", "RW", "GWG"], 9)
-st("fw10", 10, "Feuerwache 10 – Waldheim", "fw", "bf", [-6900, 3000], ["ELW1", "HLF20", "LF20", "DLK", "TLF4000", "GWL", "KLAF"], 9)
+# Berufsfeuerwehr: 10 Feuerwachen. Grobe Anordnung wie in einer bayerischen Großstadt:
+# Hauptfeuerwache im Zentrum, je eine Wache im Westen/Südwesten/Süden, Norden (bei der
+# Integrierten Leitstelle), Nordosten, Osten, Südosten und am Messegelände.
+# Tanklöschfahrzeuge nur an einzelnen Wachen, Feuerwehrkräne an Wache 6 und 9.
+st("fw1", 1, "Feuerwache 1 – Altstadt (Hauptfeuerwache)", "fw", "bf", [-220, 330], ["KDOW", "ELW1", "HLF20", "HLF20", "DLK", "RW", "KLAF"], 10)
+st("fw2", 2, "Feuerwache 2 – Zentrum Süd", "fw", "bf", [-1300, 2700], ["ELW1", "HLF20", "HLF20", "DLK", "ELW2", "GWA"], 9)
+st("fw3", 3, "Feuerwache 3 – Westend", "fw", "bf", [-2950, 480], ["ELW1", "HLF20", "HLF20", "DLK", "GWL", "KLAF"], 9)
+st("fw4", 4, "Feuerwache 4 – Zentrum Nord", "fw", "bf", [-700, -2000], ["ELW1", "HLF20", "HLF20", "DLK", "RW"], 8)
+st("fw5", 5, "Feuerwache 5 – Ost", "fw", "bf", [2600, 2300], ["ELW1", "HLF20", "HLF20", "DLK", "TLF3000", "GWW", "GWH"], 9)
+st("fw6", 6, "Feuerwache 6 – Güterstadt", "fw", "bf", [-5380, -1150], ["ELW1", "HLF20", "HLF20", "DLK", "TLF4000", "RW", "GWG", "FWK"], 10)
+st("fw7", 7, "Feuerwache 7 – Nordstadt", "fw", "bf", [-720, -5180], ["ELW1", "HLF20", "HLF20", "DLK", "MTF", "KLAF"], 9)
+st("fw8", 8, "Feuerwache 8 – Nordost", "fw", "bf", [3600, -3900], ["ELW1", "HLF20", "HLF20", "DLK"], 7)
+st("fw9", 9, "Feuerwache 9 – Industriehafen", "fw", "bf", [5200, 3400], ["ELW1", "HLF20", "HLF20", "DLK", "TLF4000", "GWG", "GWA", "GWW", "GWDEKON", "FWK"], 12)
+st("fw10", 10, "Feuerwache 10 – Messe", "fw", "bf", [6900, -2300], ["ELW1", "HLF20", "LF20", "DLK", "TLF4000", "GWL", "KLAF"], 9)
 st("fwflug", 11, "Flughafenfeuerwehr Bavaria", "fw", "flughafen", [5450, -7250], ["KDOW", "FLF", "FLF", "FLF", "HLF20", "RW"], 8)
+# Werkfeuerwehr eines (fiktiven) Industriebetriebs – rund um die Uhr besetzt
+st("werk1", 40, "Werkfeuerwehr Bavaria Metallwerke", "fw", "werk", [-5050, -2350], ["ELW1", "HLF20", "TLF3000", "GWL"], 6)
 # Freiwillige Feuerwehren
 FF = ["MZF", "HLF10", "LF10"]
 st("ff21", 21, "FF Seeburg", "fw", "ff", [4700, 5950], FF + ["TLF3000", "GWW"], 6)
 st("ff22", 22, "FF Südwest", "fw", "ff", [-4700, 5300], FF + ["DLK"], 6)
 st("ff23", 23, "FF Nordost", "fw", "ff", [4550, -4550], FF + ["DLK"], 6)
 st("ff24", 24, "FF Stadionviertel", "fw", "ff", [-4250, -5200], FF + ["TLF3000"], 6)
-st("ff25", 25, "FF Messestadt", "fw", "ff", [6850, -2250], FF, 5)
+st("ff25", 25, "FF Ostpark", "fw", "ff", [3900, -300], FF, 5)
 st("ff26", 26, "FF Universitätsviertel", "fw", "ff", [2350, -2450], ["MZF", "HLF20", "LF10"], 5)
 st("ff27", 27, "FF Zentrum Süd", "fw", "ff", [-350, 2400], ["MZF", "HLF20", "LF20", "GWL"], 6)
-st("ff28", 28, "FF Waldheim-Forst", "fw", "ff", [-7900, 1800], ["MTF", "LF10", "TLF4000"], 5)
+st("ff28", 28, "FF Waldheim", "fw", "ff", [-7300, 2900], ["MTF", "HLF20", "LF10", "TLF4000"], 6)
+st("ff29", 29, "FF Südstadt", "fw", "ff", [900, 5200], FF + ["DLK"], 6)
+st("ff30", 30, "FF Flughafen-Nord", "fw", "ff", [5250, -5950], FF, 5)
 st("ff31", 31, "FF Oberfeldkirchen", "fw", "ff", [-10900, -8150], ["MTF", "HLF10", "TLF3000"], 4)
 st("ff32", 32, "FF Aichering", "fw", "ff", [11100, 3550], ["MTF", "HLF10", "LF10"], 4)
 st("ff33", 33, "FF Moosbrunn", "fw", "ff", [-1650, 10450], ["MTF", "HLF10"], 4)
@@ -39,8 +45,9 @@ st("ff35", 35, "FF Kirchstetten", "fw", "ff", [10900, -9400], ["MTF", "HLF10"], 
 # Rettungsdienst (inkl. Rettungswagen der Berufsfeuerwehr – an den Feuerwachen stationiert, Organisation Rettungsdienst)
 def rw(id, nr, name, pos, v, slots=None, kind="rw"): st(id, nr, name, "rd", kind, pos, v, slots)
 rw("rwf1", 31, "Rettungswache Feuerwache 1 – Altstadt", [-180, 290], ["RTW", "NEF"], 3)
-rw("rwf4", 34, "Rettungswache Feuerwache 4 – Südstadt", [660, 4610], ["RTW"], 2)
-rw("rwf7", 37, "Rettungswache Feuerwache 7 – Flughafen", [5290, -5910], ["RTW"], 2)
+rw("rwf4", 34, "Rettungswache Feuerwache 4 – Zentrum Nord", [-660, -1960], ["RTW"], 2)
+rw("rwf7", 37, "Rettungswache Feuerwache 7 – Nordstadt", [-680, -5140], ["RTW"], 2)
+rw("rwwerk", 40, "Werksanitätsdienst Bavaria Metallwerke", [-5010, -2310], ["RTW"], 2)
 rw("rw1", 1, "Rettungswache 1 – Altstadt", [220, -330], ["RTW", "RTW", "NEF"])
 rw("rw2", 2, "Rettungswache 2 – Bahnhofsviertel", [-1500, -560], ["RTW", "RTW", "NEF", "KTW", "SRTW"], 6)
 rw("rw3", 3, "Rettungswache 3 – Zentrum Nord", [-350, -2350], ["RTW", "RTW"])

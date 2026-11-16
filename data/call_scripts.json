@@ -812,6 +812,54 @@
    ],
    "danger": "yes",
    "water": true
+  },
+  "lkw_umgestuerzt": {
+   "open": [
+    "Hier ist ein Lastwagen umgekippt!",
+    "Ein LKW liegt auf der Seite, mitten auf der Straße!",
+    "Da ist gerade ein Laster in der Kurve umgefallen."
+   ],
+   "what": [
+    "{objekt}. Der Fahrer sitzt noch drin, glaube ich.",
+    "{objekt}, da läuft Diesel aus."
+   ],
+   "danger": "maybe"
+  },
+  "baukran": {
+   "open": [
+    "Hier ist ein Baukran umgestürzt!",
+    "Auf der Baustelle ist der Kran umgefallen, das war ein riesiger Knall!",
+    "Ein Kran ist auf das Haus nebenan gekracht!"
+   ],
+   "what": [
+    "{objekt}. Da waren Arbeiter drunter.",
+    "{objekt}, alle rennen durcheinander."
+   ],
+   "danger": "yes"
+  },
+  "strab_entgleist": {
+   "open": [
+    "Die Straßenbahn ist aus den Schienen gesprungen!",
+    "Hier ist eine Tram entgleist!",
+    "Ich sitze in der Straßenbahn, wir sind entgleist."
+   ],
+   "what": [
+    "{objekt}. Ein paar Leute sind gestürzt.",
+    "{objekt}, die Bahn steht schräg auf der Straße."
+   ],
+   "danger": "maybe"
+  },
+  "pkw_gewaesser": {
+   "open": [
+    "Ein Auto ist ins Wasser gefahren!",
+    "Da treibt ein Auto im Fluss!",
+    "Hier ist gerade ein Wagen von der Uferstraße ins Wasser gerollt."
+   ],
+   "what": [
+    "{objekt}. Ich weiß nicht, ob noch jemand drin ist!",
+    "{objekt}, es geht langsam unter."
+   ],
+   "danger": "yes"
   }
  },
  "nuisance": [
