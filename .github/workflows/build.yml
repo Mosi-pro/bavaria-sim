@@ -8,6 +8,21 @@ env:
   GODOT_VERSION: 4.7.1
 
 jobs:
+  aufraeumen:
+    # Alte Build-Zwischenstände löschen (die fertigen Dateien liegen dauerhaft in den Releases),
+    # damit das Speicherkontingent für Artefakte nicht voll läuft.
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: write
+    steps:
+      - name: Alte Artefakte löschen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" --jq '.artifacts[] | select(.workflow_run.id != '"${GITHUB_RUN_ID}"') | .id' | while read id; do
+            gh api -X DELETE "repos/${GITHUB_REPOSITORY}/actions/artifacts/$id" && echo "gelöscht: $id"
+          done
+
   tests:
     runs-on: ubuntu-24.04
     steps:
@@ -26,6 +41,7 @@ jobs:
         run: tools/test_relay.sh ./godot
 
   wyse:
+    needs: aufraeumen
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -50,10 +66,12 @@ jobs:
           grep -q "Vermittlungsdienst LEITSTELLE 112 gestartet" relay.log
       - uses: actions/upload-artifact@v4
         with:
+          retention-days: 1
           name: LEITSTELLE112-Wyse-Vermittlung-${{ env.APP_VERSION }}
           path: wyse/
 
   windows:
+    needs: aufraeumen
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -92,6 +110,7 @@ jobs:
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\LEITSTELLE112.iss
       - uses: actions/upload-artifact@v4
         with:
+          retention-days: 1
           name: LEITSTELLE112-Windows-${{ env.APP_VERSION }}
           path: |
             build/windows/
@@ -111,6 +130,7 @@ jobs:
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\LEITSTELLE112_Beta.iss
       - uses: actions/upload-artifact@v4
         with:
+          retention-days: 1
           name: LEITSTELLE112-BETA-Windows-${{ env.APP_VERSION }}
           path: build/installer_beta/*.exe
       - name: Selbsttest der EXE unter Windows
