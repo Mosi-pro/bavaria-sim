@@ -41,8 +41,10 @@ jobs:
         run: tools/test_relay.sh ./godot
 
   wyse:
-    needs: aufraeumen
+    needs: windows
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Godot und Linux-Exportvorlagen laden
@@ -64,15 +66,20 @@ jobs:
         run: |
           (timeout 8 wyse/leitstelle112.x86_64 --headless -- --vermittlung --port=24180 || true) | tee relay.log
           grep -q "Vermittlungsdienst LEITSTELLE 112 gestartet" relay.log
-      - uses: actions/upload-artifact@v4
-        with:
-          retention-days: 1
-          name: LEITSTELLE112-Wyse-Vermittlung-${{ env.APP_VERSION }}
-          path: wyse/
+      - name: Paket für den Vermittlungsdienst zum Release hinzufügen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          chmod +x wyse/leitstelle112.x86_64 wyse/*.sh
+          tar -czf LEITSTELLE112-Wyse-Vermittlung-${APP_VERSION}.tar.gz -C wyse .
+          sha256sum LEITSTELLE112-Wyse-Vermittlung-${APP_VERSION}.tar.gz > SHA256SUMMEN_WYSE.txt
+          gh release upload "v${APP_VERSION}" LEITSTELLE112-Wyse-Vermittlung-${APP_VERSION}.tar.gz SHA256SUMMEN_WYSE.txt --clobber
 
   windows:
-    needs: aufraeumen
+    needs: [aufraeumen, tests]
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Godot und Exportvorlagen laden
@@ -108,13 +115,6 @@ jobs:
         run: |
           choco install innosetup -y --no-progress
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\LEITSTELLE112.iss
-      - uses: actions/upload-artifact@v4
-        with:
-          retention-days: 1
-          name: LEITSTELLE112-Windows-${{ env.APP_VERSION }}
-          path: |
-            build/windows/
-            build/installer/*.exe
       - name: Beta-Version exportieren (getrennt, mit Zugangscode)
         shell: pwsh
         run: |
@@ -128,11 +128,6 @@ jobs:
           Copy-Item packaging\LIZENZHINWEISE.txt build\windows_beta\
           if (!(Test-Path build\windows_beta\LEITSTELLE112_BETA.exe)) { throw "Beta-Export fehlgeschlagen" }
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer\LEITSTELLE112_Beta.iss
-      - uses: actions/upload-artifact@v4
-        with:
-          retention-days: 1
-          name: LEITSTELLE112-BETA-Windows-${{ env.APP_VERSION }}
-          path: build/installer_beta/*.exe
       - name: Selbsttest der EXE unter Windows
         shell: pwsh
         run: |
@@ -151,59 +146,27 @@ jobs:
           Write-Host "Exit-Code: $($p.ExitCode)"
           if (Test-Path $log) { Get-Content $log | Select-String "OK|FEHLER|SELBSTTEST|ERROR" }
           if ($p.ExitCode -ne 0) { throw "Selbsttest der Beta fehlgeschlagen" }
-
-  release:
-    # Veröffentlicht die geprüften Dateien als GitHub-Release:
-    # direkter Download der Setup-EXE ohne Anmeldung und ohne ZIP.
-    needs: [tests, windows, wyse]
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - name: Versionsnummer ermitteln
-        run: echo "APP_VERSION=$(grep -oP '^config/version="\K[^"]+' project.godot)" >> $GITHUB_ENV
-      - uses: actions/download-artifact@v4
-        with:
-          name: LEITSTELLE112-Windows-${{ env.APP_VERSION }}
-          path: win
-      - uses: actions/download-artifact@v4
-        with:
-          name: LEITSTELLE112-Wyse-Vermittlung-${{ env.APP_VERSION }}
-          path: wyse
-      - name: Dateien zusammenstellen
+      - name: Release veröffentlichen (normale Version und getrennte Beta)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          mkdir -p out
-          cp win/installer/LEITSTELLE112_Setup_${APP_VERSION}.exe out/
-          (cd win/windows && zip -qr ../../out/LEITSTELLE112-Portable-${APP_VERSION}.zip .)
-          chmod +x wyse/leitstelle112.x86_64 wyse/*.sh
-          tar -czf out/LEITSTELLE112-Wyse-Vermittlung-${APP_VERSION}.tar.gz -C wyse .
+          V="$APP_VERSION"
+          mkdir -p out beta
+          cp build/installer/LEITSTELLE112_Setup_${V}.exe out/
+          7z a -tzip -bso0 out/LEITSTELLE112-Portable-${V}.zip ./build/windows/*
           (cd out && sha256sum * > SHA256SUMMEN.txt)
-          ls -la out
-          awk -v v="## Version ${APP_VERSION} " 'index($0,v)==1{f=1;next} /^## Version /{f=0} f' CHANGELOG.md > notes.md
-      - name: Release veröffentlichen
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          TAG="v${APP_VERSION}"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" out/* --clobber
+          awk -v v="## Version ${V} " 'index($0,v)==1{f=1;next} /^## Version /{f=0} f' CHANGELOG.md > notes.md
+          if gh release view "v$V" >/dev/null 2>&1; then
+            gh release upload "v$V" out/* --clobber
           else
-            gh release create "$TAG" out/* --target "$GITHUB_SHA" --title "LEITSTELLE 112 – Version ${APP_VERSION}" --notes-file notes.md
+            gh release create "v$V" out/* --target "$GITHUB_SHA" --title "LEITSTELLE 112 – Version ${V}" --notes-file notes.md
           fi
-      - uses: actions/download-artifact@v4
-        with:
-          name: LEITSTELLE112-BETA-Windows-${{ env.APP_VERSION }}
-          path: beta
-      - name: Beta getrennt als Vorabversion veröffentlichen
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          TAG="v${APP_VERSION}-beta"
+          cp build/installer_beta/LEITSTELLE112_BETA_Setup_${V}.exe beta/
           (cd beta && sha256sum *.exe > SHA256SUMMEN_BETA.txt)
-          printf 'BETA-Version %s – nur für eingeladene Tester.\nStart nur mit persönlichem Zugangscode. Eigener Installationsordner und eigene Spielstände, getrennt von der normalen Version.\n' "$APP_VERSION" > beta_notes.md
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" beta/* --clobber
+          printf 'BETA-Version %s – nur für eingeladene Tester.\nStart nur mit persönlichem Zugangscode. Eigener Installationsordner und eigene Spielstände, getrennt von der normalen Version.\n' "$V" > beta_notes.md
+          if gh release view "v$V-beta" >/dev/null 2>&1; then
+            gh release upload "v$V-beta" beta/* --clobber
           else
-            gh release create "$TAG" beta/* --target "$GITHUB_SHA" --prerelease --title "LEITSTELLE 112 BETA – ${APP_VERSION}" --notes-file beta_notes.md
+            gh release create "v$V-beta" beta/* --target "$GITHUB_SHA" --prerelease --title "LEITSTELLE 112 BETA – ${V}" --notes-file beta_notes.md
           fi
