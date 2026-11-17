@@ -1,5 +1,20 @@
 # Änderungen – LEITSTELLE 112
 
+## Version 1.4.0 (17.11.2026)
+
+**Neu**
+- **Flughafenfeuerwehr ausgebaut:** jetzt 4 Flugfeldlöschfahrzeuge, ELW 1, TLF 4000 und **2 Treppenfahrzeuge** (Rettungstreppe für Evakuierung und Patientenzugang am Flugzeug).
+- **Neue Flughafen-Einsätze** mit eigenen Stichwörtern:
+  - Luftfahrzeug in Not – Notlandung (THL FLUGZEUG; Varianten: sichere Landung, Evakuierung über Notrutschen, Triebwerksbrand → B FLUGZEUG)
+  - Brand an einem Luftfahrzeug (B FLUGZEUG; Bremsenbrand, Hilfstriebwerk, Brand in der Kabine)
+  - Medizinischer Notfall an Bord (RD 2; an einer Außenposition nur über das Treppenfahrzeug erreichbar)
+- **Werkfeuerwehr:** zusätzlich Teleskopmastbühne (TMB) und Hochleistungslüfter (HLL). Der Lüfter wird bei großen Hallenbränden gebraucht.
+- **Großraum-RTW:** einer jetzt an Feuerwache 6, einer weiterhin am SEG-Standort. Beide können zusätzlich unverletzte Betroffene aufnehmen (Betreuung).
+
+**Fehlerbehebungen**
+- **Anrufer legt auf:** Danach sind keine Rückfragen mehr möglich (Fragen-Knöpfe gesperrt, Hinweis im Gesprächsverlauf). Bisher konnte man einem Scherzanrufer nach dem Auflegen weiter Fragen stellen.
+- **Kindernotarzt** steht jetzt an Feuerwache 1 (vorher am Universitätsklinikum).
+
 ## Version 1.3.1 (16.11.2026)
 
 **Neu**

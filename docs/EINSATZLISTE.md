@@ -1,10 +1,10 @@
-# Einsatzliste – LEITSTELLE 112 (Version 1.3.0)
+# Einsatzliste – LEITSTELLE 112 (Version 1.4.0)
 
 Alle Einsätze, die im Spiel vorkommen können. Die Häufigkeit ist der Anteil an allen
 zufälligen Notrufen (gerundet). Jede Einsatzart hat Varianten: Was der Anrufer meldet
 und was die erste Einheit vor Ort vorfindet, kann sich unterscheiden.
 
-**50 Einsatzarten** in 6 Kategorien, 135 Varianten, 51 Stichwörter.
+**53 Einsatzarten** in 6 Kategorien, 143 Varianten, 53 Stichwörter.
 
 ## Brand
 
@@ -24,6 +24,7 @@ _Feuer, Rauch, Brandmeldeanlage_
 | Großbrand einer Lagerhalle | B 5 | 0.3 % | Vollbrand; Vollbrand mit Einsturzgefahr |
 | Brand in einem Zug | B ZUG | 0.2 % | Schmorbrand Triebwagen; Wagen in Brand; Güterwagen mit Gefahrgut (→ ABC 3) |
 | Brand in einem Pflegeheim | B 5 | 0.2 % | Zimmerbrand im Pflegeheim; Kleinbrand – Rauchausbreitung (→ B 4); Ausgedehnter Brand |
+| Brand an einem Luftfahrzeug | B FLUGZEUG | sehr selten | Bremsenbrand; Brand Hilfstriebwerk; Brand in der Kabine |
 
 ## Technische Hilfe
 
@@ -45,6 +46,7 @@ _Person eingeklemmt/eingeschlossen, Baum, Wasser, Unwetter_
 | Baukran umgestürzt | THL 3 | 0.1 % | Kran auf Gebäude gestürzt; Person unter Last eingeklemmt; Kranführer in Höhe (→ THL P RETTUNG H/T) |
 | Straßenbahn entgleist | THL 2 | 0.1 % | Entgleist ohne Verletzte; Fahrgäste verletzt (→ RD 3); Gegen Gebäude geprallt (→ THL 3) |
 | Sturmschaden an Gebäude | THL UNWETTER | sehr selten (häufiger bei Sturm, Starkregen) | Sicherung; Passant verletzt |
+| Luftfahrzeug in Not – Notlandung | THL FLUGZEUG | sehr selten | Sichere Landung; Evakuierung über Notrutschen; Triebwerksbrand nach Landung (→ B FLUGZEUG) |
 | Person im Eis eingebrochen | RD EISUNFALL 2 | sehr selten (häufiger bei Schnee) | Person im Eis; Person untergegangen |
 | Hochwasser – Deichverteidigung | THL UNWETTER | nur in Szenarien | Sandsackverbau; Evakuierung |
 
@@ -54,7 +56,7 @@ _Krankheit, Verletzung, Verkehrsunfall mit Verletzten_
 
 | Einsatz | Stichwort | Häufigkeit | Mögliche Lagen vor Ort |
 |---|---|---|---|
-| Medizinischer Notfall | RD 1 | 22.2 % | Stabil; Kritischer als gemeldet (→ RD 2); Tragehilfe (→ THL TRAGEHILFE) |
+| Medizinischer Notfall | RD 1 | 22.1 % | Stabil; Kritischer als gemeldet (→ RD 2); Tragehilfe (→ THL TRAGEHILFE) |
 | Krankentransport | RD KTP | 8.3 % | Transport |
 | Bewusstlose Person | RD 2 | 4.6 % | Bewusstlos; Reanimation; Wieder ansprechbar (→ RD 1) |
 | Akuter Brustschmerz / Atemnot | RD 2 | 3.2 % | Akutes Koronarsyndrom; Entwarnung (→ RD 1) |
@@ -63,6 +65,7 @@ _Krankheit, Verletzung, Verkehrsunfall mit Verletzten_
 | Notfall Kind | RD 2-KIND | 0.8 % | Fieberkrampf; Atemnot Kind; Säugling leblos |
 | Transport schwergewichtiger Patient | RD KTP/RTW | 0.6 % | Schwerlasttransport; Drehleiterrettung (→ THL TRAGEHILFE) |
 | Reizgas in einer Schule | RD 4 | 0.2 % | Pfefferspray; Viele Betroffene (→ RD 5) |
+| Medizinischer Notfall an Bord | RD 2 | 0.1 % | Patient an Außenposition; Patient am Gate (→ RD 1) |
 | Zwischenfall bei Großveranstaltung | RD MANV 10–15 | nur in Szenarien | Mehrere Verletzte; Massenpanik (→ RD MANV 16–25) |
 
 ## Gefahrstoff
@@ -153,3 +156,5 @@ _Unfälle auf Straße und Autobahn (Stichwörter THL 2–5, RD)_
 | POL 3 | Polizeiliche Sonderlage | Führung, Einsatzhundertschaft, Spezialeinheit | Geiselnahme, bewaffnete Person, Amoklage |
 | SON PSNV (B) | Psychosoziale Notfallversorgung Betroffene | Kriseninterventionsteam | Betreuung von Angehörigen und Augenzeugen |
 | SON BETREUUNG | Betreuung / Evakuierung | Betreuungseinheit | Evakuierte Anwohner, Betreuung von Personen |
+| B FLUGZEUG | Brand Luftfahrzeug | Flughafenfeuerwehr: 2 Flugfeldlöschfahrzeuge, Treppenfahrzeug, Einsatzleitung | Triebwerksbrand, Bremsenbrand, Brand in der Kabine, Hilfstriebwerk (APU) |
+| THL FLUGZEUG | Luftfahrzeug in Not / Notlandung | Flughafenfeuerwehr in Bereitstellung, Rettungsdienst, Treppenfahrzeuge | Notlandung angekündigt, Fahrwerksproblem, Rauch im Cockpit, Vogelschlag |

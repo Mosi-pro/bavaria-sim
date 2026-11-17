@@ -680,6 +680,37 @@
    },
    "min": "Betreuungseinheit",
    "schlagworte": "Evakuierte Anwohner, Betreuung von Personen"
+  },
+  "B FLUGZEUG": {
+   "name": "Brand Luftfahrzeug",
+   "cat": "brand",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "flf": 2,
+    "loeschen": 1,
+    "treppe": 1,
+    "rtw": 1,
+    "notarzt": 1,
+    "polizei": 1
+   },
+   "min": "Flughafenfeuerwehr: 2 Flugfeldlöschfahrzeuge, Treppenfahrzeug, Einsatzleitung",
+   "schlagworte": "Triebwerksbrand, Bremsenbrand, Brand in der Kabine, Hilfstriebwerk (APU)"
+  },
+  "THL FLUGZEUG": {
+   "name": "Luftfahrzeug in Not / Notlandung",
+   "cat": "thl",
+   "prio": 1,
+   "aao": {
+    "fuehrung_fw": 1,
+    "flf": 3,
+    "treppe": 1,
+    "rtw": 2,
+    "notarzt": 1,
+    "polizei": 1
+   },
+   "min": "Flughafenfeuerwehr in Bereitstellung, Rettungsdienst, Treppenfahrzeuge",
+   "schlagworte": "Notlandung angekündigt, Fahrwerksproblem, Rauch im Cockpit, Vogelschlag"
   }
  },
  "types": {
@@ -1286,7 +1317,15 @@
     {
      "p": 0.45,
      "name": "Hallenbrand",
-     "lage": "Starke Rauchentwicklung aus dem Hallendach, Brandbekämpfung im Innen- und Außenangriff."
+     "lage": "Starke Rauchentwicklung aus dem Hallendach, Brandbekämpfung im Innen- und Außenangriff.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "loeschen": 3,
+      "dlk": 1,
+      "atemschutz": 1,
+      "polizei": 1,
+      "luefter": 1
+     }
     },
     {
      "p": 0.25,
@@ -1301,7 +1340,8 @@
       "atemschutz": 1,
       "logistik": 1,
       "rtw": 1,
-      "polizei": 2
+      "polizei": 2,
+      "luefter": 1
      },
      "work": 5400,
      "patients": [
@@ -4896,6 +4936,239 @@
     "p75": "Fahrzeug am Kran angeschlagen und aus dem Wasser gehoben.",
     "done": "Fahrzeug geborgen, Ölsperre kontrolliert."
    }
+  },
+  "flug_notlandung": {
+   "name": "Luftfahrzeug in Not – Notlandung",
+   "keyword": "THL FLUGZEUG",
+   "weight": 0.08,
+   "cat": "thl",
+   "call": "flug_notlandung",
+   "loc": {
+    "mode": "poi",
+    "poi_kinds": [
+     "flughafen"
+    ]
+   },
+   "objects": [
+    "Passagierflugzeug (180 Plätze) im Landeanflug",
+    "Regionalflugzeug mit Fahrwerksproblem",
+    "Frachtflugzeug mit Triebwerksausfall"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "flf": 3,
+    "treppe": 1,
+    "polizei": 1
+   },
+   "work": 1500,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Sichere Landung",
+     "lage": "Luftfahrzeug sicher gelandet, Fahrzeuge begleiten es zur Parkposition. Keine Verletzten."
+    },
+    {
+     "p": 0.3,
+     "name": "Evakuierung über Notrutschen",
+     "lage": "Fahrwerk nach der Landung eingeknickt, Evakuierung über Notrutschen und Treppen. Mehrere Leichtverletzte, viele Unverletzte zu betreuen.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "flf": 3,
+      "treppe": 2,
+      "betreuung": 1,
+      "elrd": 1,
+      "polizei": 2
+     },
+     "patients": [
+      4,
+      9
+     ],
+     "sev": [
+      1,
+      2
+     ],
+     "work": 3600
+    },
+    {
+     "p": 0.1,
+     "name": "Triebwerksbrand nach Landung",
+     "keyword": "B FLUGZEUG",
+     "lage": "Triebwerk brennt nach der Landung! Schaumangriff mit Flugfeldlöschfahrzeugen, Passagiere werden evakuiert.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "flf": 4,
+      "loeschen": 1,
+      "treppe": 2,
+      "betreuung": 1,
+      "elrd": 1,
+      "polizei": 2
+     },
+     "patients": [
+      3,
+      8
+     ],
+     "sev": [
+      1,
+      3
+     ],
+     "work": 4200
+    }
+   ],
+   "reports": {
+    "p50": "Luftfahrzeug gesichert, Passagiere werden betreut.",
+    "done": "Einsatz beendet, Luftfahrzeug an Flughafenbetreiber übergeben."
+   }
+  },
+  "flug_brand": {
+   "name": "Brand an einem Luftfahrzeug",
+   "keyword": "B FLUGZEUG",
+   "weight": 0.06,
+   "cat": "brand",
+   "call": "flug_brand",
+   "loc": {
+    "mode": "poi",
+    "poi_kinds": [
+     "flughafen"
+    ]
+   },
+   "objects": [
+    "Passagierflugzeug an einer Außenposition",
+    "Flugzeug auf dem Vorfeld",
+    "Frachtflugzeug an der Frachthalle"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "flf": 2,
+    "loeschen": 1,
+    "polizei": 1
+   },
+   "work": 1800,
+   "patients": [
+    0,
+    0
+   ],
+   "sev": [
+    1,
+    1
+   ],
+   "variants": [
+    {
+     "p": 0.5,
+     "name": "Bremsenbrand",
+     "lage": "Überhitzte Bremsen am Hauptfahrwerk, Rauchentwicklung. Kühlung mit Pulver und Wasser."
+    },
+    {
+     "p": 0.3,
+     "name": "Brand Hilfstriebwerk",
+     "lage": "Brand im Hilfstriebwerk (APU) am Heck, Passagiere noch an Bord – Aussteigen über Treppenfahrzeug.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "flf": 2,
+      "loeschen": 1,
+      "treppe": 2,
+      "polizei": 1
+     },
+     "patients": [
+      1,
+      3
+     ],
+     "sev": [
+      1,
+      1
+     ],
+     "work": 2700
+    },
+    {
+     "p": 0.2,
+     "name": "Brand in der Kabine",
+     "lage": "Rauch in der Kabine, Evakuierung läuft! Innenangriff unter Atemschutz über die Treppe.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "flf": 3,
+      "loeschen": 2,
+      "treppe": 2,
+      "atemschutz": 1,
+      "betreuung": 1,
+      "elrd": 1,
+      "polizei": 2
+     },
+     "patients": [
+      3,
+      8
+     ],
+     "sev": [
+      1,
+      3
+     ],
+     "work": 4200
+    }
+   ],
+   "reports": {
+    "p50": "Feuer unter Kontrolle.",
+    "done": "Brand gelöscht, Luftfahrzeug an Flughafenbetreiber übergeben."
+   }
+  },
+  "flug_med": {
+   "name": "Medizinischer Notfall an Bord",
+   "keyword": "RD 2",
+   "weight": 0.12,
+   "cat": "rd",
+   "call": "flug_med",
+   "loc": {
+    "mode": "poi",
+    "poi_kinds": [
+     "flughafen"
+    ]
+   },
+   "objects": [
+    "Flugzeug an einer Außenposition",
+    "gerade gelandetes Flugzeug",
+    "Flugzeug am Gate"
+   ],
+   "reqs": {
+    "treppe": 1
+   },
+   "work": 900,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    3,
+    3
+   ],
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Patient an Außenposition",
+     "lage": "Passagier mit Herzproblemen an Bord, Flugzeug steht an einer Außenposition – Zugang nur über Treppenfahrzeug."
+    },
+    {
+     "p": 0.4,
+     "name": "Patient am Gate",
+     "keyword": "RD 1",
+     "lage": "Passagier mit Kreislaufproblemen, Flugzeug am Gate über die Fluggastbrücke erreichbar.",
+     "reqs": {},
+     "sev": [
+      2,
+      2
+     ],
+     "work": 0,
+     "gate": 0
+    }
+   ],
+   "reports": {
+    "done": "Patient an Rettungsdienst übergeben, Flugzeug freigegeben."
+   },
+   "gate": 0.8
   }
  }
 }

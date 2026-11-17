@@ -157,6 +157,9 @@ Der Gerätewagen Logistik hat einen wechselbaren Rollcontainer: Schlauch/Wasserv
 [b]Feuerwehrkran (FwK 70)[/b]
 Zwei Kranwagen an Feuerwache 6 und 9 – für umgestürzte LKW, Baukranunfälle, entgleiste Straßenbahnen und Fahrzeuge im Wasser. Sie fahren langsam (max. 80 km/h), also früh alarmieren.
 
+[b]Flughafen[/b]
+Notlandungen, Flugzeugbrände und Patienten an Bord übernimmt die Flughafenfeuerwehr mit Flugfeldlöschfahrzeugen (FLF) und Treppenfahrzeugen (TRF). Steht ein Flugzeug an einer Außenposition, kommt der Rettungsdienst nur über die Treppe an Bord.
+
 [b]Schwierigkeit[/b]
 Leicht: Das passende Stichwort wird vorgeschlagen.  Mittel: Nur die Einsatzart wird angedeutet.  Schwer/Experte: keine Hinweise, mehr und hektischere Notrufe.
 

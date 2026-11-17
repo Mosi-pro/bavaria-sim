@@ -22,9 +22,9 @@ st("fw7", 7, "Feuerwache 7 – Nordstadt", "fw", "bf", [-720, -5180], ["ELW1", "
 st("fw8", 8, "Feuerwache 8 – Nordost", "fw", "bf", [3600, -3900], ["ELW1", "HLF20", "HLF20", "DLK"], 7)
 st("fw9", 9, "Feuerwache 9 – Industriehafen", "fw", "bf", [5200, 3400], ["ELW1", "HLF20", "HLF20", "DLK", "TLF4000", "GWG", "GWA", "GWW", "GWDEKON", "FWK"], 12)
 st("fw10", 10, "Feuerwache 10 – Messe", "fw", "bf", [6900, -2300], ["ELW1", "HLF20", "LF20", "DLK", "TLF4000", "GWL", "KLAF"], 9)
-st("fwflug", 11, "Flughafenfeuerwehr Bavaria", "fw", "flughafen", [5450, -7250], ["KDOW", "FLF", "FLF", "FLF", "HLF20", "RW"], 8)
+st("fwflug", 11, "Flughafenfeuerwehr Bavaria", "fw", "flughafen", [5450, -7250], ["KDOW", "ELW1", "FLF", "FLF", "FLF", "FLF", "HLF20", "TLF4000", "RW", "TRF", "TRF"], 13)
 # Werkfeuerwehr eines (fiktiven) Industriebetriebs – rund um die Uhr besetzt
-st("werk1", 40, "Werkfeuerwehr Bavaria Metallwerke", "fw", "werk", [-5050, -2350], ["ELW1", "HLF20", "TLF3000", "GWL"], 6)
+st("werk1", 40, "Werkfeuerwehr Bavaria Metallwerke", "fw", "werk", [-5050, -2350], ["ELW1", "HLF20", "TLF3000", "TMB", "GWL", "HLL"], 8)
 # Freiwillige Feuerwehren
 FF = ["MZF", "HLF10", "LF10"]
 st("ff21", 21, "FF Seeburg", "fw", "ff", [4700, 5950], FF + ["TLF3000", "GWW"], 6)
@@ -44,9 +44,10 @@ st("ff34", 34, "FF Hohenried", "fw", "ff", [-11300, 6700], ["MTF", "LF10", "TLF3
 st("ff35", 35, "FF Kirchstetten", "fw", "ff", [10900, -9400], ["MTF", "HLF10"], 4)
 # Rettungsdienst (inkl. Rettungswagen der Berufsfeuerwehr – an den Feuerwachen stationiert, Organisation Rettungsdienst)
 def rw(id, nr, name, pos, v, slots=None, kind="rw"): st(id, nr, name, "rd", kind, pos, v, slots)
-rw("rwf1", 31, "Rettungswache Feuerwache 1 – Altstadt", [-180, 290], ["RTW", "NEF"], 3)
+rw("rwf1", 31, "Rettungswache Feuerwache 1 – Altstadt", [-180, 290], ["RTW", "NEF", "KINEF"], 4)
 rw("rwf4", 34, "Rettungswache Feuerwache 4 – Zentrum Nord", [-660, -1960], ["RTW"], 2)
 rw("rwf7", 37, "Rettungswache Feuerwache 7 – Nordstadt", [-680, -5140], ["RTW"], 2)
+rw("rwf6", 36, "Rettungswache Feuerwache 6 – Güterstadt", [-5340, -1110], ["GRTW"], 2)
 rw("rwwerk", 40, "Werksanitätsdienst Bavaria Metallwerke", [-5010, -2310], ["RTW"], 2)
 rw("rw1", 1, "Rettungswache 1 – Altstadt", [220, -330], ["RTW", "RTW", "NEF"])
 rw("rw2", 2, "Rettungswache 2 – Bahnhofsviertel", [-1500, -560], ["RTW", "RTW", "NEF", "KTW", "SRTW"], 6)
@@ -55,7 +56,7 @@ rw("rw4", 4, "Rettungswache 4 – Zentrum Süd", [-200, 2250], ["RTW", "RTW", "N
 rw("rw5", 5, "Rettungswache 5 – Westend", [-3050, -250], ["RTW", "RTW", "KTW"])
 rw("rw6", 6, "Rettungswache 6 – Nordstadt", [-250, -4900], ["RTW", "RTW", "NEF"])
 rw("rw7", 7, "Rettungswache 7 – Nordost", [4000, -4050], ["RTW", "RTW", "KTW"])
-rw("rw8", 8, "Rettungswache 8 – Universitätsklinikum", [2900, -3150], ["RTW", "NEF", "ITW", "NAW", "KINEF"], 6)
+rw("rw8", 8, "Rettungswache 8 – Universitätsklinikum", [2900, -3150], ["RTW", "NEF", "ITW", "NAW"], 5)
 rw("rw9", 9, "Rettungswache 9 – Ostpark", [3000, 500], ["RTW", "RTW"])
 rw("rw10", 10, "Rettungswache 10 – Industriehafen", [5900, 3100], ["RTW", "RTW"])
 rw("rw11", 11, "Rettungswache 11 – Seeburg", [4300, 5600], ["RTW", "RTW", "NEF"])

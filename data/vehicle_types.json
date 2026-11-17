@@ -56,7 +56,9 @@
   "betreuung_psnv": "Psychosoziale Notfallversorgung (KIT)",
   "rth": "Rettungshubschrauber",
   "licht": "Beleuchtung / Stromerzeuger",
-  "kran": "Feuerwehrkran"
+  "kran": "Feuerwehrkran",
+  "treppe": "Flugzeug-Treppenfahrzeug",
+  "luefter": "Hochleistungslüfter"
  },
  "types": {
   "KDOW": {
@@ -1159,12 +1161,15 @@
    "caps": {
     "rtw": 1,
     "grtw": 1,
-    "seg": 1
+    "seg": 1,
+    "betreuung": 1
    },
    "price": 650000,
    "equip": [
     "Bis zu 6 liegende Patienten",
-    "Material für Massenanfall"
+    "Material für Massenanfall",
+    "Antidote für Vergiftungen",
+    "Aufenthalt für unverletzte Betroffene"
    ]
   },
   "KINEF": {
@@ -1295,6 +1300,68 @@
     "Teleskopausleger, Hubkraft bis 70 t",
     "Front-Seilwinde",
     "Anschlagmittel und Traversen"
+   ]
+  },
+  "TRF": {
+   "short": "TRF",
+   "name": "Treppenfahrzeug (Flughafen)",
+   "org": "fw",
+   "kenn": "26",
+   "speed": 60,
+   "crew": 2,
+   "min": 1,
+   "quals": {
+    "MA": 1
+   },
+   "caps": {
+    "treppe": 1
+   },
+   "price": 450000,
+   "equip": [
+    "Rettungstreppe bis Oberdeck",
+    "Beleuchtung",
+    "Haltegriffe für Evakuierung"
+   ]
+  },
+  "TMB": {
+   "short": "TMB",
+   "name": "Teleskopmastbühne",
+   "org": "fw",
+   "kenn": "32",
+   "speed": 95,
+   "crew": 2,
+   "min": 2,
+   "quals": {
+    "MA": 1
+   },
+   "caps": {
+    "dlk": 1
+   },
+   "price": 900000,
+   "equip": [
+    "Arbeitskorb",
+    "Teleskopmast mit Gelenkarm",
+    "Wenderohr"
+   ]
+  },
+  "HLL": {
+   "short": "HLL",
+   "name": "Hochleistungslüfter",
+   "org": "fw",
+   "kenn": "65",
+   "speed": 90,
+   "crew": 2,
+   "min": 2,
+   "quals": {
+    "MA": 1
+   },
+   "caps": {
+    "luefter": 1
+   },
+   "price": 380000,
+   "equip": [
+    "Großlüfter mit Wassernebel",
+    "Entrauchung von Hallen und Tiefgaragen"
    ]
   }
  }

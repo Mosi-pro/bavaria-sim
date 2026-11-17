@@ -478,6 +478,24 @@ func test_gwl_modules() -> void:
 	kinc["need"] = {"kran": 1}
 	var ks: Array = Advisor.suggest(kinc)["suggested"]
 	check(ks.size() == 1 and State.vehicles[ks[0]]["type"] == "FWK", "Bei Kranbedarf wird ein Feuerwehrkran vorgeschlagen")
+	# Anrufer legt auf: keine Rückfragen mehr
+	var nc := CallGen.make_nuisance_call()
+	var ncall: Dictionary = State.calls[nc]
+	ncall["nuisance"] = "scherz"
+	Sim.act({"a": "call_take", "id": nc}, me)
+	Sim.act({"a": "call_ask", "id": nc, "q": "q_wo"}, me)
+	var again: Dictionary = Sim.act({"a": "call_ask", "id": nc, "q": "q_was"}, me)
+	check(ncall.get("hung_up", false) and not again.get("ok", true), "Nach dem Auflegen sind keine Rückfragen mehr möglich")
+	# Flughafen, Kindernotarzt, GRTW, Werkfeuerwehr
+	var types_at := func(sid: String) -> Array:
+		var out: Array = []
+		for vid in State.station_vehicles(sid):
+			out.append(State.vehicles[vid]["type"])
+		return out
+	check(types_at.call("fwflug").count("TRF") == 2 and types_at.call("fwflug").count("FLF") == 4, "Flughafenfeuerwehr mit 4 FLF und 2 Treppenfahrzeugen")
+	check(types_at.call("rwf1").has("KINEF"), "Kindernotarzt an Feuerwache 1")
+	check(types_at.call("rwf6").has("GRTW"), "Großraum-RTW an Feuerwache 6")
+	check(types_at.call("werk1").has("TMB") and types_at.call("werk1").has("HLL"), "Werkfeuerwehr mit Teleskopmastbühne und Hochleistungslüfter")
 	# Stichwortfarben nach Fachbereich
 	check(Data.keyword_color("RD 2") == Color("#e58a2e") and Data.keyword_color("B 2") == Color("#d9534a") and Data.keyword_color("THL 4") == Color("#d9534a") and Data.keyword_color("POL 1") == Color("#5b95c8"), "Stichwortfarben: RD orange, Feuerwehr rot, Polizei blau")
 

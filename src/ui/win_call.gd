@@ -38,6 +38,8 @@ func _step_head(n: String, text: String) -> Label:
 	l.add_theme_font_override("font", UI.bold())
 	return l
 
+var _qbtns: Array = []
+
 func setup(id: String) -> void:
 	call_id = id
 	add_theme_constant_override("separation", 6)
@@ -60,8 +62,10 @@ func setup(id: String) -> void:
 	qgrid.columns = 2
 	var labels := {"q_was": "Was ist passiert?", "q_personen": "Wie viele Betroffene?", "q_gefahr": "Gefahr / eingeklemmt?", "q_zustand": "Zustand Patient?", "q_beruhigen": "Anrufer beruhigen", "q_rueckruf": "Name / Rückruf"}
 	var qs: Dictionary = Data.call_scripts.get("questions", {})
+	_qbtns = [b_wo]
 	for q in labels:
 		var b := UI.button(labels[q], _ask.bind(q), qs.get(q, {}).get("text", ""))
+		_qbtns.append(b)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		if q == "q_was":
 			UI.accent(b, UI.BLUE)
@@ -189,6 +193,11 @@ func _process(delta: float) -> void:
 
 func _refresh(c: Dictionary) -> void:
 	var caller: Dictionary = c["caller"]
+	var gone: bool = c.get("hung_up", false)
+	for b in _qbtns:
+		b.disabled = gone
+		if gone:
+			b.tooltip_text = "Der Anrufer hat aufgelegt – keine Rückfragen mehr möglich."
 	caller_lbl.text = "Notruf 112   ·   Tel. %s (%s)   ·   %s   ·   Gesprächsdauer %s" % [caller["phone"], "Handy" if caller["mobile"] else "Festnetz", caller["name"] if c["known"].has("callback") else "Name unbekannt", State.dur_str(float(c["talk"]))]
 	var loc: Dictionary = c["loc"]
 	if not loc.is_empty() and not _manual:

@@ -860,6 +860,42 @@
     "{objekt}, es geht langsam unter."
    ],
    "danger": "yes"
+  },
+  "flug_notlandung": {
+   "open": [
+    "Hier Flugleitung Bavaria: Luftfahrzeug meldet Notfall, Landung in etwa 10 Minuten.",
+    "Tower Bavaria, wir haben einen Notfall im Anflug – Fahrwerksproblem gemeldet.",
+    "Flugsicherung hier, Maschine im Anflug meldet Triebwerksausfall."
+   ],
+   "what": [
+    "{objekt}. Bitte Bereitstellung an der Landebahn.",
+    "{objekt}, Pilot hat Notfall erklärt."
+   ],
+   "danger": "maybe"
+  },
+  "flug_brand": {
+   "open": [
+    "Vorfeldkontrolle: Am Flugzeug auf dem Vorfeld steigt Rauch auf!",
+    "Hier brennt es an einem Flugzeug, an der Außenposition!",
+    "Flughafen-Betriebszentrale – Rauch an einem Luftfahrzeug gemeldet."
+   ],
+   "what": [
+    "{objekt}. Man sieht Rauch am Fahrwerk.",
+    "{objekt}, da kommt Qualm raus."
+   ],
+   "danger": "yes"
+  },
+  "flug_med": {
+   "open": [
+    "Hier Flughafen-Betriebszentrale: Wir haben einen medizinischen Notfall an Bord.",
+    "Ein Passagier ist im Flugzeug zusammengebrochen!",
+    "Die Crew meldet einen Patienten an Bord, Flugzeug steht auf dem Vorfeld."
+   ],
+   "what": [
+    "{objekt}. Ein Passagier hat starke Brustschmerzen.",
+    "{objekt}, der Mann ist ganz blass und schwitzt."
+   ],
+   "danger": "no"
   }
  },
  "nuisance": [

@@ -361,6 +361,8 @@ static func take(c: Dictionary, by: String) -> String:
 static func ask(c: Dictionary, q: String) -> String:
 	if c["state"] != "active":
 		return "Kein aktives Gespräch."
+	if c.get("hung_up", false):
+		return "Der Anrufer hat aufgelegt – keine Rückfragen mehr möglich."
 	var qs: Dictionary = scripts().get("questions", {})
 	if not qs.has(q):
 		return "Unbekannte Rückfrage."
@@ -443,6 +445,10 @@ static func ask(c: Dictionary, q: String) -> String:
 				answer = _pick(g.get("calmed", ["Okay."]))
 	c["pending"].append({"d": 0.1, "who": "D", "text": qs[q]["text"]})
 	c["pending"].append({"d": Sim.rng.randf_range(1.2, 2.4), "who": "A", "text": answer})
+	if answer.find("aufgelegt") >= 0:
+		# Anrufer legt auf: danach sind keine Rückfragen mehr möglich
+		c["hung_up"] = true
+		c["pending"].append({"d": 0.5, "who": "S", "text": String(scripts().get("hangup", "— Anrufer hat aufgelegt —")) + " Rückfragen nicht mehr möglich – Einsatz anlegen oder Gespräch beenden."})
 	State.touch_call(c["id"])
 	return ""
 
