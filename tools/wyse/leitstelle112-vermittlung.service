@@ -7,6 +7,13 @@ Wants=network-online.target
 Type=simple
 User=leitstelle
 WorkingDirectory=/opt/leitstelle112
+# Eigener Datenordner /var/lib/leitstelle112 (Protokolle, Cache) – unabhängig vom Home-Verzeichnis
+StateDirectory=leitstelle112
+CacheDirectory=leitstelle112
+Environment=HOME=/var/lib/leitstelle112
+Environment=XDG_DATA_HOME=/var/lib/leitstelle112/data
+Environment=XDG_CONFIG_HOME=/var/lib/leitstelle112/config
+Environment=XDG_CACHE_HOME=/var/cache/leitstelle112
 ExecStart=/opt/leitstelle112/leitstelle112.x86_64 --headless -- --vermittlung --port=24180
 Restart=always
 RestartSec=5
@@ -14,7 +21,7 @@ RestartSec=5
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/home/leitstelle /opt/leitstelle112
+ReadWritePaths=/opt/leitstelle112
 PrivateTmp=true
 MemoryMax=600M
 

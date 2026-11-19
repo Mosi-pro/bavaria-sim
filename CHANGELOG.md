@@ -2,6 +2,9 @@
 
 ## Version 1.4.2 (19.11.2026)
 
+**Behoben (Server)**
+- Vermittlungsdienst stürzte auf dem Server direkt nach dem Start ab, weil die Schutzeinstellung des Dienstes den Zugriff auf seinen Datenordner verhinderte. Der Dienst nutzt jetzt einen eigenen Ordner unter `/var/lib/leitstelle112`. Zum Aktualisieren den Installationsbefehl einfach erneut ausführen.
+
 **Verbessert**
 - **Online-Räume wie bei anderen Online-Spielen:** Jeder Spieler kann über »SPIEL ERSTELLEN« einen eigenen Raum eröffnen; alle offenen Räume stehen in der Serverliste unter »MULTIPLAYER« und lassen sich per Doppelklick betreten. Viele Räume gleichzeitig möglich.
 - Passwort ist optional: Ohne Passwort tritt man direkt bei. Nur bei geschützten Räumen fragt das Spiel beim Beitreten nach dem Raum-Passwort.
