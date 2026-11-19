@@ -59,7 +59,7 @@ jobs:
           ./godot --headless --path . --import || true
           mkdir -p wyse
           ./godot --headless --path . --export-release "Linux" wyse/leitstelle112.x86_64
-          cp tools/wyse/* docs/VERMITTLUNGSDIENST.md wyse/
+          cp tools/wyse/* docs/VERMITTLUNGSDIENST.md docs/SERVER_INSTALLATION.md wyse/
           test -s wyse/leitstelle112.x86_64
           echo "APP_VERSION=$(grep -oP '^config/version="\K[^"]+' project.godot)" >> $GITHUB_ENV
       - name: Start des Vermittlungsdienstes prüfen

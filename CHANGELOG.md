@@ -1,5 +1,11 @@
 # Änderungen – LEITSTELLE 112
 
+## Version 1.4.1 (19.11.2026)
+
+**Neu**
+- **Internet-Mehrspieler ohne Einrichtung:** Das Spiel verbindet sich jetzt automatisch mit dem Vermittlungsdienst des Projekts (`ws://v2202611458938560247.nicesrv.de:24180`). »SPIEL ERSTELLEN« → Einladungscode weitergeben, Mitspieler geben ihn unter »MULTIPLAYER« ein – keine Portfreigabe nötig. Die Adresse lässt sich in den Einstellungen weiterhin ändern.
+- Installationsanleitung für den Mietserver (`docs/SERVER_INSTALLATION.md`) und eigenes Absicherungsskript `absichern_vps.sh` (Firewall, automatische Updates, Schutz gegen SSH-Passwort-Raten).
+
 ## Version 1.4.0 (17.11.2026)
 
 **Neu**
