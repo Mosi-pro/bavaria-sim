@@ -2,7 +2,7 @@
 
 Mit dem Vermittlungsdienst können Spieler über das Internet zusammen disponieren, ohne
 selbst etwas einzurichten (keine Portfreigabe, keine IP-Adressen). Das Spiel ab Version
-1.4.1 verbindet sich automatisch mit
+1.4.2 verbindet sich automatisch mit
 
     ws://v2202611458938560247.nicesrv.de:24180
 
@@ -22,7 +22,7 @@ Auf dem Windows-PC **PowerShell** öffnen (Startmenü → „PowerShell“) und 
 
 ```
 cd $HOME\Downloads
-scp LEITSTELLE112-Wyse-Vermittlung-1.4.1.tar.gz root@v2202611458938560247.nicesrv.de:/root/
+scp LEITSTELLE112-Wyse-Vermittlung-1.4.2.tar.gz root@v2202611458938560247.nicesrv.de:/root/
 ```
 
 - Beim ersten Mal kommt die Frage „Are you sure you want to continue connecting?“ → `yes` eintippen.
@@ -51,7 +51,7 @@ Weiter in derselben SSH-Sitzung:
 
 ```
 mkdir -p /root/leitstelle && cd /root/leitstelle
-tar -xzf /root/LEITSTELLE112-Wyse-Vermittlung-1.4.1.tar.gz
+tar -xzf /root/LEITSTELLE112-Wyse-Vermittlung-1.4.2.tar.gz
 bash installieren.sh
 ```
 
