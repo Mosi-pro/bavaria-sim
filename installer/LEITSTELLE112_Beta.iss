@@ -3,7 +3,7 @@
 ; Kompilieren: ISCC.exe installer\LEITSTELLE112_Beta.iss   (erwartet den Build unter build\windows_beta)
 
 #define AppName "LEITSTELLE 112 BETA"
-#define AppVersion "1.4.1"
+#define AppVersion "1.4.2"
 #define AppExe "LEITSTELLE112_BETA.exe"
 
 [Setup]

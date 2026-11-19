@@ -1,5 +1,13 @@
 # Änderungen – LEITSTELLE 112
 
+## Version 1.4.2 (19.11.2026)
+
+**Verbessert**
+- **Online-Räume wie bei anderen Online-Spielen:** Jeder Spieler kann über »SPIEL ERSTELLEN« einen eigenen Raum eröffnen; alle offenen Räume stehen in der Serverliste unter »MULTIPLAYER« und lassen sich per Doppelklick betreten. Viele Räume gleichzeitig möglich.
+- Passwort ist optional: Ohne Passwort tritt man direkt bei. Nur bei geschützten Räumen fragt das Spiel beim Beitreten nach dem Raum-Passwort.
+- Räume mit einer anderen Spielversion werden als »andere Version« markiert und können nicht betreten werden.
+- Klarere Texte: »Privater Raum« erscheint nicht in der Liste und ist nur per Einladungscode erreichbar.
+
 ## Version 1.4.1 (19.11.2026)
 
 **Neu**

@@ -12,7 +12,7 @@ static func host_dialog(parent: Node, in_session: bool) -> void:
 	name.max_length = 40
 	var player := UI.line_edit("", String(Settings.get_v("profile", "name")))
 	player.max_length = 24
-	var pw := UI.line_edit("leer = ohne Passwort")
+	var pw := UI.line_edit("optional – leer = jeder kann beitreten")
 	pw.secret = true
 	var maxp := SpinBox.new()
 	maxp.min_value = 2
@@ -33,12 +33,12 @@ static func host_dialog(parent: Node, in_session: bool) -> void:
 	var diff := UI.option(diffs.map(func(d): return Data.modes["difficulties"][d]["name"]), 1)
 	var region := UI.option(["Bavaria (Stadtgebiet und Umland)"], 0)
 	var has_relay: bool = Data.relay_url() != ""
-	var conn := UI.option(["Internet – Mitspieler treten per Code bei (empfohlen)", "Nur lokales Netzwerk / direkte IP-Adresse"], 0 if has_relay else 1)
+	var conn := UI.option(["Internet – Raum erscheint in der Serverliste (empfohlen)", "Nur lokales Netzwerk / direkte IP-Adresse"], 0 if has_relay else 1)
 	conn.set_item_disabled(0, not has_relay)
 	var private := CheckBox.new()
-	private.text = "Private Sitzung (nicht in der LAN-Serverliste anzeigen)"
+	private.text = "Privater Raum (nicht in der Serverliste – Beitritt nur per Einladungscode)"
 	private.focus_mode = Control.FOCUS_NONE
-	var rows: Array = [["Servername", name], ["Spielername", player], ["Passwort", pw], ["Maximale Spielerzahl", maxp]]
+	var rows: Array = [["Servername", name], ["Spielername", player], ["Passwort (optional)", pw], ["Maximale Spielerzahl", maxp]]
 	if not in_session:
 		rows.append(["Spielmodus", mode])
 		rows.append(["Schwierigkeit", diff])
@@ -201,7 +201,7 @@ static func lobby(parent: Node) -> void:
 # ---------------------------------------------------------------- Serverübersicht
 static func browser(parent: Node) -> void:
 	Net.start_browser()
-	var tree := UI.tree([{"title": "Servername"}, {"title": "Host", "width": 110}, {"title": "Spieler", "width": 54}, {"title": "Max.", "width": 40}, {"title": "Spielmodus", "width": 150}, {"title": "Region", "width": 70}, {"title": "Netz", "width": 70}, {"title": "Passwort", "width": 64}, {"title": "Status", "width": 90}])
+	var tree := UI.tree([{"title": "Servername"}, {"title": "Host", "width": 110}, {"title": "Spieler", "width": 54}, {"title": "Max.", "width": 40}, {"title": "Spielmodus", "width": 150}, {"title": "Region", "width": 70}, {"title": "Netz", "width": 70}, {"title": "Passwort", "width": 64}, {"title": "Status", "width": 110}])
 	var ip := UI.line_edit("IP-Adresse oder Hostname", String(Settings.get_v("net", "last_host")))
 	var port := SpinBox.new()
 	port.min_value = 1024
@@ -217,7 +217,7 @@ static func browser(parent: Node) -> void:
 	code_edit.max_length = 6
 	code_edit.custom_minimum_size.x = 120
 	code_edit.size_flags_horizontal = Control.SIZE_FILL
-	var inet := {"list": [], "err": ""}
+	var inet := {"list": [], "err": "", "by_code": {}}
 	var status := UI.label("Suche Sitzungen im Internet und im lokalen Netzwerk …", UI.TEXT2)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -230,7 +230,9 @@ static func browser(parent: Node) -> void:
 			sel = tree.get_selected().get_metadata(0)
 		tree.clear()
 		var root := tree.create_item()
+		inet["by_code"] = {}
 		for sx in inet["list"]:
+			inet["by_code"][String(sx.get("code", ""))] = sx
 			var it := tree.create_item(root)
 			it.set_metadata(0, "inet:" + String(sx.get("code", "")))
 			it.set_text(0, String(sx.get("name", "?")))
@@ -242,8 +244,11 @@ static func browser(parent: Node) -> void:
 			it.set_text(6, "Internet")
 			it.set_text(7, "ja" if sx.get("locked", false) else "nein")
 			var fullx: bool = int(sx.get("players", 0)) >= int(sx.get("max", 0))
-			it.set_text(8, "voll" if fullx else ("läuft" if sx.get("started", false) else "Lobby"))
-			it.set_custom_color(8, UI.RED if fullx else UI.GREEN)
+			var oldv: bool = int(sx.get("version", Net.PROTOCOL)) != Net.PROTOCOL
+			it.set_text(8, "andere Version" if oldv else ("voll" if fullx else ("läuft" if sx.get("started", false) else "Lobby")))
+			it.set_custom_color(8, UI.RED if (fullx or oldv) else UI.GREEN)
+			if oldv:
+				it.set_tooltip_text(8, "Dieser Raum nutzt eine andere Spielversion. Bitte das Spiel aktualisieren.")
 			if String(it.get_metadata(0)) == sel:
 				it.select(0)
 		for key in Net.discovery.servers:
@@ -278,6 +283,28 @@ static func browser(parent: Node) -> void:
 			Settings.set_v("profile", "name", player.text.strip_edges())
 		if code_edit.text.strip_edges() != "":
 			Settings.save()
+			var sx: Dictionary = inet["by_code"].get(code_edit.text.strip_edges().to_upper(), {})
+			if not sx.is_empty() and int(sx.get("version", Net.PROTOCOL)) != Net.PROTOCOL:
+				status.text = "Dieser Raum nutzt eine andere Spielversion – bitte das Spiel aktualisieren."
+				return
+			if sx.get("locked", false) and pw.text == "":
+				# Raum mit Passwort: kurz nachfragen (wie bei anderen Online-Spielen)
+				var pe := UI.line_edit("Passwort des Raums")
+				pe.secret = true
+				var pbox := UI.vbox([UI.label("Der Raum »%s« ist mit einem Passwort geschützt." % String(sx.get("name", "")), UI.TEXT2), pe])
+				var holder := {"w": null}
+				var go := func():
+					pw.text = pe.text
+					if is_instance_valid(holder["w"]):
+						holder["w"].queue_free()
+					Net.discovery.stop()
+					var e2: String = Net.join_code(code_edit.text, pw.text)
+					status.text = e2 if e2 != "" else "Trete »%s« bei …" % String(sx.get("name", ""))
+				pe.text_submitted.connect(func(_t): go.call())
+				pbox.add_child(UI.hbox([UI.spacer(), UI.accent(UI.button("Beitreten", go), UI.BLUE), UI.button("Abbrechen", func(): holder["w"].queue_free())]))
+				holder["w"] = UI.window(parent, "Passwort erforderlich", Vector2i(420, 160), pbox)
+				pe.grab_focus.call_deferred()
+				return
 			Net.discovery.stop()
 			var errc: String = Net.join_code(code_edit.text, pw.text)
 			status.text = errc if errc != "" else "Verbinde über Einladungscode %s …" % code_edit.text.strip_edges().to_upper()
@@ -311,7 +338,7 @@ static func browser(parent: Node) -> void:
 			if err != "":
 				status.text = err
 			elif arr.is_empty() and Net.discovery.servers.is_empty():
-				status.text = "Derzeit keine offenen Sitzungen. Mit einem Einladungscode kannst du direkt beitreten."
+				status.text = "Derzeit keine offenen Räume. Erstelle selbst einen über »SPIEL ERSTELLEN« – oder tritt mit einem Einladungscode bei."
 			else:
 				status.text = "%d Sitzung(en) gefunden." % (arr.size() + Net.discovery.servers.size())
 		fill.call()
@@ -329,9 +356,9 @@ static func browser(parent: Node) -> void:
 		Net.internet_list.disconnect(on_inet)
 		Net.connect_result.disconnect(on_result)
 		Net.stop_browser())
-	box.add_child(UI.caption("Offene Sitzungen (Internet und lokales Netzwerk)"))
+	box.add_child(UI.caption("Offene Räume – Doppelklick zum Beitreten (Internet und lokales Netzwerk)"))
 	box.add_child(tree)
-	box.add_child(UI.hbox([UI.label("Einladungscode", UI.TEXT2), code_edit, UI.label("Passwort", UI.TEXT2), pw, UI.label("Spielername", UI.TEXT2), player]))
+	box.add_child(UI.hbox([UI.label("Einladungscode", UI.TEXT2), code_edit, UI.label("Passwort (nur falls geschützt)", UI.TEXT2), pw, UI.label("Spielername", UI.TEXT2), player]))
 	var recent: Dictionary = LocalDB.table("servers")
 	if not recent.is_empty():
 		var names: Array = ["Zuletzt verwendet …"]
