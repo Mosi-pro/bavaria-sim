@@ -10,6 +10,30 @@ Dauer: etwa 15 Minuten. Du brauchst nur deinen Windows-PC.
 
 ---
 
+## Variante A (am einfachsten): nur über die Browser-Konsole des Anbieters
+
+Im Kundenbereich deines Server-Anbieters die **Konsole** des Servers öffnen (oft „Bildschirm“,
+„Konsole“ oder „VNC“), als `root` anmelden und **einen** Befehl eintippen:
+
+```
+curl -fsSL https://github.com/Mosi-pro/bavaria-sim/releases/latest/download/server.sh | bash
+```
+
+Falls `curl` nicht gefunden wird:
+
+```
+wget -qO- https://github.com/Mosi-pro/bavaria-sim/releases/latest/download/server.sh | bash
+```
+
+Das Skript lädt das aktuelle Paket, installiert den Dienst und sichert den Server ab.
+Am Ende steht „FERTIG“. Für Updates denselben Befehl erneut ausführen.
+
+(Voraussetzung: Das GitHub-Repository ist öffentlich.)
+
+---
+
+## Variante B: vom Windows-PC aus per PowerShell
+
 ## 1. Paket herunterladen
 
 Lade `LEITSTELLE112-Wyse-Vermittlung-<Version>.tar.gz` herunter (Releases auf GitHub

@@ -73,7 +73,9 @@ jobs:
           chmod +x wyse/leitstelle112.x86_64 wyse/*.sh
           tar -czf LEITSTELLE112-Wyse-Vermittlung-${APP_VERSION}.tar.gz -C wyse .
           sha256sum LEITSTELLE112-Wyse-Vermittlung-${APP_VERSION}.tar.gz > SHA256SUMMEN_WYSE.txt
-          gh release upload "v${APP_VERSION}" LEITSTELLE112-Wyse-Vermittlung-${APP_VERSION}.tar.gz SHA256SUMMEN_WYSE.txt --clobber
+          cp LEITSTELLE112-Wyse-Vermittlung-${APP_VERSION}.tar.gz LEITSTELLE112-Server.tar.gz
+          cp tools/wyse/server.sh server.sh
+          gh release upload "v${APP_VERSION}" LEITSTELLE112-Wyse-Vermittlung-${APP_VERSION}.tar.gz LEITSTELLE112-Server.tar.gz server.sh SHA256SUMMEN_WYSE.txt --clobber
 
   windows:
     needs: [aufraeumen, tests]
