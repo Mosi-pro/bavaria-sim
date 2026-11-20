@@ -1,6 +1,7 @@
 extends VBoxContainer
 ## Linke Seitenleiste: wartende/aktive Notrufe und Einsatzübersicht.
 
+const Areas = preload("res://src/simulation/areas.gd")
 const UI = preload("res://src/ui/kit.gd")
 const IL = preload("res://src/incidents/incident_logic.gd")
 
@@ -76,7 +77,12 @@ func _rebuild() -> void:
 		it.set_custom_color(0, Data.keyword_color(inc["keyword"]))
 		it.set_tooltip_text(0, "%s – Priorität %d" % [Data.keywords.get(inc["keyword"], {}).get("name", ""), int(inc["prio"])])
 		it.set_text(1, String(inc["address"]).get_slice(",", 0))
-		it.set_tooltip_text(1, "Einsatz %s\n%s\n%s" % [inc["nr"], inc["address"], inc["lage"]])
+		var ia: String = String(inc.get("area", ""))
+		var foreign: bool = not Areas.mine(Game.me, ia) and not Areas.owners(ia).is_empty()
+		it.set_tooltip_text(1, "Einsatz %s\n%s\n%s%s" % [inc["nr"], inc["address"], inc["lage"], ("\nGebiet %s – zuständig: %s" % [Areas.name(ia), ", ".join(Areas.owners(ia))]) if foreign else ""])
+		if foreign:
+			it.set_custom_color(1, UI.TEXT2.darkened(0.25))
+			it.set_text(1, "[%s] %s" % [Areas.name(ia), it.get_text(1)])
 		var st: String = inc["status"]
 		it.set_text(2, IL.STATUS_NAMES.get(st, st))
 		var col: Color = STATUS_COL.get(st, UI.TEXT2)

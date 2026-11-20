@@ -3,6 +3,7 @@ extends Node
 ## Der PC des Hosts führt die Simulation aus; Clients senden ausschließlich Aktionen,
 ## die der Host gegen Authentifizierung, Rolle und Spielzustand prüft.
 
+const Areas = preload("res://src/simulation/areas.gd")
 const Auth = preload("res://src/multiplayer/auth.gd")
 const Discovery = preload("res://src/multiplayer/discovery.gd")
 const RelayPeer = preload("res://src/multiplayer/relay_peer.gd")
@@ -43,6 +44,7 @@ var _pw_salt := PackedByteArray()
 var _pw_key := PackedByteArray()
 var _pending := {}           # Host: peer_id -> {nonce, t}
 var _tokens := {}            # Host: token -> role (für Wiederverbindung)
+var _token_areas := {}       # Host: token -> Gebiete (für Wiederverbindung)
 var _fails := {}             # Host: ip -> [anzahl, sperre_bis_ms]
 var _rate := {}              # Host: peer_id -> [fensterstart_ms, anzahl]
 var _dirty := {"inc": {}, "call": {}, "veh": {}, "st": {}}
@@ -112,7 +114,8 @@ func host(opts: Dictionary) -> String:
 		"version": PROTOCOL, "relay": via_relay,
 	}
 	_started = bool(opts.get("started", false))
-	players = {1: {"name": Game.me["name"], "role": "leitung", "token": ""}}
+	players = {1: {"name": Game.me["name"], "role": "leitung", "token": "", "area": []}}
+	Game.me["area"] = []
 	if via_relay:
 		var url := Data.relay_url()
 		if url == "":
@@ -241,7 +244,8 @@ func s_auth(version: int, name: String, client_nonce: PackedByteArray, proof: Pa
 				n += 1
 	token = token.substr(0, 64)
 	var role: String = _tokens.get(token, "disposition")
-	players[id] = {"name": name, "role": role, "token": token}
+	var area: Array = _token_areas.get(token, [])
+	players[id] = {"name": name, "role": role, "token": token, "area": area}
 	if token != "":
 		_tokens[token] = role
 	c_accept.rpc_id(id, id, name, role, session, _started)
@@ -257,7 +261,7 @@ func _broadcast_lobby() -> void:
 		(_peer as RelayPeer).update_info(_discovery_info())
 	var pub := {}
 	for id in players:
-		pub[id] = {"name": players[id]["name"], "role": players[id]["role"]}
+		pub[id] = {"name": players[id]["name"], "role": players[id]["role"], "area": players[id].get("area", [])}
 	for id in _auth_ids():
 		c_lobby.rpc_id(id, pub, session)
 	lobby_changed.emit()
@@ -305,6 +309,47 @@ func _apply_role(peer_id: int, role: String) -> void:
 		Game.me["role"] = role
 	_broadcast_lobby()
 
+## Mehrspieler-Gebiete: [] = ganze Stadt. Der Host teilt zu; Mitspieler dürfen ihr eigenes Gebiet wählen.
+func set_area(peer_id: int, areas: Array) -> void:
+	if mode == MODE_HOST:
+		_apply_area(peer_id, areas)
+	elif mode == MODE_CLIENT:
+		s_set_area.rpc_id(1, areas)
+
+@rpc("any_peer", "call_remote", "reliable")
+func s_set_area(areas: Array) -> void:
+	if mode == MODE_HOST and players.has(multiplayer.get_remote_sender_id()):
+		_apply_area(multiplayer.get_remote_sender_id(), areas)
+
+func _apply_area(peer_id: int, areas: Array, quiet := false) -> void:
+	if not players.has(peer_id):
+		return
+	var clean: Array = []
+	var valid: Dictionary = Data.modes.get("areas", {}).get("list", {})
+	for a in areas:
+		if valid.has(String(a)) and not clean.has(String(a)):
+			clean.append(String(a))
+	players[peer_id]["area"] = clean
+	if players[peer_id]["token"] != "":
+		_token_areas[players[peer_id]["token"]] = clean
+	if peer_id == 1:
+		Game.me["area"] = clean
+	if not quiet:
+		_broadcast_lobby()
+	if _started and State.active:
+		Sim.radio("Leitstelle", "%s ist zuständig für: %s." % [players[peer_id]["name"], Areas.names(clean)], -1, "system", "")
+
+## Gebiete automatisch gleichmäßig auf alle Spieler verteilen (nur Host).
+func auto_areas() -> void:
+	if mode != MODE_HOST:
+		return
+	var ids: Array = players.keys()
+	ids.sort()
+	var parts: Array = Areas.distribute(ids.size())
+	for i in ids.size():
+		_apply_area(ids[i], parts[i], true)
+	_broadcast_lobby()
+
 func kick(peer_id: int) -> void:
 	if mode == MODE_HOST and peer_id != 1 and players.has(peer_id):
 		c_kick.rpc_id(peer_id, "Sie wurden vom Host aus der Sitzung entfernt.")
@@ -314,6 +359,12 @@ func kick(peer_id: int) -> void:
 func start_game() -> void:
 	if mode != MODE_HOST:
 		return
+	var any_area := false
+	for pid in players:
+		if not players[pid].get("area", []).is_empty():
+			any_area = true
+	if not any_area and players.size() >= 2:
+		auto_areas()
 	_started = true
 	discovery.update_info(_discovery_info())
 	if _peer is RelayPeer:
@@ -390,7 +441,7 @@ func s_action(req: int, a: Dictionary) -> void:
 	_rate[id] = r
 	if int(r[1]) > 40 or a.size() > 16:
 		return
-	var res: Dictionary = Sim.act(a, {"id": id, "name": players[id]["name"], "role": players[id]["role"]})
+	var res: Dictionary = Sim.act(a, {"id": id, "name": players[id]["name"], "role": players[id]["role"], "area": players[id].get("area", [])})
 	c_action_result.rpc_id(id, req, res)
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -494,7 +545,7 @@ func c_reject(reason: String) -> void:
 func c_accept(my_id_: int, name: String, role: String, sess: Dictionary, started: bool) -> void:
 	_authed = true
 	session = sess
-	Game.me = {"id": my_id_, "name": name, "role": role}
+	Game.me = {"id": my_id_, "name": name, "role": role, "area": []}
 	status_text = "Verbunden mit %s" % sess.get("name", "Host")
 	if _join.has("ip"):
 		LocalDB.put("servers", "%s:%d" % [_join["ip"], int(_join["port"])], {"name": sess.get("name", ""), "ip": _join["ip"], "port": _join["port"], "last": int(Time.get_unix_time_from_system())})
@@ -512,6 +563,7 @@ func c_lobby(pub: Dictionary, sess: Dictionary) -> void:
 	if pub.has(me_id):
 		Game.me["role"] = pub[me_id]["role"]
 		Game.me["name"] = pub[me_id]["name"]
+		Game.me["area"] = pub[me_id].get("area", [])
 	lobby_changed.emit()
 	State.players_changed.emit()
 

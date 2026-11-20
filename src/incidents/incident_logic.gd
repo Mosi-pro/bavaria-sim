@@ -92,7 +92,7 @@ static func create_incident(form: Dictionary, call_id: String, by: String) -> St
 	var inc := {
 		"id": id, "nr": "%02d%02d%02d-%04d" % [int(d["year"]) % 100, d["month"], d["day"], n],
 		"keyword": kw, "x": p.x, "y": p.y, "node": World.access_node(p), "radius": float(form.get("radius", 0.0)),
-		"address": form.get("address", World.address_at(p)["text"]), "district": World.districts[World.district_at(p)]["name"],
+		"address": form.get("address", World.address_at(p)["text"]), "district": World.districts[World.district_at(p)]["name"], "area": preload("res://src/simulation/areas.gd").of_pos(p),
 		"object": form.get("object", ""), "persons": form.get("persons", ""), "danger": form.get("danger", ""), "info": form.get("info", ""),
 		"prio": int(form.get("prio", kd.get("prio", 2))), "status": "neu", "t_created": State.clock, "t_call": State.clock,
 		"t_alarm": -1.0, "t_arrival": -1.0, "t_done": -1.0, "notes": [], "truth": "", "call": call_id, "caller": form.get("caller", ""),

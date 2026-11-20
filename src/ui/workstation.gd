@@ -706,8 +706,9 @@ func _process(delta: float) -> void:
 		conn += "  ·  %d ms" % Net.last_ping
 	_status_labels["conn"].text = conn
 	_status_labels["conn"].add_theme_color_override("font_color", UI.TEXT2 if not Net.is_online() else UI.BLUE.lightened(0.3))
-	_status_labels["player"].text = Game.me["name"]
-	_status_labels["player"].tooltip_text = "Rolle: %s" % Game.my_role().get("name", "")
+	var my_areas: Array = Game.me.get("area", [])
+	_status_labels["player"].text = Game.me["name"] + (("  ·  Gebiet " + preload("res://src/simulation/areas.gd").names(my_areas)) if not my_areas.is_empty() else "")
+	_status_labels["player"].tooltip_text = "Rolle: %s\nZuständig für: %s" % [Game.my_role().get("name", ""), preload("res://src/simulation/areas.gd").names(my_areas)]
 	_status_labels["player"].mouse_filter = Control.MOUSE_FILTER_STOP
 	_status_labels["date"].text = State.date_str()
 	_status_labels["time"].text = State.time_str()

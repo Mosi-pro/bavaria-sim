@@ -1,6 +1,7 @@
 extends RefCounted
 ## Mehrspieler-Fenster: Spiel erstellen (Host), Serverübersicht (LAN/Direkt-IP), Lobby.
 
+const Areas = preload("res://src/simulation/areas.gd")
 const UI = preload("res://src/ui/kit.gd")
 const SaveSystem = preload("res://src/save/save_system.gd")
 
@@ -95,12 +96,20 @@ static func lobby(parent: Node) -> void:
 	info.scroll_following = false
 	info.custom_minimum_size.y = 120
 	info.size_flags_vertical = Control.SIZE_FILL
-	var tree := UI.tree([{"title": "Spieler"}, {"title": "Rolle", "width": 240}, {"title": "", "width": 70}])
+	var tree := UI.tree([{"title": "Spieler"}, {"title": "Rolle", "width": 210}, {"title": "Gebiet", "width": 120}, {"title": "", "width": 70}])
+	var area_ids: Array = [""]
+	var area_names: Array = ["Ganze Stadt"]
+	for a in Areas.list():
+		area_ids.append(a)
+		area_names.append("Gebiet " + Areas.name(a))
+	var area_opt := UI.option(area_names, 0)
+	area_opt.custom_minimum_size.x = 160
 	var chat := UI.rich(false)
 	chat.custom_minimum_size.y = 90
 	var chat_in := UI.line_edit("Nachricht an die Mitspieler …")
 	var role_ids: Array = Data.roles.keys()
 	var role_opt := UI.option(role_ids.map(func(r): return Data.roles[r]["name"]), 0)
+	role_opt.custom_minimum_size.x = 260
 	var status := UI.label("", UI.TEXT2)
 	var start_btn := UI.accent(UI.button("Spiel starten", func(): _start_pending()), UI.GREEN)
 	var box := UI.vbox([])
@@ -132,9 +141,13 @@ static func lobby(parent: Node) -> void:
 			it.set_metadata(0, id)
 			it.set_text(0, "%s%s%s" % [p["name"], "  (Host)" if int(id) == 1 else "", "  (ich)" if int(id) == Net.my_id() else ""])
 			it.set_text(1, Data.roles.get(p["role"], {}).get("name", p["role"]))
+			var par: Array = p.get("area", [])
+			it.set_text(2, Areas.names(par))
+			if par.size() == 1:
+				it.set_custom_color(2, Areas.color(par[0]))
 			if Net.mode == Net.MODE_HOST and int(id) != 1:
-				it.set_text(2, "entfernen")
-				it.set_custom_color(2, UI.RED)
+				it.set_text(3, "entfernen")
+				it.set_custom_color(3, UI.RED)
 		start_btn.visible = Net.mode == Net.MODE_HOST and not Game.in_session
 		status.text = "Warten auf den Spielstart durch den Host …" if (Net.mode == Net.MODE_CLIENT and not Game.in_session) else ""
 		if Net.mode == Net.MODE_NONE and box.is_inside_tree():
@@ -142,10 +155,12 @@ static func lobby(parent: Node) -> void:
 	tree.item_selected.connect(func():
 		var it := tree.get_selected()
 		if it != null and Net.players.has(it.get_metadata(0)):
-			role_opt.select(max(0, role_ids.find(Net.players[it.get_metadata(0)]["role"]))))
+			role_opt.select(max(0, role_ids.find(Net.players[it.get_metadata(0)]["role"])))
+			var par: Array = Net.players[it.get_metadata(0)].get("area", [])
+			area_opt.select(0 if par.size() != 1 else max(0, area_ids.find(par[0]))))
 	tree.item_mouse_selected.connect(func(_pos, _btn):
 		var it := tree.get_selected()
-		if it != null and tree.get_selected_column() == 2 and Net.mode == Net.MODE_HOST:
+		if it != null and tree.get_selected_column() == 3 and Net.mode == Net.MODE_HOST:
 			Net.kick(int(it.get_metadata(0))))
 	var apply_role := UI.button("Rolle zuweisen", func():
 		var it := tree.get_selected()
@@ -175,6 +190,20 @@ static func lobby(parent: Node) -> void:
 	box.add_child(info)
 	box.add_child(tree)
 	box.add_child(UI.hbox([UI.label("Rolle:", UI.TEXT2), role_opt, apply_role, UI.spacer()]))
+	var apply_area := UI.button("Gebiet zuweisen", func():
+		var it := tree.get_selected()
+		var target: int = Net.my_id() if it == null else int(it.get_metadata(0))
+		if Net.mode != Net.MODE_HOST:
+			target = Net.my_id()
+		var a: String = area_ids[area_opt.selected]
+		Net.set_area(target, [] if a == "" else [a]), "Zuständigkeitsgebiet festlegen. Der Host kann es für alle Spieler festlegen.")
+	var auto_btn := UI.button("Gebiete automatisch verteilen", func(): Net.auto_areas(), "Die Stadt gleichmäßig auf alle Spieler aufteilen (Nord, Ost, Süd, West).")
+	auto_btn.visible = Net.mode == Net.MODE_HOST
+	box.add_child(UI.hbox([UI.label("Gebiet:", UI.TEXT2), area_opt, apply_area, auto_btn, UI.spacer()]))
+	var area_help := UI.label("Jeder Spieler ist für ein Gebiet der Stadt zuständig: Notrufe aus seinem Gebiet klingeln bei ihm, und nur er alarmiert dort. Ist niemand frei, laufen Notrufe nach %d Sekunden zu allen über. Fahrzeuge aus anderen Gebieten dürfen zur Unterstützung alarmiert werden. Beim Spielstart werden die Gebiete automatisch verteilt, falls noch keine vergeben sind." % int(Areas.overflow()), UI.TEXT2, 11)
+	area_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	area_help.custom_minimum_size.x = 600
+	box.add_child(area_help)
 	box.add_child(UI.caption("Chat"))
 	box.add_child(chat)
 	box.add_child(UI.hbox([chat_in, UI.button("Senden", send)]))
@@ -193,7 +222,7 @@ static func lobby(parent: Node) -> void:
 			status.text = "Einladungscode %s in die Zwischenablage kopiert." % Net.relay_code)
 	copy.visible = Net.mode == Net.MODE_HOST and Net.via_relay
 	box.add_child(UI.hbox([status, UI.spacer(), copy, upnp, start_btn, leave]))
-	var w := UI.window(parent, "Sitzung – Mitspieler und Rollen", Vector2i(680, 560), box, "lobby")
+	var w := UI.window(parent, "Sitzung – Mitspieler und Rollen", Vector2i(720, 640), box, "lobby")
 	if w != null and not Game.in_session:
 		w.close_requested.connect(func(): Net.shutdown())
 	fill.call()

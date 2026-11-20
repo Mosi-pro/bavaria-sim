@@ -59,6 +59,8 @@ func _ready() -> void:
 	test_scenarios()
 	print("== Speichern und Laden ==")
 	test_save_load()
+	print("== Mehrspieler-Gebiete ==")
+	test_areas()
 	print("== Beta-Zugangscodes ==")
 	test_beta()
 	print("== Authentifizierung ==")
@@ -498,6 +500,31 @@ func test_gwl_modules() -> void:
 	check(types_at.call("werk1").has("TMB") and types_at.call("werk1").has("HLL"), "Werkfeuerwehr mit Teleskopmastbühne und Hochleistungslüfter")
 	# Stichwortfarben nach Fachbereich
 	check(Data.keyword_color("RD 2") == Color("#e58a2e") and Data.keyword_color("B 2") == Color("#d9534a") and Data.keyword_color("THL 4") == Color("#d9534a") and Data.keyword_color("POL 1") == Color("#5b95c8"), "Stichwortfarben: RD orange, Feuerwehr rot, Polizei blau")
+
+func test_areas() -> void:
+	const Areas = preload("res://src/simulation/areas.gd")
+	Sim.new_game({"mode": "frei", "seed": 61})
+	Sim.running = false
+	State.meta["next_call"] = 1e12
+	check(Areas.of_pos(Vector2(-600, -5300)) == "nord" and Areas.of_pos(Vector2(6000, 1900)) == "ost" and Areas.of_pos(Vector2(0, 0)) == "sued" and Areas.of_pos(Vector2(-2900, 600)) == "west", "Stadtteile sind den Gebieten Nord/Ost/Süd/West zugeordnet")
+	var parts: Array = Areas.distribute(2)
+	check(parts.size() == 2 and parts[0].size() == 2 and parts[1].size() == 2, "Automatische Verteilung: 2 Spieler je 2 Gebiete")
+	var nord := {"name": "Anna", "role": "disposition", "area": ["nord"]}
+	var sued := {"name": "Ben", "role": "disposition", "area": ["sued"]}
+	State.players = {1: {"name": "Anna", "role": "disposition", "area": ["nord"]}, 2: {"name": "Ben", "role": "disposition", "area": ["sued"]}}
+	var cid := CallGen.spawn_event("brand_muell", {"district": "nordstadt", "variant": 0, "loc_level": 2})
+	var c: Dictionary = State.calls[cid]
+	check(String(c.get("area", "")) == "nord", "Notruf kennt sein Gebiet")
+	check(not Sim.act({"a": "call_take", "id": cid}, sued)["ok"], "Fremder Notruf kann nicht sofort angenommen werden")
+	c["wait"] = Areas.overflow() + 1.0
+	check(Sim.act({"a": "call_take", "id": cid}, sued)["ok"], "Nach dem Überlauf darf jeder annehmen")
+	var r: Dictionary = Sim.act({"a": "inc_create", "form": {"keyword": "B 1", "x": -600.0, "y": -5300.0}}, nord)
+	var iid: String = r["id"]
+	check(String(State.incidents[iid]["area"]) == "nord", "Einsatz kennt sein Gebiet")
+	var v1: String = Advisor.suggest(State.incidents[iid])["suggested"][0]
+	check(not Sim.act({"a": "inc_alarm", "id": iid, "vehicles": [v1]}, sued)["ok"], "Fremder Disponent darf im Gebiet Nord nicht alarmieren")
+	check(Sim.act({"a": "inc_alarm", "id": iid, "vehicles": [v1]}, nord)["ok"], "Zuständiger Disponent alarmiert")
+	State.players = {}
 
 func test_beta() -> void:
 	const Beta = preload("res://src/core/beta.gd")

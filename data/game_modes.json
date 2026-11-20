@@ -38,6 +38,16 @@
     "slot_cost": 40000
   },
   "scoring": {"hilfsfrist": 600, "call_to_alarm": 120},
+  "areas": {
+    "_comment": "Mehrspieler: Aufteilung der Stadt in Zuständigkeitsgebiete. Jeder Spieler bearbeitet Notrufe und Einsätze in seinem Gebiet; Notrufe ohne freien Disponenten laufen nach overflow Sekunden zu allen über.",
+    "overflow": 20,
+    "list": {
+      "nord": {"name": "Nord", "color": "#5b95c8", "districts": ["zentrum_nord", "nordstadt", "stadionviertel", "universitaet", "nordost", "flughafen", "oberfeldkirchen", "kirchstetten"]},
+      "ost":  {"name": "Ost",  "color": "#d6a83b", "districts": ["ostpark", "industriehafen", "messe", "seeburg", "aichering"]},
+      "sued": {"name": "Süd",  "color": "#4c9868", "districts": ["altstadt", "zentrum_sued", "suedstadt", "suedwest", "moosbrunn"]},
+      "west": {"name": "West", "color": "#c97bd1", "districts": ["westend", "bahnhofsviertel", "gueterstadt", "waldheim", "hohenried"]}
+    }
+  },
   "roles": {
     "leitung":      {"name": "Schichtführung / Lageführung", "calls": true, "incidents": true, "orgs": ["fw", "rd", "pol", "kats", "thw", "wr"], "manage": true},
     "disposition":  {"name": "Disposition (Notrufannahme)", "calls": true, "incidents": true, "orgs": ["fw", "rd", "pol", "kats", "thw", "wr"], "manage": false},

@@ -2,6 +2,7 @@ extends Control
 ## Kartenüberlagerung in Bildschirmkoordinaten: Beschriftungen, Wachen, Kliniken,
 ## Einsatzorte, Notrufortung, Verkehrslage, Routen und Fahrzeuge.
 
+const Areas = preload("res://src/simulation/areas.gd")
 const UI = preload("res://src/ui/kit.gd")
 
 var view: Control
@@ -114,7 +115,16 @@ func _draw() -> void:
 				var big: bool = not d.get("village", false)
 				if z < 0.03 and not big:
 					continue
-				_txt_c(p, String(d["name"]).to_upper() if big else d["name"], 12 if big else 11, Color(0.9, 0.91, 0.92, 0.75 if big else 0.6))
+				var lc := Color(0.9, 0.91, 0.92, 0.75 if big else 0.6)
+				var label: String = String(d["name"]).to_upper() if big else d["name"]
+				if _areas_on():
+					var ar: String = Areas.of_pos(d["c"])
+					if ar != "":
+						var mine: bool = Game.me.get("area", []).has(ar)
+						lc = Color(Areas.color(ar), 1.0 if mine else 0.55)
+						if mine and big:
+							label = "● " + label
+				_txt_c(p, label, 12 if big else 11, lc)
 		if z >= 0.06 and z < 1.2:
 			for a in World.areas:
 				if a["kind"] in ["rail", "campus", "messe", "stadium"] and z < 0.15:
@@ -275,6 +285,12 @@ func _draw_calls() -> void:
 		draw_rect(Rect2(sp - Vector2(7, 7), Vector2(14, 14)), Color("#202326"))
 		draw_rect(Rect2(sp - Vector2(6, 6), Vector2(12, 12)), Color("#d6a83b") if blink else Color("#8a6d28"))
 		draw_string(_font, sp + Vector2(-4, 4), "N", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#16181a"))
+
+func _areas_on() -> bool:
+	for pid in State.players:
+		if not State.players[pid].get("area", []).is_empty():
+			return true
+	return false
 
 func _draw_incidents(z: float) -> void:
 	for id in State.incidents:

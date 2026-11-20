@@ -160,6 +160,9 @@ Zwei Kranwagen an Feuerwache 6 und 9 – für umgestürzte LKW, Baukranunfälle,
 [b]Flughafen[/b]
 Notlandungen, Flugzeugbrände und Patienten an Bord übernimmt die Flughafenfeuerwehr mit Flugfeldlöschfahrzeugen (FLF) und Treppenfahrzeugen (TRF). Steht ein Flugzeug an einer Außenposition, kommt der Rettungsdienst nur über die Treppe an Bord.
 
+[b]Mehrspieler: Gebiete[/b]
+Im Mehrspieler wird die Stadt in die Gebiete Nord, Ost, Süd und West aufgeteilt. Jeder Spieler ist für sein Gebiet zuständig: Notrufe von dort klingeln bei ihm, und nur er alarmiert dort. Ist niemand frei, laufen Notrufe nach 20 Sekunden zu allen über („Überlauf“). Fahrzeuge aus anderen Gebieten dürfen zur Unterstützung alarmiert werden. Dein Gebiet steht oben rechts neben deinem Namen; auf der Karte sind die Stadtteile in der Farbe ihres Gebiets beschriftet.
+
 [b]Schwierigkeit[/b]
 Leicht: Das passende Stichwort wird vorgeschlagen.  Mittel: Nur die Einsatzart wird angedeutet.  Schwer/Experte: keine Hinweise, mehr und hektischere Notrufe.
 

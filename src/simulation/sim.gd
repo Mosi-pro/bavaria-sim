@@ -4,6 +4,7 @@ extends Node
 
 const VL = preload("res://src/vehicles/vehicle_logic.gd")
 const IL = preload("res://src/incidents/incident_logic.gd")
+const Areas = preload("res://src/simulation/areas.gd")
 const CallGen = preload("res://src/incidents/call_generator.gd")
 const Advisor = preload("res://src/dispatch/advisor.gd")
 const StationLogic = preload("res://src/stations/station_logic.gd")
@@ -165,6 +166,8 @@ func act(a: Dictionary, player: Dictionary) -> Dictionary:
 			if not State.calls.has(cid):
 				return _err("Notruf nicht mehr vorhanden.")
 			var c: Dictionary = State.calls[cid]
+			if kind == "call_take" and not Areas.may(player, String(c.get("area", ""))) and float(c.get("wait", 0.0)) < Areas.overflow():
+				return _err("Notruf aus Gebiet %s – zuständig: %s. Übernahme durch andere erst nach %d s (Notrufüberlauf)." % [Areas.name(String(c.get("area", ""))), ", ".join(Areas.owners(String(c.get("area", "")))), int(Areas.overflow())])
 			if kind != "call_take" and c["taken_by"] != who:
 				return _err("Der Notruf wird von %s bearbeitet." % c["taken_by"])
 			match kind:
@@ -210,6 +213,8 @@ func act(a: Dictionary, player: Dictionary) -> Dictionary:
 			if not State.incidents.has(iid):
 				return _err("Einsatz nicht mehr vorhanden.")
 			var inc: Dictionary = State.incidents[iid]
+			if kind in ["inc_edit", "inc_alarm", "inc_close"] and not Areas.may(player, String(inc.get("area", ""))):
+				return _err("Einsatz im Gebiet %s – zuständig: %s. Bitte im Chat absprechen oder die Schichtführung fragen." % [Areas.name(String(inc.get("area", ""))), ", ".join(Areas.owners(String(inc.get("area", ""))))])
 			match kind:
 				"inc_open":
 					if not inc.get("opened", false):

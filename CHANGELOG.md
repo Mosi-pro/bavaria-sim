@@ -1,5 +1,15 @@
 # Änderungen – LEITSTELLE 112
 
+## Version 1.5.0 (20.11.2026)
+
+**Neu: Mehrspieler mit Gebieten**
+- Die Stadt ist in vier Zuständigkeitsgebiete aufgeteilt: **Nord, Ost, Süd, West**. Jeder Spieler ist für sein Gebiet zuständig – vom Notruf bis zum Abschluss.
+- Notrufe aus einem Gebiet klingeln nur beim zuständigen Spieler. Ist dort niemand frei, laufen sie nach 20 Sekunden zu allen über (»Überlauf aus Gebiet …«).
+- Einsätze im eigenen Gebiet alarmiert nur der Zuständige; Fahrzeuge aus anderen Gebieten dürfen zur Unterstützung mitgeschickt werden. Die Schichtführung darf überall eingreifen.
+- Beim Spielstart werden die Gebiete automatisch gleichmäßig verteilt (2 Spieler: je zwei Gebiete, 4 Spieler: je eins). In der Lobby lässt sich das ändern (»Gebiet zuweisen«, »Gebiete automatisch verteilen«).
+- Anzeige: eigenes Gebiet oben rechts neben dem Namen, Einsätze fremder Gebiete in der Liste ausgegraut mit Gebietsangabe, »Was ist zu tun?« zeigt nur die eigenen Aufgaben, Stadtteilnamen auf der Karte in Gebietsfarben.
+- Im Einzelspiel ändert sich nichts.
+
 ## Version 1.4.2 (19.11.2026)
 
 **Behoben (Server)**

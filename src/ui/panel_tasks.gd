@@ -2,6 +2,7 @@ extends VBoxContainer
 ## Aufgabenliste „Was ist zu tun?“: zeigt die offenen Arbeitsschritte nach Dringlichkeit
 ## mit einem Knopf für die nächste Aktion. Bei leichten Schwierigkeitsgraden mit Erklärung.
 
+const Areas = preload("res://src/simulation/areas.gd")
 const UI = preload("res://src/ui/kit.gd")
 const IL = preload("res://src/incidents/incident_logic.gd")
 
@@ -42,7 +43,11 @@ func tasks() -> Array:
 		for cid in State.calls:
 			var c: Dictionary = State.calls[cid]
 			if c["state"] == "ringing":
-				out.append([0, UI.RED, "Notruf wartet  (%s)" % State.dur_str(float(c["wait"])), "Anrufer legt sonst auf. Annehmen und Ort/Lage erfragen.", "Annehmen", "call", cid])
+				var ca: String = String(c.get("area", ""))
+				if Areas.mine(Game.me, ca) or Areas.owners(ca).is_empty():
+					out.append([0, UI.RED, "Notruf wartet  (%s)" % State.dur_str(float(c["wait"])), "Anrufer legt sonst auf. Annehmen und Ort/Lage erfragen.", "Annehmen", "call", cid])
+				elif float(c["wait"]) >= Areas.overflow():
+					out.append([0, UI.RED, "Überlauf aus Gebiet %s  (%s)" % [Areas.name(ca), State.dur_str(float(c["wait"]))], "Im Gebiet %s ist gerade niemand frei. Bitte aushelfen und annehmen." % Areas.name(ca), "Annehmen", "call", cid])
 			elif c["taken_by"] == me:
 				out.append([1, UI.YELLOW, "Notruf im Gespräch", "Ort und Lage klären, dann Stichwort wählen und Einsatz anlegen.", "Öffnen", "call", cid])
 	if role.get("incidents", false):
@@ -52,6 +57,9 @@ func tasks() -> Array:
 				out.append([2, Color("#C97BD1"), "Sprechwunsch: %s" % UI.short_callsign(v), "Fahrzeug möchte etwas melden (Status 5). Sprechaufforderung geben.", "Sprechen", "talk", vid])
 		for iid in State.incidents:
 			var inc: Dictionary = State.incidents[iid]
+			var ia: String = String(inc.get("area", ""))
+			if not Areas.mine(Game.me, ia) and not Areas.owners(ia).is_empty():
+				continue
 			var nr: String = String(inc["nr"]).substr(7)
 			var where: String = String(inc["address"]).get_slice(",", 0)
 			if inc["done"]:

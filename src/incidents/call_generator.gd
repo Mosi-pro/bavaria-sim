@@ -2,6 +2,7 @@ extends RefCounted
 ## Notrufgenerator und Gesprächsführung (nur Host).
 
 const IL = preload("res://src/incidents/incident_logic.gd")
+const Areas = preload("res://src/simulation/areas.gd")
 
 static func scripts() -> Dictionary:
 	return Data.call_scripts
@@ -267,6 +268,7 @@ static func make_call(tid: String, recall: bool, force_level := -1) -> String:
 		if hl != "none" or State.meta.get("mode", "") == "einweisung":
 			c["same_inc"] = tr["incident"]
 	c["true_pos"] = [tr["x"], tr["y"]]
+	c["area"] = Areas.of_pos(Vector2(tr["x"], tr["y"]))
 	_set_loc_level(c, tr, level)
 	var prefix := _pick(persona.get("prefix", [""]))
 	var open := _pick(script.get("open", ["Ich brauche Hilfe!"]))
@@ -305,6 +307,7 @@ static func make_nuisance_call() -> String:
 	var d := pick_district([])
 	var r := World.random_road_point(Sim.rng, d, [])
 	c["true_pos"] = [r["pos"].x, r["pos"].y]
+	c["area"] = Areas.of_pos(r["pos"])
 	c["loc_level"] = 0
 	c["loc"] = {"x": r["pos"].x, "y": r["pos"].y, "r": 900.0, "text": "Funkzelle %s (ungenau)" % World.districts[d]["name"]}
 	c["pending"] = [
