@@ -149,6 +149,38 @@ jobs:
           Write-Host "Exit-Code: $($p.ExitCode)"
           if (Test-Path $log) { Get-Content $log | Select-String "OK|FEHLER|SELBSTTEST|ERROR" }
           if ($p.ExitCode -ne 0) { throw "Selbsttest der Beta fehlgeschlagen" }
+      - name: Testversion bauen (nur Entwicklungszweige, eigener Ordner)
+        # Wie die Beta (Zugangscode), aber eigener Installationsordner, eigene AppId und
+        # eigene Spielstände (%APPDATA%\LEITSTELLE112_Test), damit eine installierte Beta
+        # nicht überschrieben wird. Die Änderungen an project.godot/export_presets.cfg
+        # gelten nur in diesem Build-Lauf.
+        if: github.ref_name != github.event.repository.default_branch
+        shell: pwsh
+        run: |
+          $g = (Get-ChildItem godot\*_console.exe).FullName
+          (Get-Content project.godot -Raw -Encoding UTF8).Replace('custom_user_dir_name.beta="LEITSTELLE112_Beta"', 'custom_user_dir_name.beta="LEITSTELLE112_Test"') | Set-Content project.godot -Encoding UTF8 -NoNewline
+          (Get-Content export_presets.cfg -Raw -Encoding UTF8).Replace('product_name="LEITSTELLE 112 BETA"', 'product_name="LEITSTELLE 112 TEST"') | Set-Content export_presets.cfg -Encoding UTF8 -NoNewline
+          if (!(Select-String -Path project.godot -Pattern 'LEITSTELLE112_Test' -Quiet)) { throw "Datenordner der Testversion nicht gesetzt" }
+          New-Item -ItemType Directory -Force build\windows_test\config, build\windows_test\config_standard\world | Out-Null
+          & $g --headless --path . --export-release "Windows Beta" build\windows_test\LEITSTELLE112_TEST.exe
+          Copy-Item data\*.json build\windows_test\config_standard\
+          Copy-Item data\world\*.json build\windows_test\config_standard\world\
+          Copy-Item packaging\config_README.txt build\windows_test\config\LIESMICH.txt
+          Copy-Item packaging\LIESMICH_TEST.txt build\windows_test\LIESMICH.txt
+          Copy-Item packaging\LIZENZHINWEISE.txt build\windows_test\
+          if (!(Test-Path build\windows_test\LEITSTELLE112_TEST.exe)) { throw "Export der Testversion fehlgeschlagen" }
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /DTest installer\LEITSTELLE112_Beta.iss
+          if ($LASTEXITCODE -ne 0) { throw "Installer der Testversion fehlgeschlagen" }
+          git checkout -- project.godot export_presets.cfg
+      - name: Selbsttest der Test-EXE
+        if: github.ref_name != github.event.repository.default_branch
+        shell: pwsh
+        run: |
+          $log = Join-Path $PWD "selbsttest_test.log"
+          $p = Start-Process build\windows_test\LEITSTELLE112_TEST.exe -ArgumentList "--headless","--selbsttest","--log-file","`"$log`"" -Wait -PassThru
+          Write-Host "Exit-Code: $($p.ExitCode)"
+          if (Test-Path $log) { Get-Content $log | Select-String "OK|FEHLER|SELBSTTEST|ERROR|Datenordner" }
+          if ($p.ExitCode -ne 0) { throw "Selbsttest der Testversion fehlgeschlagen" }
       - name: Release veröffentlichen (normale Version und getrennte Beta)
         # Nur der Hauptzweig (Standard-Branch) veröffentlicht die öffentliche Version.
         if: github.ref_name == github.event.repository.default_branch
@@ -176,7 +208,7 @@ jobs:
             gh release create "v$V-beta" beta/* --target "$GITHUB_SHA" --prerelease --title "LEITSTELLE 112 BETA – ${V}" --notes-file beta_notes.md
           fi
       - name: Testversion veröffentlichen (Entwicklungszweig, nicht öffentlich)
-        # Andere Zweige: nur die BETA-Variante (mit Zugangscode, eigener Installationsordner)
+        # Andere Zweige: nur die Testversion (Zugangscode wie Beta, eigener Installationsordner)
         # als Vorabversion »test-<zweig>«. Die öffentliche Version bleibt unberührt.
         if: github.ref_name != github.event.repository.default_branch
         shell: bash
@@ -187,8 +219,8 @@ jobs:
           B="${GITHUB_REF_NAME//\//-}"
           TAG="test-${B}"
           mkdir -p testout
-          cp build/installer_beta/LEITSTELLE112_BETA_Setup_${V}.exe testout/LEITSTELLE112_TEST_${B}_${V}.exe
-          printf 'TESTVERSION aus dem Entwicklungszweig %s (Version %s, Stand %s).\nNicht für die Öffentlichkeit. Startet nur mit Tester-Zugangscode und wird getrennt von der normalen Version installiert (wie die Beta).\n' "$GITHUB_REF_NAME" "$V" "${GITHUB_SHA:0:7}" > test_notes.md
+          cp build/installer_test/LEITSTELLE112_TEST_Setup_${V}.exe testout/LEITSTELLE112_TEST_${B}_${V}.exe
+          printf 'TESTVERSION aus dem Entwicklungszweig %s (Version %s, Stand %s).\nNicht für die Öffentlichkeit. Startet nur mit Tester-Zugangscode. Eigener Installationsordner (LEITSTELLE 112 TEST) und eigene Spielstände – getrennt von normaler Version und Beta.\n' "$GITHUB_REF_NAME" "$V" "${GITHUB_SHA:0:7}" > test_notes.md
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" testout/* --clobber
             gh release edit "$TAG" --notes-file test_notes.md --target "$GITHUB_SHA"

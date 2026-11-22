@@ -115,7 +115,7 @@ func _selftest() -> void:
 	SaveSystem.delete("selbsttest")
 	if Beta.is_beta():
 		var codes: Dictionary = Beta._list().get("codes", {})
-		report.call(OS.get_user_data_dir().ends_with("LEITSTELLE112_Beta") and codes.size() > 0 and Beta.check("LB-AAAA-AAAA-AAAA") < 0, "Beta-Version: eigener Datenordner (%s), %d Zugangscodes, ungültige Codes abgelehnt" % [OS.get_user_data_dir(), codes.size()])
+		report.call(OS.get_user_data_dir().get_file() in ["LEITSTELLE112_Beta", "LEITSTELLE112_Test"] and codes.size() > 0 and Beta.check("LB-AAAA-AAAA-AAAA") < 0, "Beta-Version: eigener Datenordner (%s), %d Zugangscodes, ungültige Codes abgelehnt" % [OS.get_user_data_dir(), codes.size()])
 	var key := Sim.Personnel != null
 	report.call(key, "Module vollständig")
 	print("SELBSTTEST " + ("BESTANDEN" if ok else "FEHLGESCHLAGEN"))
