@@ -67,6 +67,7 @@ jobs:
           (timeout 8 wyse/leitstelle112.x86_64 --headless -- --vermittlung --port=24180 || true) | tee relay.log
           grep -q "Vermittlungsdienst LEITSTELLE 112 gestartet" relay.log
       - name: Paket für den Vermittlungsdienst zum Release hinzufügen
+        if: github.ref_name == github.event.repository.default_branch
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -149,6 +150,8 @@ jobs:
           if (Test-Path $log) { Get-Content $log | Select-String "OK|FEHLER|SELBSTTEST|ERROR" }
           if ($p.ExitCode -ne 0) { throw "Selbsttest der Beta fehlgeschlagen" }
       - name: Release veröffentlichen (normale Version und getrennte Beta)
+        # Nur der Hauptzweig (Standard-Branch) veröffentlicht die öffentliche Version.
+        if: github.ref_name == github.event.repository.default_branch
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -171,4 +174,24 @@ jobs:
             gh release upload "v$V-beta" beta/* --clobber
           else
             gh release create "v$V-beta" beta/* --target "$GITHUB_SHA" --prerelease --title "LEITSTELLE 112 BETA – ${V}" --notes-file beta_notes.md
+          fi
+      - name: Testversion veröffentlichen (Entwicklungszweig, nicht öffentlich)
+        # Andere Zweige: nur die BETA-Variante (mit Zugangscode, eigener Installationsordner)
+        # als Vorabversion »test-<zweig>«. Die öffentliche Version bleibt unberührt.
+        if: github.ref_name != github.event.repository.default_branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="$APP_VERSION"
+          B="${GITHUB_REF_NAME//\//-}"
+          TAG="test-${B}"
+          mkdir -p testout
+          cp build/installer_beta/LEITSTELLE112_BETA_Setup_${V}.exe testout/LEITSTELLE112_TEST_${B}_${V}.exe
+          printf 'TESTVERSION aus dem Entwicklungszweig %s (Version %s, Stand %s).\nNicht für die Öffentlichkeit. Startet nur mit Tester-Zugangscode und wird getrennt von der normalen Version installiert (wie die Beta).\n' "$GITHUB_REF_NAME" "$V" "${GITHUB_SHA:0:7}" > test_notes.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" testout/* --clobber
+            gh release edit "$TAG" --notes-file test_notes.md --target "$GITHUB_SHA"
+          else
+            gh release create "$TAG" testout/* --target "$GITHUB_SHA" --prerelease --title "TESTVERSION – ${GITHUB_REF_NAME}" --notes-file test_notes.md
           fi
