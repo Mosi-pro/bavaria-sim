@@ -186,21 +186,23 @@ func _build_world() -> void:
 func _build_audio() -> void:
 	var amb := float(Settings.get_v("audio", "ambient"))
 	var base := linear_to_db(maxf(amb, 0.0001))
-	for kind in ["murmur", "murmur_soft", "server", "fridge"]:
-		for p in layout.sound_spots.get(kind, []):
-			var a := AudioStreamPlayer3D.new()
-			a.stream = Sfx.get_stream(kind)
-			a.position = p
-			a.unit_size = {"murmur": 5.0, "murmur_soft": 2.5, "server": 3.0, "fridge": 1.2}[kind]
-			a.max_distance = 30.0
-			a.volume_db = base + {"murmur": -4.0, "murmur_soft": -8.0, "server": -2.0, "fridge": -10.0}[kind]
-			a.autoplay = amb > 0.001
-			world.add_child(a)
-			_loops.append(a)
+	# Dauergeräusche nur dort, wo sie hingehören: leises Lüfterrauschen im Technikraum.
+	# (Künstliches Stimmengemurmel und Kühlschrankbrummen entfernt – wirkte störend.)
+	for p in layout.sound_spots.get("server", []):
+		var a := AudioStreamPlayer3D.new()
+		a.stream = Sfx.get_stream("server")
+		a.position = p
+		a.unit_size = 1.5
+		a.max_distance = 7.0
+		a.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_SQUARE_DISTANCE
+		a.volume_db = base - 12.0
+		a.autoplay = amb > 0.001
+		world.add_child(a)
+		_loops.append(a)
 	for i in 6:
 		var a := AudioStreamPlayer3D.new()
-		a.unit_size = 3.0
-		a.max_distance = 25.0
+		a.unit_size = 2.0
+		a.max_distance = 14.0
 		world.add_child(a)
 		_sfx_pool.append(a)
 
@@ -442,7 +444,7 @@ func _physics_process(delta: float) -> void:
 	_bob += moved * 5.2
 	if _step_dist > (0.7 if spd > 2 else 0.62):
 		_step_dist = 0.0
-		_play_sfx("step", body.position + Vector3(0, 0.05, 0), -18.0)
+		pass
 
 func _process(delta: float) -> void:
 	if not is_visible_in_tree():
@@ -467,7 +469,7 @@ func _process(delta: float) -> void:
 			led.visible = not led.visible
 	_t_keys -= delta
 	if _t_keys <= 0.0:
-		_t_keys = randf_range(0.08, 0.35)
+		_t_keys = randf_range(1.2, 4.0)
 		_keyboard_tick()
 	# eigene Pose an die Mitspieler
 	var p := body.position
@@ -602,24 +604,24 @@ func _interact() -> void:
 				_start_busy("coffee", 4.5, "Kaffee läuft durch …", func():
 					_set_item(Presence.ITEM_COFFEE)
 					_show_toast("Frisch gebrühter Kaffee. [F] trinken, [G] abstellen."))
-				_play_sfx("coffee", _spot("coffee"), -4.0)
+				_play_sfx("coffee", _spot("coffee"), -9.0)
 		"water":
 			if item == 0:
 				_start_busy("water", 2.0, "Wasser wird gezapft …", func():
 					_set_item(Presence.ITEM_WATER)
 					_show_toast("Ein Glas Wasser. [F] trinken, [G] abstellen."))
-				_play_sfx("water", body.position + Vector3(0, 1, 0), -6.0)
+				_play_sfx("water", body.position + Vector3(0, 1, 0), -12.0)
 		"microwave":
 			if item == 0:
 				_start_busy("microwave", 6.0, "Essen wird aufgewärmt …", func():
 					_set_item(Presence.ITEM_FOOD)
 					_show_toast("Mahlzeit! [F] essen, [G] abstellen."))
-				_play_sfx("microwave", _spot("microwave"), -6.0)
+				_play_sfx("microwave", _spot("microwave"), -12.0)
 		"stove":
 			Presence.set_toggle("stove", not Presence.is_on("stove"))
 		"sink":
 			_start_busy("sink", 2.0, "Hände waschen …", func(): _show_toast("Hände gewaschen."))
-			_play_sfx("water", body.position + Vector3(0, 1, 0), -6.0)
+			_play_sfx("water", body.position + Vector3(0, 1, 0), -12.0)
 		"server":
 			_show_toast(_server_status(), 8.0)
 		"info":
@@ -686,7 +688,8 @@ func _play_sfx(name: String, pos: Vector3, vol_db := 0.0) -> void:
 			return
 
 func _keyboard_tick() -> void:
-	if not Settings.get_v("audio", "keys"):
+	# gelegentliches, leises Tippen von besetzten Nachbarplätzen (nicht beim eigenen Arbeiten)
+	if not Settings.get_v("audio", "keys") or mode == "desk":
 		return
 	var occupied: Array = []
 	for id in layout.seats:
@@ -703,7 +706,7 @@ func _keyboard_tick() -> void:
 			if a.stream == null:
 				return
 			a.position = Vector3(s["look"]) * 0.6 + Vector3(s["eye"]) * 0.4
-			a.volume_db = linear_to_db(maxf(float(Settings.get_v("audio", "ambient")), 0.0001)) - 8.0
+			a.volume_db = linear_to_db(maxf(float(Settings.get_v("audio", "ambient")), 0.0001)) - 18.0
 			a.play()
 			return
 
@@ -833,7 +836,7 @@ func _apply_toggles(instant := false) -> void:
 		if not _door_angles.has(id):
 			_door_angles[id] = {"cur": target if instant else 0.0, "target": target}
 		elif not instant and absf(float(_door_angles[id]["target"]) - target) > 0.01:
-			_play_sfx("cabinet" if id == "fridge" else "door", (d["hinge"] as Node3D).global_position + Vector3(0, 1.0, 0), -8.0)
+			_play_sfx("cabinet" if id == "fridge" else "door", (d["hinge"] as Node3D).global_position + Vector3(0, 1.0, 0), -14.0)
 		_door_angles[id]["target"] = target
 	var on := Presence.is_on("stove")
 	for hp in layout.hotplates:
