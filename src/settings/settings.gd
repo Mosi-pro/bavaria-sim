@@ -7,13 +7,13 @@ const PATH := "user://settings.cfg"
 const DEFAULTS := {
 	"video": {"mode": "fenster", "resolution": "1600x900", "quality": "hoch", "vsync": true, "ui_scale": 1.0},
 	"audio": {"master": 0.8, "effects": 0.8, "radio": 0.7, "ambient": 0.35, "phone": 0.9, "keys": true, "mute_unfocused": false},
-	"game": {"speed": 2.0, "autosave_min": 5, "autosave": true, "language": "de", "pause_on_call": false, "confirm_alarm": false},
+	"game": {"speed": 2.0, "autosave_min": 5, "autosave": true, "language": "de", "pause_on_call": false, "confirm_alarm": false, "walkable": true},
 	"map": {"labels": true, "buildings": true, "districts": true, "traffic": true, "pois": true, "stations": true, "routes": true, "idle_vehicles": false},
 	"net": {"port": 24112, "discovery_port": 24113, "max_players": 6, "last_host": "", "reconnect": true, "relay_url": ""},
 	"profile": {"name": "Disponent", "dienstnummer": "ILS-0112", "role": "leitung"},
-	"keys": {"call_take": KEY_F2, "dispatch": KEY_F3, "radio_focus": KEY_F4, "quick_save": KEY_F5, "pause": KEY_PAUSE, "speed_up": KEY_KP_ADD, "speed_down": KEY_KP_SUBTRACT, "fullscreen": KEY_F11, "map_home": KEY_HOME, "talk_ack": KEY_F6},
+	"keys": {"call_take": KEY_F2, "dispatch": KEY_F3, "radio_focus": KEY_F4, "quick_save": KEY_F5, "pause": KEY_PAUSE, "speed_up": KEY_KP_ADD, "speed_down": KEY_KP_SUBTRACT, "fullscreen": KEY_F11, "map_home": KEY_HOME, "talk_ack": KEY_F6, "stand_up": KEY_F8},
 }
-const KEY_LABELS := {"call_take": "Notruf annehmen", "dispatch": "Einsatz disponieren", "radio_focus": "Funk-/Texteingabe", "quick_save": "Schnellspeichern", "pause": "Pause", "speed_up": "Spielgeschwindigkeit erhöhen", "speed_down": "Spielgeschwindigkeit verringern", "fullscreen": "Vollbild umschalten", "map_home": "Karte: Gesamtansicht", "talk_ack": "Sprechwunsch annehmen"}
+const KEY_LABELS := {"call_take": "Notruf annehmen", "dispatch": "Einsatz disponieren", "radio_focus": "Funk-/Texteingabe", "quick_save": "Schnellspeichern", "pause": "Pause", "speed_up": "Spielgeschwindigkeit erhöhen", "speed_down": "Spielgeschwindigkeit verringern", "fullscreen": "Vollbild umschalten", "map_home": "Karte: Gesamtansicht", "talk_ack": "Sprechwunsch annehmen", "stand_up": "Arbeitsplatz verlassen (Aufstehen)"}
 const RESOLUTIONS := ["1280x720", "1366x768", "1600x900", "1920x1080", "2560x1440", "3840x2160"]
 
 var data: Dictionary = {}

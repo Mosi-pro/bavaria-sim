@@ -11,7 +11,7 @@ const RelayPeer = preload("res://src/multiplayer/relay_peer.gd")
 const MODE_NONE := 0
 const MODE_HOST := 1
 const MODE_CLIENT := 2
-const PROTOCOL := 3
+const PROTOCOL := 4
 const CHUNK := 48000
 const MOVING := ["enroute", "transport", "returning", "alarmed"]
 

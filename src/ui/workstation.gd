@@ -40,6 +40,8 @@ var _ctx_id := ""
 var _overlay: PanelContainer
 var _overlay_label: Label
 var _t := 0.0
+## Begehbare Leitstelle (building.gd), falls dieser Arbeitsplatz dort eingebettet ist.
+var building: Control = null
 
 func _ready() -> void:
 	Game.ui = self
@@ -269,6 +271,9 @@ func _build_toolbar() -> Control:
 	var bar := PanelContainer.new()
 	bar.add_theme_stylebox_override("panel", UI.box(UI.SEC, UI.BORDER, 1, 4))
 	var h := UI.hbox([], 3)
+	if building != null:
+		h.add_child(UI.accent(UI.button("Aufstehen  (F8)", func(): building.stand_up(), "Arbeitsplatz verlassen und zurück in die begehbare Leitstelle"), UI.BLUE))
+		h.add_child(VSeparator.new())
 	h.add_child(UI.accent(UI.button("Notruf annehmen  (F2)", func(): _menu_action("call_take"), "Nächsten wartenden Notruf annehmen"), UI.RED))
 	h.add_child(UI.button("Sprechwunsch  (F6)", func(): _menu_action("talk"), "Sprechaufforderung an das nächste Fahrzeug mit Status 5"))
 	h.add_child(UI.button("Neuer Einsatz", func(): _menu_action("inc_new"), "Einsatz ohne Notruf anlegen (z. B. nach Meldung über Funk)"))
@@ -721,7 +726,11 @@ func _process(delta: float) -> void:
 		_statusbar.add_theme_color_override("font_color", Color("#6b737b"))
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not event.is_pressed() or event.is_echo():
+	if not event.is_pressed() or event.is_echo() or not is_visible_in_tree():
+		return
+	if building != null and event.is_action_pressed("ls_stand_up"):
+		building.stand_up()
+		get_viewport().set_input_as_handled()
 		return
 	var typing := get_viewport().gui_get_focus_owner() is LineEdit or get_viewport().gui_get_focus_owner() is TextEdit
 	for action in ["call_take", "dispatch", "radio_focus", "quick_save", "pause", "fullscreen", "map_home", "talk_ack", "speed_up", "speed_down"]:

@@ -4,6 +4,7 @@ extends Control
 const UI = preload("res://src/ui/kit.gd")
 const MainMenu = preload("res://src/ui/main_menu.gd")
 const Workstation = preload("res://src/ui/workstation.gd")
+const Building = preload("res://src/building/building.gd")
 const Beta = preload("res://src/core/beta.gd")
 const BetaGate = preload("res://src/ui/beta_gate.gd")
 
@@ -69,7 +70,11 @@ func _show_menu() -> void:
 
 func _show_workstation() -> void:
 	var w := Control.new()
-	w.set_script(Workstation)
+	# Begehbare Leitstelle (3D) mit eingebettetem Arbeitsplatz – oder klassisch direkt am Platz.
+	if Settings.get_v("game", "walkable") and DisplayServer.get_name() != "headless":
+		w.set_script(Building)
+	else:
+		w.set_script(Workstation)
 	_swap(w)
 
 func _on_session_ended(reason: String) -> void:

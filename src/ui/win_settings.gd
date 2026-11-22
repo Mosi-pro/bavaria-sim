@@ -23,7 +23,7 @@ func setup() -> void:
 	var autosave := _opt("game", "autosave_min", [[2, "alle 2 Minuten"], [5, "alle 5 Minuten"], [10, "alle 10 Minuten"], [20, "alle 20 Minuten"]])
 	var lang := UI.option(["Deutsch", "English (nicht verfügbar)"], 0)
 	lang.set_item_disabled(1, true)
-	tabs.add_child(_page("Spiel", [["Standard-Spielgeschwindigkeit", speed], ["Automatisches Speichern", _check("game", "autosave")], ["Autosave-Intervall", autosave], ["Sprache", lang]]))
+	tabs.add_child(_page("Spiel", [["Standard-Spielgeschwindigkeit", speed], ["Automatisches Speichern", _check("game", "autosave")], ["Autosave-Intervall", autosave], ["Begehbare 3D-Leitstelle (ab nächster Sitzung)", _check("game", "walkable")], ["Sprache", lang]]))
 	# Karte
 	tabs.add_child(_page("Karte", [["Straßen- und Gebietsnamen", _check("map", "labels")], ["Gebäude (hohe Zoomstufe)", _check("map", "buildings")], ["Stadtteilgrenzen", _check("map", "districts")], ["Verkehrslage, Baustellen, Sperrungen", _check("map", "traffic")], ["Besondere Objekte", _check("map", "pois")], ["Wachen und Krankenhäuser", _check("map", "stations")], ["Routen ausgewählter Fahrzeuge", _check("map", "routes")], ["Fahrzeuge auf der Wache anzeigen", _check("map", "idle_vehicles")]]))
 	# Steuerung

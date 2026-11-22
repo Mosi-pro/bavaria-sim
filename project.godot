@@ -26,6 +26,7 @@ World="*res://src/map/world.gd"
 State="*res://src/simulation/state.gd"
 Sim="*res://src/simulation/sim.gd"
 Net="*res://src/multiplayer/net.gd"
+Presence="*res://src/multiplayer/presence.gd"
 Audio="*res://src/audio/audio.gd"
 Game="*res://src/core/game.gd"
 
