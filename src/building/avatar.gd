@@ -37,6 +37,17 @@ static func _box(s: Vector3) -> BoxMesh:
 		_meshes[k] = m
 	return _meshes[k]
 
+static func _cap(r: float, h: float) -> CapsuleMesh:
+	var k := "k%f_%f" % [r, h]
+	if not _meshes.has(k):
+		var m := CapsuleMesh.new()
+		m.radius = r
+		m.height = h
+		m.radial_segments = 14
+		m.rings = 4
+		_meshes[k] = m
+	return _meshes[k]
+
 static func _sph(r: float) -> SphereMesh:
 	var k := "s%f" % r
 	if not _meshes.has(k):
@@ -88,24 +99,24 @@ func setup(look_seed: int, display_name: String) -> void:
 	hips = Node3D.new()
 	hips.position.y = HIP_Y
 	body.add_child(hips)
-	_part(hips, _box(Vector3(0.36, 0.16, 0.22)), trousers, Vector3(0, 0.02, 0))
+	_part(hips, _cap(0.13, 0.4), trousers, Vector3(0, 0.02, 0), Vector3(1.0, 1.0, 0.75)).rotation.z = PI / 2
 	_part(hips, _box(Vector3(0.37, 0.05, 0.23)), dark, Vector3(0, 0.1, 0))
 	for s in [-1.0, 1.0]:
 		var hip := Node3D.new()
 		hip.position = Vector3(s * 0.1, -0.04, 0)
 		hips.add_child(hip)
-		_part(hip, _box(Vector3(0.15, 0.46, 0.17)), trousers, Vector3(0, -0.23, 0))
+		_part(hip, _cap(0.082, 0.5), trousers, Vector3(0, -0.23, 0))
 		var knee := Node3D.new()
 		knee.position = Vector3(0, -0.45, 0)
 		hip.add_child(knee)
-		_part(knee, _box(Vector3(0.13, 0.42, 0.14)), trousers, Vector3(0, -0.21, 0))
-		_part(knee, _box(Vector3(0.12, 0.08, 0.27)), dark, Vector3(0, -0.43, -0.05))
+		_part(knee, _cap(0.068, 0.46), trousers, Vector3(0, -0.21, 0))
+		_part(knee, _cap(0.055, 0.26), dark, Vector3(0, -0.425, -0.05)).rotation.x = PI / 2
 		legs.append([hip, knee])
 	torso = Node3D.new()
 	torso.position = Vector3(0, 0.1, 0)
 	hips.add_child(torso)
-	_part(torso, _box(Vector3(0.4, 0.56, 0.23)), shirt, Vector3(0, 0.3, 0))
-	_part(torso, _box(Vector3(0.44, 0.12, 0.24)), shirt, Vector3(0, 0.52, 0))
+	_part(torso, _cap(0.19, 0.62), shirt, Vector3(0, 0.3, 0), Vector3(1.05, 1.0, 0.62))
+	_part(torso, _cap(0.07, 0.48), shirt, Vector3(0, 0.52, 0), Vector3(1.0, 1.0, 1.5)).rotation.z = PI / 2
 	for s in [-1.0, 1.0]:
 		_part(torso, _box(Vector3(0.12, 0.02, 0.07)), dark, Vector3(s * 0.15, 0.59, 0))
 	_part(torso, _box(Vector3(0.08, 0.05, 0.01)), dark, Vector3(-0.1, 0.42, -0.118))
@@ -123,11 +134,11 @@ func setup(look_seed: int, display_name: String) -> void:
 		var sh := Node3D.new()
 		sh.position = Vector3(s * 0.26, 0.5, 0)
 		torso.add_child(sh)
-		_part(sh, _box(Vector3(0.11, 0.3, 0.12)), shirt, Vector3(0, -0.13, 0))
+		_part(sh, _cap(0.058, 0.34), shirt, Vector3(0, -0.13, 0))
 		var el := Node3D.new()
 		el.position = Vector3(0, -0.29, 0)
 		sh.add_child(el)
-		_part(el, _box(Vector3(0.085, 0.26, 0.09)), skin, Vector3(0, -0.13, 0))
+		_part(el, _cap(0.045, 0.3), skin, Vector3(0, -0.13, 0))
 		var hand := Node3D.new()
 		hand.position = Vector3(0, -0.29, 0)
 		el.add_child(hand)

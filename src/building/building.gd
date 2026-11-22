@@ -33,6 +33,9 @@ var _prompt: Label
 var _cross: ColorRect
 var _status: Label
 var _toast: Label
+var _hint_panel: PanelContainer
+var _tl_time: Label
+var _minimap: Control
 var _toast_t := 0.0
 var _progress: ProgressBar
 var _item_hint: Label
@@ -115,24 +118,44 @@ func _build_world() -> void:
 	env.background_mode = Environment.BG_COLOR
 	env.background_color = Color(0.74, 0.82, 0.9)
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.86, 0.85, 0.82)
-	env.ambient_light_energy = 0.55
-	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_exposure = 1.05
+	env.ambient_light_color = Color(0.9, 0.87, 0.82)
+	env.ambient_light_energy = 0.42
+	env.tonemap_mode = Environment.TONE_MAPPER_AGX
+	env.tonemap_exposure = 1.15
 	env.glow_enabled = q >= 1
-	env.glow_intensity = 0.35
-	env.glow_bloom = 0.05
-	env.glow_hdr_threshold = 1.2
-	env.ssao_enabled = q >= 2
-	env.ssao_radius = 0.8
-	env.ssao_intensity = 1.2
+	env.glow_intensity = 0.45
+	env.glow_bloom = 0.04
+	env.glow_hdr_threshold = 1.0
+	# Umgebungsverdeckung und indirektes Licht (ab mittlerer bzw. hoher Qualität)
+	env.ssao_enabled = q >= 1
+	env.ssao_radius = 1.2
+	env.ssao_intensity = 1.6
+	env.ssao_power = 1.4
+	env.ssil_enabled = q >= 2
+	env.ssil_radius = 3.0
+	env.ssil_intensity = 0.8
+	env.ssr_enabled = q >= 2
+	env.ssr_max_steps = 48
 	env.adjustment_enabled = true
-	env.adjustment_saturation = 0.95
+	env.adjustment_saturation = 1.02
+	env.adjustment_contrast = 1.05
 	var we := WorldEnvironment.new()
 	we.environment = env
 	world.add_child(we)
 	layout = Layout.new()
 	layout.build(world, q)
+	if q >= 2:
+		# Reflexionen im Leitstellenraum (einmalig berechnet)
+		var probe := ReflectionProbe.new()
+		probe.position = Vector3(18, 2.6, 8)
+		probe.size = Vector3(36, 5.4, 18)
+		probe.box_projection = true
+		probe.interior = true
+		probe.update_mode = ReflectionProbe.UPDATE_ONCE
+		probe.ambient_mode = ReflectionProbe.AMBIENT_COLOR
+		probe.ambient_color = Color(0.32, 0.3, 0.28)
+		world.add_child(probe)
+	_build_screens()
 	# Spieler (Kapsel mit Kollision)
 	body = CharacterBody3D.new()
 	body.collision_layer = 0
@@ -198,19 +221,54 @@ func _build_hud() -> void:
 	_prompt.offset_top = 26; _prompt.offset_bottom = 70; _prompt.offset_left = -400; _prompt.offset_right = 400
 	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hud.add_child(_prompt)
-	_status = _hud_label("", 13, Color(0.92, 0.93, 0.95))
-	_status.position = Vector2(16, 12)
-	hud.add_child(_status)
+	# oben links: Logo, Name, Datum und Uhrzeit
+	var tl := _panel()
+	tl.position = Vector2(14, 12)
+	var logo := Control.new()
+	logo.set_script(preload("res://src/building/hud_widgets.gd"))
+	logo.kind = "logo"
+	logo.custom_minimum_size = Vector2(36, 34)
+	var name_l := _hud_label("Leitstelle\nBavaria", 15, Color(0.95, 0.96, 0.97))
+	name_l.add_theme_constant_override("line_spacing", -4)
+	_tl_time = _hud_label("", 13, Color(0.9, 0.91, 0.93))
+	var sep := VSeparator.new()
+	sep.custom_minimum_size.x = 14
+	tl.add_child(UI.hbox([logo, name_l, sep, _hud_label("◷", 22, Color(0.9, 0.91, 0.93)), _tl_time], 8))
+	hud.add_child(tl)
+	# oben rechts: Kennzahlen
+	var tr := _panel()
+	tr.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	tr.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	tr.offset_right = -14
+	tr.offset_top = 12
+	_status = _hud_label("", 14, Color(0.93, 0.94, 0.96))
+	tr.add_child(_status)
+	hud.add_child(tr)
+	# unten links: Lageplan
+	_minimap = Control.new()
+	_minimap.set_script(preload("res://src/building/hud_widgets.gd"))
+	_minimap.building = self
+	_minimap.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	_minimap.offset_left = 14; _minimap.offset_right = 254; _minimap.offset_top = -214; _minimap.offset_bottom = -44
+	_minimap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(_minimap)
 	_help = _hud_label("W A S D laufen  ·  Maus umsehen  ·  Umschalt schneller  ·  E benutzen  ·  Esc Menü", 12, Color(0.85, 0.86, 0.88, 0.85))
 	_help.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_help.offset_left = 16; _help.offset_top = -34; _help.offset_bottom = -12; _help.offset_right = 900
 	hud.add_child(_help)
-	_toast = _hud_label("", 15, Color(1, 1, 1))
-	_toast.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	_toast.offset_top = 70; _toast.offset_bottom = 160; _toast.offset_left = -460; _toast.offset_right = 460
-	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# unten rechts: Hinweise
+	_hint_panel = _panel()
+	_hint_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_hint_panel.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_hint_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_hint_panel.offset_right = -14
+	_hint_panel.offset_bottom = -44
+	var hint_title := _hud_label("ⓘ  Hinweis", 14, Color(0.55, 0.75, 1.0))
+	_toast = _hud_label("", 13, Color(0.92, 0.93, 0.95))
 	_toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hud.add_child(_toast)
+	_toast.custom_minimum_size.x = 300
+	_hint_panel.add_child(UI.vbox([hint_title, _toast], 2))
+	hud.add_child(_hint_panel)
 	_progress = ProgressBar.new()
 	_progress.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_progress.offset_top = 70; _progress.offset_bottom = 84; _progress.offset_left = -130; _progress.offset_right = 130
@@ -220,10 +278,25 @@ func _build_hud() -> void:
 	hud.add_child(_progress)
 	_item_hint = _hud_label("", 13, Color(1, 1, 1))
 	_item_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	_item_hint.offset_left = -420; _item_hint.offset_right = -16; _item_hint.offset_top = -34; _item_hint.offset_bottom = -12
+	_item_hint.offset_left = -520; _item_hint.offset_right = -16; _item_hint.offset_top = -34; _item_hint.offset_bottom = -12
 	_item_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	hud.add_child(_item_hint)
 	_build_menu()
+
+func _panel() -> PanelContainer:
+	var p := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.09, 0.1, 0.11, 0.86)
+	sb.border_color = Color(0.3, 0.32, 0.35, 0.8)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(4)
+	sb.content_margin_left = 12
+	sb.content_margin_right = 12
+	sb.content_margin_top = 7
+	sb.content_margin_bottom = 7
+	p.add_theme_stylebox_override("panel", sb)
+	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return p
 
 func _hud_label(text: String, size: int, col: Color) -> Label:
 	var l := Label.new()
@@ -382,7 +455,6 @@ func _process(delta: float) -> void:
 		_hide_stray_windows()
 	_update_prompt()
 	_toast_t -= delta
-	_toast.modulate.a = clampf(_toast_t, 0.0, 1.0)
 	_t_slow += delta
 	if _t_slow >= 1.0:
 		_t_slow = 0.0
@@ -661,7 +733,7 @@ func _on_seats_changed() -> void:
 		plate.modulate = Color(0.85, 0.25, 0.2) if used else Color(0.15, 0.65, 0.3)
 		var scr: Node3D = s["screens"]
 		for sc in scr.get_children():
-			(sc as MeshInstance3D).material_override = MATS.get_mat(String(sc.get_meta("on")) if used else "screen_off")
+			(sc as MeshInstance3D).material_override = MATS.get_mat(String(sc.get_meta("on")) if used else "screen_login")
 	# Eigener Platz bestätigt → hinsetzen
 	if pending_seat != "" and Presence.owner_of(pending_seat) == Presence.me():
 		var id := pending_seat
@@ -796,64 +868,71 @@ func _update_status() -> void:
 	for id in State.calls:
 		if State.calls[id]["state"] == "ringing":
 			ringing += 1
-	var free := 0
+	var used := 0
+	var total := 0
 	for id in layout.seats:
-		if layout.seats[id]["kind"] == "desk" and Presence.owner_of(id) == 0 and _npc_at(id) == "":
-			free += 1
-	var t := "ILS Bavaria  ·  %s  %s\nNotrufe wartend: %d   ·   laufende Einsätze: %d   ·   freie Arbeitsplätze: %d" % [State.date_str(), State.time_str(), ringing, State.incidents.size(), free]
-	if ringing > 0:
-		t += "\n☎ Es gehen Notrufe ein – setz dich an einen Arbeitsplatz!"
-	_status.text = t
-	_status.add_theme_color_override("font_color", Color(1.0, 0.75, 0.7) if ringing > 0 else Color(0.92, 0.93, 0.95))
+		if layout.seats[id]["kind"] != "desk":
+			continue
+		total += 1
+		if Presence.owner_of(id) != 0 or _npc_at(id) != "":
+			used += 1
+	var wd := ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"]
+	var dt := Time.get_datetime_dict_from_unix_time(State.game_unix())
+	_tl_time.text = "%s, %s\n%s Uhr" % [wd[int(dt["weekday"])], State.date_str().split(" ")[-1], State.time_str().substr(0, 5)]
+	_status.text = "Plätze %d / %d     ☎ %d     ⚠ %d" % [used, total, ringing, State.incidents.size()]
+	_status.add_theme_color_override("font_color", Color(1.0, 0.72, 0.68) if ringing > 0 else Color(0.93, 0.94, 0.96))
+	if _toast_t <= 0.0:
+		if ringing > 0:
+			_toast.text = "%d Notruf%s wartend – setz dich an einen freien Arbeitsplatz." % [ringing, "e" if ringing != 1 else ""]
+		elif State.incidents.is_empty():
+			_toast.text = "Keine aktuellen Einsätze."
+		else:
+			_toast.text = "%d laufende Einsätze." % State.incidents.size()
 
-const STATUS_NAMES := {1: "Einsatzbereit über Funk", 2: "Einsatzbereit auf Wache", 3: "Einsatz übernommen", 4: "Am Einsatzort", 5: "Sprechwunsch", 6: "Nicht einsatzbereit", 7: "Patient aufgenommen", 8: "Am Transportziel"}
+## Live-Bildschirme: Karte, Einsatzliste, Fahrzeugstatus und Großbildwand werden in
+## SubViewports gezeichnet und von allen Monitoren gemeinsam genutzt (geringe Last).
+var _screens := {}
+var _screen_t := 0
+
+func _build_screens() -> void:
+	var defs := {"map": [Vector2i(512, 310), "screen_a"], "list": [Vector2i(512, 310), "screen_b"], "status": [Vector2i(512, 310), "screen_c"], "wall": [Vector2i(1640, 520), "wall_screen"], "login": [Vector2i(512, 310), "screen_login"]}
+	for k in defs:
+		var sv := SubViewport.new()
+		sv.size = defs[k][0]
+		sv.transparent_bg = false
+		sv.disable_3d = true
+		sv.render_target_update_mode = SubViewport.UPDATE_ONCE
+		var c := Control.new()
+		c.set_script(preload("res://src/building/screen_canvas.gd"))
+		c.kind = k
+		c.size = Vector2(defs[k][0])
+		sv.add_child(c)
+		add_child(sv)
+		_screens[k] = [sv, c]
+		# Bildschirme leuchten selbst: unbeleuchtet mit Farbtextur (Viewport-Texturen
+		# lassen sich nicht zuverlässig als Emissionstextur verwenden)
+		var m: StandardMaterial3D = MATS.get_mat(defs[k][1])
+		m.emission_enabled = false
+		m.emission_texture = null
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.albedo_color = Color(0.93, 0.93, 0.93)
+		m.albedo_texture = sv.get_texture()
+
+func _update_screens(all := false) -> void:
+	_screen_t += 1
+	for k in _screens:
+		if k == "login" and not all:
+			continue
+		if k == "map" and not all and _screen_t % 2 == 0:
+			continue
+		var sv: SubViewport = _screens[k][0]
+		(_screens[k][1] as Control).queue_redraw()
+		sv.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 func _update_wall() -> void:
 	if not State.active:
 		return
-	var lines: Array = []
-	var ringing := 0
-	for id in State.calls:
-		if State.calls[id]["state"] == "ringing":
-			ringing += 1
-	lines.append("LAGEÜBERSICHT                %s" % State.time_str())
-	lines.append("")
-	lines.append("Notrufe wartend:   %d" % ringing)
-	lines.append("Laufende Einsätze: %d" % State.incidents.size())
-	lines.append("")
-	var ids: Array = State.incidents.keys()
-	ids.sort()
-	ids.reverse()
-	for i in mini(8, ids.size()):
-		var inc: Dictionary = State.incidents[ids[i]]
-		lines.append("%-7s %s" % [String(inc.get("keyword", "")), String(inc.get("address", "")).substr(0, 30)])
-	(layout.labels["lage"] as Label3D).text = "\n".join(lines)
-	var counts := {}
-	for id in State.vehicles:
-		var st := int(State.vehicles[id]["status"])
-		counts[st] = int(counts.get(st, 0)) + 1
-	var vl: Array = ["FAHRZEUGSTATUS (FMS)", ""]
-	for st in [1, 2, 3, 4, 7, 8, 5, 6]:
-		vl.append("Status %d  %-24s %3d" % [st, STATUS_NAMES[st], int(counts.get(st, 0))])
-	(layout.labels["fahrzeuge"] as Label3D).text = "\n".join(vl)
-	var il: Array = ["BAVARIA   %s" % State.date_str(), ""]
-	il.append("Wetter: %s" % Data.modes.get("weather", {}).get(State.env.get("weather", ""), {}).get("name", "–"))
-	il.append("Schicht: %s" % String(State.meta.get("name", "")).substr(0, 30))
-	il.append("")
-	il.append("DISPONENTEN IM DIENST")
-	var any := false
-	for id in layout.seat_order:
-		if layout.seats[id]["kind"] != "desk":
-			continue
-		var who := _npc_at(id)
-		if who == "" and Presence.owner_of(id) != 0:
-			who = Presence.player_name(Presence.owner_of(id))
-		if who != "":
-			il.append("%-20s %s" % [String(layout.seats[id]["name"]), who])
-			any = true
-	if not any:
-		il.append("– kein Platz besetzt –")
-	(layout.labels["info"] as Label3D).text = "\n".join(il)
+	_update_screens(_screen_t == 0)
 	(layout.labels["clock"] as Label3D).text = State.time_str().substr(0, 5)
 
 # ================================================================== Mitspieler und Kollegen

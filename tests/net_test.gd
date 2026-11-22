@@ -43,6 +43,9 @@ func _ready() -> void:
 		Game.start_new({"mode": "frei", "difficulty": "leicht", "seed": 1})
 		State.meta["next_call"] = 1e12
 		Net.start_game()
+		# begehbare Leitstelle: Host sitzt am Schichtführungsplatz
+		Presence.set_local_pose(Vector3(2.7, 0, 7.6), 0.3, 0.0, 0)
+		Presence.request_seat("sf1")
 	elif role == "client":
 		if relay != "":
 			Net.query_internet()
@@ -89,6 +92,13 @@ func _host() -> void:
 		1:
 			for e in State.chat:
 				if e["text"] == "CLIENT-DONE":
+					var cpid: int = Net.players.keys()[1]
+					ok(Presence.owner_of("ws5") == cpid, "3D-Leitstelle: Host vergibt Arbeitsplatz 5 an den Client")
+					ok(Presence.poses.has(cpid) and Vector3(Presence.poses[cpid]["p"]).distance_to(Vector3(12.0, 0, 6.0)) < 0.1, "3D-Leitstelle: Position des Clients beim Host angekommen")
+					ok(Presence.is_on("pause"), "3D-Leitstelle: vom Client geöffnete Tür ist beim Host offen")
+					Presence.request_seat("ws5")
+					ok(Presence.owner_of("ws5") == cpid, "3D-Leitstelle: belegter Platz kann nicht doppelt vergeben werden")
+					Presence.request_seat("sf1")
 					ok(State.incidents.size() >= 1, "Host hat den vom Client angelegten Einsatz")
 					var alarmed := 0
 					for v in State.vehicles.values():
@@ -100,6 +110,7 @@ func _host() -> void:
 		2:
 			if Net.players.size() < 2:
 				ok(Net._tokens.values().has("feuerwehr"), "Rolle des Clients für Wiederverbindung gemerkt")
+				ok(Presence.owner_of("ws5") == 0, "3D-Leitstelle: Verbindungsabbruch gibt den Arbeitsplatz frei")
 				_next()
 		3:
 			if Net.players.size() >= 2:
@@ -191,10 +202,15 @@ func _client() -> void:
 				Game.act({"a": "set_speed", "speed": 8.0}, func(res):
 					ok(not res.get("ok", true), "Host lehnt unberechtigte Aktion ab (Rolle)"))
 				Net.set_role(Net.my_id(), "feuerwehr")
+				Presence.set_local_pose(Vector3(12.0, 0, 6.0), 1.0, 0.1, 1)
+				Presence.request_seat("ws5")
+				Presence.set_toggle("pause", true)
 				_next()
 		6:
-			if Game.me["role"] == "feuerwehr" and wait > 1.0:
+			if Game.me["role"] == "feuerwehr" and wait > 1.5:
 				ok(true, "Rollenwechsel synchronisiert")
+				ok(Presence.owner_of("ws5") == Presence.me() and Presence.is_on("pause"), "3D-Leitstelle: Platzbelegung und Türzustand beim Client bestätigt")
+				ok(Presence.owner_of("sf1") == 1 and Presence.poses.has(1), "3D-Leitstelle: Host sitzt sichtbar am Schichtführungsplatz")
 				Game.act({"a": "chat", "text": "CLIENT-DONE"})
 				_next()
 		7:
@@ -210,4 +226,5 @@ func _client() -> void:
 			if not result.is_empty() and Net._authed and wait > 3.0:
 				ok(result["ok"] and Game.me["role"] == "feuerwehr", "Wiederverbindung mit gemerkter Rolle")
 				ok(State.active and State.incidents.has(inc_id), "Spielzustand nach Wiederverbindung vorhanden")
+				ok(Presence.owner_of("ws5") == Presence.me(), "3D-Leitstelle: Arbeitsplatz nach Wiederverbindung wieder belegt")
 				_finish()

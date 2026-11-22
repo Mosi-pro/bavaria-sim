@@ -1,5 +1,30 @@
 # Änderungen – LEITSTELLE 112
 
+## In Entwicklung (Testzweig) – Begehbare 3D-Leitstelle
+
+**Neu: Begehbare Integrierte Leitstelle Bavaria (Ebene 1)**
+- Nach dem Spielstart steht man im Foyer und bewegt sich in der Ich-Perspektive durch die Leitstelle (W A S D / Pfeiltasten, Maus, Umschalt = schneller, E = benutzen, Esc = Menü). Wände, Möbel und geschlossene Türen blockieren.
+- Leitstellenraum nach dem Vorbild einer modernen deutschen Großleitstelle: vier geschwungene Tischreihen mit 12 Disponentenplätzen und 2 Schichtführungsplätzen, weiße Arbeitsplatten auf dunklen Unterschränken, je 7 Monitore an Monitorschienen, Telefon, Funkbedienteil, Mikrofon und Bürostuhl. Weiße Lichtsäulen mit Signalleuchte und Platznummern, Nussbaum-Wandverkleidung, Rasterdecke mit LED-Lichtbändern, Galerie mit verglastem Obergeschoss, Fensterfront.
+- Großbildwand mit Live-Lageübersicht (Notrufe, Einsätze, Fahrzeugstatus), fiktives Emblem der Leitstelle Bavaria und rote Digitaluhr. Die Monitore an den Plätzen zeigen live Lagekarte, Einsatzliste und Fahrzeugstatus. Freie Plätze zeigen den Anmeldebildschirm.
+- Weitere Räume: Foyer mit Empfang, Flur, Pausenraum (Küche, Kaffeevollautomat, Spüle, Kochfeld, Mikrowelle, Kühlschrank, Wasserspender, Esstisch, Sofa), Besprechungsraum, WC Damen/Herren, Technik-/Serverraum, Büro der Schichtführung und Umkleide.
+- Interaktionen: Türen öffnen und schließen, Kaffee zubereiten, Wasser zapfen, Essen aufwärmen, Kochfeld schalten, Hände waschen, auf Stühle, Bänke und das Sofa setzen. Mit F wird getrunken oder gegessen, mit G abgestellt.
+- Dezente Raumgeräusche (selbst erzeugt): Gesprächsgemurmel, Tastaturen, Serverlüfter, Kühlschrank, Kaffeemaschine, Türen, Schritte.
+- HUD: Leitstelle und Uhrzeit oben links, Platzbelegung, Notrufe und Einsätze oben rechts, Lageplan unten links, Hinweise unten rechts.
+- Im Einzelspiel sitzen einige Kolleginnen und Kollegen (KI) im Raum.
+
+**Neu: Arbeitsplatz übernehmen (Ebene 2)**
+- Vor einem freien Platz: »[E] Arbeitsplatz übernehmen«. Die Kamera fährt in die Sitzposition, dann öffnet sich der **bisherige Leitstellenarbeitsplatz unverändert** mit allen Funktionen. Die 3D-Ansicht wird dabei angehalten und kostet keine Leistung.
+- **F8** oder der Knopf »Aufstehen« führt zurück in die Leitstelle; offene Programmfenster bleiben erhalten.
+
+**Neu: Mehrspieler in der Leitstelle**
+- Alle Spieler sehen sich als Figuren mit Namen, sitzend oder laufend, mit Getränk in der Hand.
+- Platzbelegung wird vom Host vergeben: Jeder Platz gehört höchstens einem Spieler, belegte Plätze sind markiert. Beim Aufstehen oder bei einem Verbindungsabbruch wird der Platz frei; nach einer Wiederverbindung wird der eigene Platz wieder angefordert.
+- Türen und Geräte (Kühlschrank, Kochfeld) sind für alle gleich. Die Leitstellenlogik bleibt eine gemeinsame Spielinstanz.
+- Protokollversion 4: Host und Mitspieler brauchen dieselbe Programmversion.
+
+**Einstellungen**
+- »Begehbare 3D-Leitstelle« (Einstellungen → Spiel). Ausgeschaltet startet das Spiel wie bisher direkt am Arbeitsplatz. Die Grafikqualität steuert Umgebungsverdeckung, indirektes Licht, Reflexionen und Schatten.
+
 ## Version 1.5.0 (20.11.2026)
 
 **Neu: Mehrspieler mit Gebieten**

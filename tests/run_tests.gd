@@ -65,6 +65,8 @@ func _ready() -> void:
 	test_beta()
 	print("== Authentifizierung ==")
 	test_auth()
+	print("== Begehbare Leitstelle (3D) ==")
+	await test_building()
 	print("\nErgebnis: %d bestanden, %d fehlgeschlagen" % [passed, failed])
 	get_tree().quit(1 if failed > 0 else 0)
 
@@ -680,3 +682,91 @@ func test_auth() -> void:
 	check(not Auth.verify(key, hn, cn, Auth.proof(Auth.derive("geheim#112", salt), hn, cn)), "Falsches Passwort wird abgelehnt")
 	check(not Auth.verify(key, Auth.random_bytes(24), cn, Auth.proof(key, hn, cn)), "Wiederverwendeter Nachweis (Replay) wird abgelehnt")
 	check(Auth.derive("Geheim#112", Auth.random_bytes(16)) != key, "Salt verändert den Schlüssel")
+
+
+func test_building() -> void:
+	const Layout = preload("res://src/building/layout.gd")
+	const Building = preload("res://src/building/building.gd")
+	var holder := Node3D.new()
+	add_child(holder)
+	var lay := Layout.new()
+	lay.build(holder, 1)
+	var desks := 0
+	for id in lay.seats:
+		if lay.seats[id]["kind"] == "desk":
+			desks += 1
+	check(desks == 14, "Leitstellenraum: %d Disponentenarbeitsplätze (12 + 2 Schichtführung)" % desks)
+	check(lay.seats.size() > 30 and lay.doors.size() >= 10, "Sitzplätze (%d) und Türen (%d) angelegt" % [lay.seats.size(), lay.doors.size()])
+	# Beschriftungen passen in ihre Felder
+	var font: Font = ThemeDB.fallback_font
+	var fit_ok := true
+	for c in holder.get_children():
+		if c is Label3D and c.has_meta("fit"):
+			var box: Vector2 = c.get_meta("fit")
+			var w := 0.0
+			for line in c.text.split("\n"):
+				w = maxf(w, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, c.font_size).x)
+			if w * c.pixel_size > box.x + 0.001:
+				fit_ok = false
+	check(fit_ok, "Alle Schilder und Tafeln: Text innerhalb der Ränder")
+	# Kollision: Wände und Möbel blockieren, freie Flächen sind begehbar
+	var body := CharacterBody3D.new()
+	var cs := CollisionShape3D.new()
+	var cap := CapsuleShape3D.new()
+	cap.radius = 0.28
+	cap.height = 1.75
+	cs.shape = cap
+	cs.position.y = 0.875
+	body.add_child(cs)
+	holder.add_child(body)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	check(body.test_move(Transform3D(Basis(), Vector3(1.0, 0.05, 12.0)), Vector3(-2.0, 0, 0)), "Westwand des Leitstellenraums blockiert")
+	check(body.test_move(Transform3D(Basis(), Vector3(5.0, 0.05, 3.4)), Vector3(4.0, 0, 0)), "Arbeitsplatz (Tisch/Stuhl) blockiert")
+	check(not body.test_move(Transform3D(Basis(), Vector3(4.5, 0.05, 13.0)), Vector3(0, 0, -1.0)), "Gang zwischen den Tischreihen ist frei")
+	check(body.test_move(Transform3D(Basis(), Vector3(5.0, 0.05, -1.3)), Vector3(0, 0, -3.0)), "Geschlossene Tür zum Pausenraum blockiert")
+	holder.queue_free()
+	# Platzvergabe (Host-Logik): ein Platz – ein Inhaber, Freigabe bei Verbindungsabbruch
+	Presence.reset()
+	Presence.request_seat("ws1")
+	check(Presence.owner_of("ws1") == Presence.me(), "Eigener Arbeitsplatz wird vergeben")
+	var denied := []
+	Presence.seat_denied.connect(func(s, t): denied.append(s), CONNECT_ONE_SHOT)
+	Presence._apply_seat(Presence.me(), "ws1", true)
+	Presence._apply_seat(7, "ws1", true)
+	check(Presence.owner_of("ws1") == Presence.me(), "Belegter Platz kann nicht übernommen werden")
+	Presence._apply_seat(7, "ws2", true)
+	Presence._apply_seat(7, "ws3", true)
+	check(Presence.owner_of("ws2") == 0 and Presence.owner_of("ws3") == 7, "Jeder Spieler belegt höchstens einen Platz")
+	var old_mode: int = Net.mode
+	Net.mode = Net.MODE_HOST
+	Presence._on_peer_gone(7)
+	Net.mode = old_mode
+	check(Presence.owner_of("ws3") == 0, "Verbindungsabbruch gibt den Platz frei")
+	check(not Presence.valid_id("ws1;drop") and Presence.valid_id("ws12"), "Ungültige Platzkennungen werden abgewiesen")
+	Presence.release_seat()
+	check(Presence.my_seat() == "", "Aufstehen gibt den Platz frei")
+	# Ebene 1 → Ebene 2: Hinsetzen blendet den bestehenden Arbeitsplatz ein, Aufstehen wieder aus
+	Game.start_new({"mode": "frei", "seed": 5})
+	Sim.running = false
+	var b := Control.new()
+	b.set_script(Building)
+	add_child(b)
+	await get_tree().process_frame
+	check(b.ws != null and not b.ws.visible and b.mode == "walk", "Start in der begehbaren Leitstelle, Arbeitsplatz-UI ausgeblendet")
+	check(Game.ui == b.ws, "Bestehendes Leitstellen-UI ist eingebunden (keine zweite Oberfläche)")
+	b.pending_seat = "ws4"
+	Presence.request_seat("ws4")
+	for i in 90:
+		await get_tree().process_frame
+		if b.mode == "desk":
+			break
+	check(b.mode == "desk" and b.ws.visible and b.vp.render_target_update_mode == SubViewport.UPDATE_DISABLED, "Hinsetzen: Leitstellen-UI sichtbar, 3D-Ansicht angehalten")
+	b.stand_up()
+	for i in 90:
+		await get_tree().process_frame
+		if b.mode == "walk":
+			break
+	check(b.mode == "walk" and not b.ws.visible and Presence.owner_of("ws4") == 0, "Aufstehen: zurück in die Leitstelle, Platz freigegeben")
+	b.queue_free()
+	Game.leave("")

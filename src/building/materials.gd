@@ -16,14 +16,14 @@ static func get_mat(name: String) -> Material:
 		"plaster_grey":
 			m.albedo_color = Color(0.78, 0.79, 0.8)
 		"wood":
-			_tri(m, tex("wood"), 0.9)
-			m.albedo_color = Color(1, 1, 1)
-			m.roughness = 0.65
+			_tri(m, tex("wood"), 0.45)
+			m.roughness = 0.55
 		"carpet":
-			_tri(m, tex("carpet"), 0.55)
+			_tri(m, tex("carpet"), 0.8)
 			m.roughness = 1.0
 		"ceiling":
 			_tri(m, tex("ceiling"), 0.42)
+			m.albedo_color = Color(0.97, 0.95, 0.91)
 			m.roughness = 0.95
 		"tiles_floor":
 			_tri(m, tex("tiles"), 0.5)
@@ -34,15 +34,60 @@ static func get_mat(name: String) -> Material:
 			m.albedo_color = Color(0.96, 0.96, 0.95)
 			m.roughness = 0.3
 		"desk_top":
-			_tri(m, tex("wood"), 1.6)
-			m.albedo_color = Color(1.0, 0.97, 0.9)
-			m.roughness = 0.5
+			m.albedo_color = Color(0.9, 0.9, 0.89)
+			m.roughness = 0.3
+		"desk_edge":
+			m.albedo_color = Color(0.7, 0.71, 0.72)
+			m.roughness = 0.4
 		"desk_body":
 			m.albedo_color = Color(0.86, 0.87, 0.87)
 			m.roughness = 0.55
 		"desk_white":
 			m.albedo_color = Color(0.95, 0.95, 0.94)
 			m.roughness = 0.4
+		"cabinet":
+			m.albedo_color = Color(0.13, 0.135, 0.145)
+			m.roughness = 0.45
+			m.metallic = 0.15
+		"plinth":
+			m.albedo_color = Color(0.05, 0.05, 0.055)
+			m.roughness = 0.6
+		"bezel":
+			m.albedo_color = Color(0.03, 0.03, 0.035)
+			m.roughness = 0.35
+		"monitor_back":
+			m.albedo_color = Color(0.1, 0.1, 0.11)
+			m.roughness = 0.5
+		"keys":
+			m.albedo_color = Color(0.2, 0.2, 0.22)
+			m.roughness = 0.8
+		"pillar":
+			m.albedo_color = Color(0.94, 0.94, 0.95)
+			m.roughness = 0.22
+		"led_white":
+			m.albedo_color = Color(1, 1, 1)
+			m.emission_enabled = true
+			m.emission = Color(0.9, 0.95, 1.0)
+			m.emission_energy_multiplier = 3.0
+		"logo_a", "logo_b", "logo_c":
+			m.albedo_color = {"logo_a": Color(0.12, 0.32, 0.72), "logo_b": Color(0.2, 0.45, 0.85), "logo_c": Color(0.45, 0.65, 0.95)}[name]
+			m.roughness = 0.35
+		"binder_a", "binder_b", "binder_c", "binder_d":
+			m.albedo_color = {"binder_a": Color(0.15, 0.25, 0.5), "binder_b": Color(0.55, 0.12, 0.1), "binder_c": Color(0.85, 0.85, 0.82), "binder_d": Color(0.2, 0.2, 0.22)}[name]
+			m.roughness = 0.6
+		"wall_screen":
+			m.albedo_color = Color(0, 0, 0)
+			m.emission_enabled = true
+			m.emission_texture = tex("screen_b")
+			m.emission = Color(1, 1, 1)
+			m.emission_energy_multiplier = 1.0
+			m.roughness = 0.7
+			m.metallic_specular = 0.15
+		"emblem":
+			m.albedo_texture = tex("emblem")
+			m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+			m.alpha_scissor_threshold = 0.5
+			m.roughness = 0.5
 		"metal":
 			m.albedo_color = Color(0.78, 0.79, 0.8)
 			m.metallic = 0.85
@@ -120,14 +165,18 @@ static func get_mat(name: String) -> Material:
 			m.emission_enabled = true
 			m.emission = Color(0.2, 0.5, 1.0)
 			m.emission_energy_multiplier = 1.6
-		"screen_a", "screen_b", "screen_c", "screen_off", "screen_tablet":
+		"screen_a", "screen_b", "screen_c", "screen_off", "screen_tablet", "screen_login":
+			# Bildschirme leuchten selbst (Emission), die Grundfarbe bleibt dunkel wie echtes Glas
 			var t := tex(name)
-			m.albedo_texture = t
+			m.albedo_color = Color(0.02, 0.02, 0.02)
 			m.emission_enabled = name != "screen_off"
 			m.emission_texture = t
 			m.emission = Color(1, 1, 1)
-			m.emission_energy_multiplier = 0.9
-			m.roughness = 0.3
+			m.emission_energy_multiplier = 1.1
+			m.roughness = 0.45
+			m.metallic_specular = 0.25
+			if name == "screen_off":
+				m.albedo_color = Color(0.03, 0.035, 0.04)
 		"wall_display":
 			m.albedo_color = Color(0.05, 0.06, 0.07)
 			m.roughness = 0.2
@@ -189,23 +238,32 @@ static func tex(name: String) -> Texture2D:
 	rng.seed = hash(name)
 	match name:
 		"wood":
+			# warmes Nussbaum-Furnier, waagerechte Paneele mit Schattenfugen
+			img = Image.create(512, 512, false, Image.FORMAT_RGB8)
+			var base := Color(0.5, 0.31, 0.18)
+			var phase := PackedFloat32Array()
+			for y in 512:
+				phase.append(sin(float(y) * 0.11 + sin(float(y) * 0.013) * 4.0))
+			for x in 512:
+				for y in 512:
+					var panel := int(y / 128) * 37 + int(x / 512)
+					var g := 0.5 + 0.5 * sin(float(y) * 0.19 + sin(float(x) * 0.006 + panel) * 3.0 + phase[y])
+					var c := base.lerp(Color(0.62, 0.41, 0.25), g * 0.55)
+					c = c.lerp(Color(0.42, 0.25, 0.14), 0.25 * float((panel * 13) % 5) / 5.0)
+					var n := rng.randf() * 0.025
+					if y % 128 < 3:
+						c = Color(0.12, 0.08, 0.05)
+					img.set_pixel(x, y, Color(c.r - n, c.g - n, c.b - n))
+		"carpet":
 			img = Image.create(256, 256, false, Image.FORMAT_RGB8)
 			for x in 256:
-				var stripe := 0.5 + 0.5 * sin(float(x) * 0.21 + sin(float(x) * 0.037) * 3.0)
-				var base := Color(0.86, 0.74, 0.56).lerp(Color(0.8, 0.66, 0.47), stripe * 0.6)
 				for y in 256:
-					var n := rng.randf() * 0.035
-					img.set_pixel(x, y, Color(base.r - n, base.g - n, base.b - n))
-		"carpet":
-			img = Image.create(128, 128, false, Image.FORMAT_RGB8)
-			for x in 128:
-				for y in 128:
-					var v := 0.33 + rng.randf() * 0.16
-					if rng.randf() < 0.07:
-						v = 0.58 + rng.randf() * 0.15
-					elif rng.randf() < 0.06:
-						v = 0.18
-					img.set_pixel(x, y, Color(v, v, v * 1.02))
+					var v := 0.2 + rng.randf() * 0.09
+					if rng.randf() < 0.06:
+						v = 0.36 + rng.randf() * 0.1
+					elif rng.randf() < 0.05:
+						v = 0.1
+					img.set_pixel(x, y, Color(v * 0.95, v * 0.98, v * 1.1))
 		"ceiling":
 			img = Image.create(128, 128, false, Image.FORMAT_RGB8)
 			for x in 128:
@@ -232,6 +290,14 @@ static func tex(name: String) -> Texture2D:
 			img = _screen(rng, 3)
 		"screen_tablet":
 			img = _screen(rng, 4)
+		"screen_login":
+			img = _screen(rng, 3)
+			img.fill_rect(Rect2i(0, 0, 160, 96), Color(0.05, 0.08, 0.13))
+			img.fill_rect(Rect2i(50, 38, 60, 20), Color(0.12, 0.2, 0.32))
+			img.fill_rect(Rect2i(56, 44, 48, 3), Color(0.6, 0.7, 0.8))
+			img.fill_rect(Rect2i(56, 50, 30, 2), Color(0.4, 0.5, 0.6))
+		"emblem":
+			img = _emblem()
 		_:
 			img = Image.create(4, 4, false, Image.FORMAT_RGB8)
 			img.fill(Color(0.5, 0.5, 0.5))
@@ -239,6 +305,35 @@ static func tex(name: String) -> Texture2D:
 	var t := ImageTexture.create_from_image(img)
 	_tex[name] = t
 	return t
+
+## Fiktives Emblem: weißer Wappenschild mit stilisierter Flamme und Stern des Lebens
+## (eigene Gestaltung, kein echtes Wappen).
+static func _emblem() -> Image:
+	var w := 260
+	var h := 300
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var white := Color(0.98, 0.96, 0.94, 1)
+	for y in h:
+		for x in w:
+			var u := (float(x) - w * 0.5) / (w * 0.5)
+			var v := float(y) / h
+			# Schildform: oben gerade, unten spitz zulaufend
+			var half := 1.0 if v < 0.55 else sqrt(maxf(0.0, 1.0 - pow((v - 0.55) / 0.45, 2.0)))
+			var inside := absf(u) <= half * 0.96 and v > 0.02 and v < 0.99
+			var inner := absf(u) <= half * 0.96 - 0.07 and v > 0.06 and v < 0.94 and (v < 0.55 or absf(u) <= half * 0.96 - 0.1)
+			if inside and not inner:
+				img.set_pixel(x, y, white)
+			elif inner:
+				# Flamme: drei Tropfenformen
+				for f in [[0.0, 0.5, 0.2, 0.3], [-0.22, 0.6, 0.13, 0.2], [0.22, 0.6, 0.13, 0.2]]:
+					var du: float = (u - f[0]) / f[2]
+					var dv: float = (v - f[1]) / f[3]
+					if dv > -1.0 and dv < 1.0 and du * du < (1.0 - dv) * (1.0 + dv) * 0.25 * (1.0 + dv):
+						img.set_pixel(x, y, white)
+				if absf(v - 0.82) < 0.018 and absf(u) < 0.45:
+					img.set_pixel(x, y, white)
+	return img
 
 ## Bildschirminhalte im Stil des Leitstellenprogramms (dunkles Thema, Listen, Karte).
 static func _screen(rng: RandomNumberGenerator, kind: int) -> Image:
