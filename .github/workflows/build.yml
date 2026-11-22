@@ -220,6 +220,7 @@ jobs:
           TAG="test-${B}"
           mkdir -p testout
           cp build/installer_test/LEITSTELLE112_TEST_Setup_${V}.exe testout/LEITSTELLE112_TEST_${B}_${V}.exe
+          (cd build/windows_test && 7z a -tzip -bso0 ../../testout/LEITSTELLE112_TEST_${B}_${V}_Portable.zip ./*)
           printf 'TESTVERSION aus dem Entwicklungszweig %s (Version %s, Stand %s).\nNicht für die Öffentlichkeit. Startet nur mit Tester-Zugangscode. Eigener Installationsordner (LEITSTELLE 112 TEST) und eigene Spielstände – getrennt von normaler Version und Beta.\n' "$GITHUB_REF_NAME" "$V" "${GITHUB_SHA:0:7}" > test_notes.md
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" testout/* --clobber
