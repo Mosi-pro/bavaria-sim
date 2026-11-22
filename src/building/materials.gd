@@ -58,6 +58,52 @@ static func get_mat(name: String) -> Material:
 		"art_a", "art_b", "art_c":
 			m.albedo_color = {"art_a": Color(0.3, 0.45, 0.6), "art_b": Color(0.75, 0.55, 0.35), "art_c": Color(0.5, 0.6, 0.4)}[name]
 			m.roughness = 0.8
+		"red_ext":
+			m.albedo_color = Color(0.78, 0.06, 0.04)
+			m.roughness = 0.25
+		"green_sign":
+			m.albedo_color = Color(0.0, 0.55, 0.25)
+			m.emission_enabled = true
+			m.emission = Color(0.0, 0.6, 0.28)
+			m.emission_energy_multiplier = 0.8
+		"cork":
+			m.albedo_color = Color(0.68, 0.52, 0.34)
+			m.roughness = 1.0
+		"paper":
+			m.albedo_color = Color(0.96, 0.96, 0.94)
+			m.roughness = 0.9
+		"leather":
+			m.albedo_color = Color(0.22, 0.2, 0.19)
+			m.roughness = 0.6
+		"blind":
+			m.albedo_color = Color(0.85, 0.85, 0.84)
+			m.roughness = 0.6
+		"hpl":
+			m.albedo_color = Color(0.3, 0.32, 0.34)
+			m.roughness = 0.35
+		"mirror":
+			# heller, glänzender Spiegel (wirkt auch ohne Reflexionssonde nicht schwarz)
+			m.albedo_color = Color(0.72, 0.77, 0.8)
+			m.metallic = 0.35
+			m.roughness = 0.04
+		"rack_door":
+			m.albedo_texture = tex("rack_door")
+			m.uv1_triplanar = true
+			m.uv1_world_triplanar = true
+			m.uv1_scale = Vector3(4, 4, 4)
+			m.metallic = 0.5
+			m.roughness = 0.5
+		"raised_floor":
+			_tri(m, tex("raised_floor"), 1.0 / 0.6)
+			m.roughness = 0.5
+		"locker":
+			m.albedo_color = Color(0.62, 0.65, 0.68)
+			m.metallic = 0.3
+			m.roughness = 0.45
+		"locker_door":
+			m.albedo_color = Color(0.32, 0.45, 0.6)
+			m.metallic = 0.3
+			m.roughness = 0.4
 		"tiles_floor":
 			_tri(m, tex("tiles"), 0.5)
 			m.albedo_color = Color(0.72, 0.72, 0.7)
@@ -185,7 +231,7 @@ static func get_mat(name: String) -> Material:
 			m.albedo_color = Color(0.97, 0.97, 0.97)
 			m.roughness = 0.15
 		"rack":
-			m.albedo_color = Color(0.08, 0.085, 0.09)
+			m.albedo_color = Color(0.17, 0.175, 0.18)
 			m.metallic = 0.5
 			m.roughness = 0.5
 		"led_green":
@@ -309,6 +355,21 @@ static func tex(name: String) -> Texture2D:
 						c = c.darkened(0.35)
 					var n := rng.randf() * 0.025
 					img.set_pixel(x, y, Color(c.r - n, c.g - n, c.b - n))
+		"rack_door":
+			img = Image.create(64, 64, false, Image.FORMAT_RGB8)
+			img.fill(Color(0.22, 0.225, 0.23))
+			for x in range(2, 64, 4):
+				for y in range(2, 64, 4):
+					img.fill_rect(Rect2i(x, y, 2, 2), Color(0.05, 0.05, 0.055))
+		"raised_floor":
+			img = Image.create(128, 128, false, Image.FORMAT_RGB8)
+			img.fill(Color(0.68, 0.69, 0.7))
+			for x in 128:
+				for y in 128:
+					if x % 128 < 2 or y % 128 < 2:
+						img.set_pixel(x, y, Color(0.35, 0.36, 0.37))
+					elif rng.randf() < 0.08:
+						img.set_pixel(x, y, Color(0.62, 0.63, 0.64))
 		"carpet":
 			img = Image.create(256, 256, false, Image.FORMAT_RGB8)
 			for x in 256:

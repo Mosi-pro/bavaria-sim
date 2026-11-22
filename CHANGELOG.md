@@ -8,6 +8,20 @@
 - Großbildwand mit Live-Lageübersicht (Notrufe, Einsätze, Fahrzeugstatus), fiktives Emblem der Leitstelle Bavaria und rote Digitaluhr. Die Monitore an den Plätzen zeigen live Lagekarte, Einsatzliste und Fahrzeugstatus. Freie Plätze zeigen den Anmeldebildschirm.
 - Der Leitstellenraum hat keine Fenster nach draußen, nur die Glasfront zur Galerie. An der Südwand stehen Regale und Info-Bildschirme.
 - Pausenraum mit wohnlicher Küche: Eichenfronten, Steinarbeitsplatte, Glasrückwand, Hängeschränke mit Unterbauleuchte, offenes Regal mit Tassen, Kaffeevollautomat, Wasserkocher, Toaster, Backofen, Geschirrspüler, Obstschale und Kräuter. Dazu Parkett, Esstisch aus Eiche mit Pendelleuchten, Akzentwand, Teppich, Bilder und Wanduhr.
+- Alle Räume außerhalb des Leitstellenraums sind realistisch und funktional eingerichtet:
+  - **Flur:** Einbauleuchten, Feuerlöscher, Erste-Hilfe-Kasten mit Defibrillator, beleuchtete Fluchtwegschilder, Pinnwände, Dienstplan-Bildschirm, Bilder, Wertstofftrennung, Wanduhr.
+  - **Foyer:** Empfangstresen mit Besuchertheke und Arbeitsplatz dahinter, Sauberlaufmatte, Wartebereich mit Sesseln, Garderobe, Kartenleser an der Glastür, Infobildschirm.
+  - **Besprechungsraum:** Konferenztisch mit Drehstühlen, Konferenztelefon, Großbildschirm auf Lowboard, Whiteboard, Flipchart, Sideboard mit Thermoskannen.
+  - **WC Damen/Herren:** raumhohe Kabinen, Wand-WCs mit Drückerplatte, Urinale mit Schamwand, Doppelwaschtisch, Spiegel, Spender, Händetrockner, Wandfliesen.
+  - **Technikraum:** Serverschränke mit gelochten Türen und Kaltgang, Kabeltrassen, Doppelboden, Präzisionsklima, USV, Löschanlage, Systemkonsole.
+  - **Büro Schichtführung:** Schreibtisch mit zwei Monitoren, Regale, Dienstplan-Tafel, Besprechungsecke, Garderobe.
+  - **Umkleide:** nummerierte zweitürige Spinde, Sitzbank, Spiegel, Garderobe, Wäschesammler.
+  - Jalousien und Fensterbänke an allen Außenfenstern.
+- Das Obergeschoss hinter der Galerie hat jetzt eine Decke.
+
+**Fehlerbehebungen**
+- Flackern an den Türen behoben: Zarge und Wandkante lagen deckungsgleich übereinander. Die Sockelleisten sind an den Türöffnungen unterbrochen.
+- Störende Raumgeräusche entfernt (künstliches Stimmengemurmel, Kühlschrankbrummen, Schritte). Tastaturgeräusche kommen seltener und leiser und sind am eigenen Platz aus. Die Effekte sind leiser.
 - Weitere Räume: Foyer mit Empfang, Flur, Pausenraum (Küche, Kaffeevollautomat, Spüle, Kochfeld, Mikrowelle, Kühlschrank, Wasserspender, Esstisch, Sofa), Besprechungsraum, WC Damen/Herren, Technik-/Serverraum, Büro der Schichtführung und Umkleide.
 - Interaktionen: Türen öffnen und schließen, Kaffee zubereiten, Wasser zapfen, Essen aufwärmen, Kochfeld schalten, Hände waschen, auf Stühle, Bänke und das Sofa setzen. Mit F wird getrunken oder gegessen, mit G abgestellt.
 - Dezente Raumgeräusche (selbst erzeugt): Gesprächsgemurmel, Tastaturen, Serverlüfter, Kühlschrank, Kaffeemaschine, Türen, Schritte.

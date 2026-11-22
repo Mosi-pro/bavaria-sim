@@ -7,11 +7,16 @@ var main
 var b
 var views := [
 	["b_warmup", Vector3(33.5, 4.7, 12.8), PI / 2 - 0.32, -0.36],
-	["b_overview", Vector3(33.5, 4.7, 12.8), PI / 2 - 0.32, -0.36],
-	["b_south", Vector3(18.0, 1.7, 8.5), PI + 0.35, 0.12],
-	["b_kitchen", Vector3(2.6, 1.6, -5.2), PI / 2 + 0.25, -0.25],
-	["b_break", Vector3(4.0, 1.65, -3.0), -0.05, -0.22],
-	["b_sofa", Vector3(2.0, 1.65, -3.4), -PI / 2 - 0.55, -0.18],
+	["r_gallery_up", Vector3(18.0, 1.7, 10.0), PI, 0.55],
+	["r_door", Vector3(13.0, 1.6, -1.0), 0.0, -0.1],
+	["r_corridor", Vector3(-5.0, 1.65, -1.3), -PI / 2, -0.05],
+	["r_foyer", Vector3(-1.0, 1.65, 1.0), PI * 0.8, -0.12],
+	["r_meeting", Vector3(15.3, 1.65, -3.2), PI / 4 + 0.15, -0.2],
+	["r_wc", Vector3(21.2, 1.65, -3.3), 0.25, -0.3],
+	["r_server", Vector3(22.6, 1.65, -6.3), -PI / 2 + 0.05, -0.1],
+	["r_office", Vector3(33.0, 1.65, -3.1), 0.3, -0.25],
+	["r_lockers", Vector3(-4.0, 1.65, -3.2), 0.0, -0.15],
+	["r_kitchen", Vector3(2.6, 1.6, -5.2), PI / 2 + 0.25, -0.25],
 ]
 var vi := 0
 func _ready():

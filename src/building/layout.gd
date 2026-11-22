@@ -26,6 +26,7 @@ var doors := {}          # id -> {hinge, open_angle, name}
 var labels := {}         # Name -> Label3D (z. B. Großbildwand)
 var sound_spots := {}    # Name -> Array[Vector3]
 var leds: Array = []     # blinkende LEDs im Technikraum
+var door_gaps: Array = []  # [Mitte, Richtung, Breite] aller Türöffnungen (für Sockelleisten)
 var hotplates: Array = []
 var spawn := Vector3(-4.0, 0.0, 6.5)
 var spawn_yaw := -PI / 2
@@ -115,6 +116,32 @@ func _spot(name: String, p: Vector3) -> void:
 		sound_spots[name] = []
 	sound_spots[name].append(p)
 
+## Sockelleiste (Quader von a nach b), an Türöffnungen unterbrochen.
+func _plinth(a: Vector3, b: Vector3) -> void:
+	var along_x := absf(b.x - a.x) >= absf(b.z - a.z)
+	var lo := minf(a.x, b.x) if along_x else minf(a.z, b.z)
+	var hi := maxf(a.x, b.x) if along_x else maxf(a.z, b.z)
+	var other := (a.z + b.z) * 0.5 if along_x else (a.x + b.x) * 0.5
+	var cuts: Array = []
+	for gp in door_gaps:
+		var c: Vector2 = gp[0]
+		var d: Vector2 = gp[1]
+		var half: float = float(gp[2]) * 0.5 + 0.07
+		if along_x and absf(d.x) > 0.9 and absf(c.y - other) < 0.35:
+			cuts.append([c.x - half, c.x + half])
+		elif not along_x and absf(d.y) > 0.9 and absf(c.x - other) < 0.35:
+			cuts.append([c.y - half, c.y + half])
+	cuts.sort_custom(func(p, q): return p[0] < q[0])
+	var cur := lo
+	for ct in cuts + [[hi, hi]]:
+		var e := minf(float(ct[0]), hi)
+		if e - cur > 0.02:
+			if along_x:
+				g.block("plinth", Vector3(cur, a.y, a.z), Vector3(e, b.y, b.z))
+			else:
+				g.block("plinth", Vector3(a.x, a.y, cur), Vector3(b.x, b.y, e))
+		cur = maxf(cur, float(ct[1]))
+
 func _floor(mat: String, r: Rect2, y := 0.0) -> void:
 	g.block(mat, Vector3(r.position.x, y - 0.06, r.position.y), Vector3(r.end.x, y, r.end.y))
 
@@ -128,10 +155,12 @@ func _door(id: String, name: String, a: Vector2, b: Vector2, at: float, w := 1.0
 	var c := a + dir * at
 	var basis := Basis(Vector3.UP, rot)
 	# Zarge
+	# (überdeckt die Wandkanten leicht – keine deckungsgleichen Flächen, kein Flackern)
 	for s in [-1.0, 1.0]:
-		var p: Vector2 = c + dir * (s * (w * 0.5 + 0.03))
-		g.box("frame", Vector3(p.x, 1.08, p.y), Vector3(0.06, 2.16, 0.24), rot)
-	g.box("frame", Vector3(c.x, 2.18, c.y), Vector3(w + 0.12, 0.06, 0.24), rot)
+		var p: Vector2 = c + dir * (s * (w * 0.5 + 0.025))
+		g.box("frame", Vector3(p.x, 1.082, p.y), Vector3(0.07, 2.16, 0.28), rot)
+	g.box("frame", Vector3(c.x, 2.175, c.y), Vector3(w + 0.13, 0.07, 0.28), rot)
+	door_gaps.append([c, dir, w])
 	var leaves := [[-w * 0.5, w if not double else w * 0.5, 1.0]]
 	if double:
 		leaves = [[-w * 0.5, w * 0.5, 1.0], [w * 0.5, w * 0.5, -1.0]]
@@ -333,10 +362,10 @@ func _chair(T: Transform3D, swivel: bool) -> void:
 		g.box_t("fabric", T * Transform3D(Basis(Vector3.FORWARD, deg_to_rad(-6)), Vector3(-0.21, 0.75, 0)), Vector3(0.035, 0.5, 0.42))
 
 ## Sitzplatz ohne Arbeitsplatz (Stuhl, Sofa, Bank).
-func _lounge_seat(id: String, name: String, pos: Vector3, yaw: float, chair := true, seat_h := 0.46) -> void:
+func _lounge_seat(id: String, name: String, pos: Vector3, yaw: float, chair := true, seat_h := 0.46, swivel := false) -> void:
 	var T := Transform3D(Basis(Vector3.UP, yaw), pos)
 	if chair:
-		_chair(T, false)
+		_chair(T, swivel)
 		g.collider(T * Vector3(0, 0.4, 0), Vector3(0.46, 0.8, 0.46), yaw)
 	_area({"kind": "seat", "id": id}, T * Vector3(0, 0.7, 0), Vector3(0.7, 1.4, 0.7), yaw)
 	seats[id] = {"pos": pos, "yaw": yaw, "kind": "lounge", "name": name, "seat_h": seat_h,
@@ -392,7 +421,7 @@ func _hall() -> void:
 	g.wall("wood", Vector2(0, 0), Vector2(0, 18), HALL_H, 0.2, [{"at": 4, "w": 1.9, "h": 2.2}])
 	# Südwand ohne Fenster nach draußen (Leitstellenraum nur mit Sichtverbindung zur Galerie)
 	g.wall("wood", Vector2(0, 18), Vector2(36, 18), GALLERY_Y, 0.25)
-	g.block("plinth", Vector3(0.1, 0, 17.86), Vector3(35.9, 0.08, 17.88))
+	_plinth(Vector3(0.1, 0, 17.86), Vector3(35.9, 0.08, 17.88))
 	# Wandschränke und Bildschirm-Infotafeln unter der Galerie
 	for x0 in [3.0, 27.0]:
 		_shelf(Vector3(x0 + 2.4, 0, 17.87), 2.4, PI)
@@ -403,9 +432,9 @@ func _hall() -> void:
 	_door("hall_n2", "Leitstellenraum", Vector2(0, 0), Vector2(36, 0), 30, 1.1, false, -1.0)
 	_door("hall_w", "Leitstellenraum", Vector2(0, 0), Vector2(0, 18), 4, 1.9, true, 1.0, true)
 	# Sockelleisten
-	g.block("plinth", Vector3(0.1, 0, 0.1), Vector3(35.9, 0.08, 0.12))
-	g.block("plinth", Vector3(35.88, 0, 0.1), Vector3(35.9, 0.08, 17.9))
-	g.block("plinth", Vector3(0.1, 0, 0.1), Vector3(0.12, 0.08, 17.9))
+	_plinth(Vector3(0.1, 0, 0.1), Vector3(35.9, 0.08, 0.12))
+	_plinth(Vector3(35.88, 0, 0.1), Vector3(35.9, 0.08, 17.9))
+	_plinth(Vector3(0.1, 0, 0.1), Vector3(0.12, 0.08, 17.9))
 	# Decke: helle Rasterdecke mit durchgehenden LED-Lichtbändern
 	_ceiling(Rect2(0, 0, 36, GALLERY_Z), HALL_H)
 	for z in [1.6, 3.9, 6.2, 8.5, 10.8, 13.0]:
@@ -520,6 +549,8 @@ func _gallery() -> void:
 		g.block("chair", Vector3(xx + 0.85, fy + 0.5, 14.95), Vector3(xx + 1.35, fy + 1.15, 15.03))
 	for xx in range(2, 35, 4):
 		g.block("emit_light", Vector3(xx, top - 0.03, 15.9), Vector3(xx + 2.4, top - 0.01, 16.1))
+	# Decke des Obergeschosses
+	_ceiling(Rect2(0, GALLERY_Z, 36, 18 - GALLERY_Z), HALL_H)
 
 func _videowall() -> void:
 	# Großbildwand an der Stirnseite (Ostwand), Inhalt live aus der Simulation (siehe building.gd)
@@ -581,30 +612,171 @@ func _corridor_and_foyer() -> void:
 	_sign("Leitstellenraum", Vector3(-0.115, 2.4, 4.0), -PI / 2)
 	_ceiling(Rect2(-8, -2.6, 44, 2.6), ROOM_H)
 	_ceiling(Rect2(-8, 0, 8, 10), ROOM_H)
-	for x in range(-6, 36, 5):
-		g.block("emit_light", Vector3(x - 0.3, ROOM_H - 0.02, -1.6), Vector3(x + 0.3, ROOM_H, -1.0))
-	# Foyer: Außenwand West mit Haupteingang, Südwand
+	# Flur: Einbauleuchten, Sockelleisten, Ausstattung nach Arbeitsstätten-Vorgaben
+	for x in range(-6, 36, 3):
+		_panel_light(Vector3(float(x), ROOM_H, -1.3))
+	_plinth(Vector3(-7.9, 0, -2.52), Vector3(35.9, 0.07, -2.5))
+	_plinth(Vector3(0.1, 0, -0.12), Vector3(35.9, 0.07, -0.1))
+	_fire_extinguisher(Vector3(2.2, 0, -0.12), PI)
+	_fire_extinguisher(Vector3(23.0, 0, -0.12), PI)
+	_fire_extinguisher(Vector3(-0.3, 0, 9.85), PI)
+	# Erste-Hilfe-Kasten und Defibrillator
+	g.block("desk_white", Vector3(10.0, 1.3, -0.16), Vector3(10.5, 1.75, -0.1))
+	g.block("green_sign", Vector3(10.17, 1.47, -0.165), Vector3(10.33, 1.53, -0.16))
+	g.block("green_sign", Vector3(10.22, 1.42, -0.165), Vector3(10.28, 1.58, -0.16))
+	_label("ERSTE HILFE", Vector3(10.25, 1.8, -0.17), PI, 0.003, Color(0.1, 0.45, 0.25), 40, 0.5, 0.08)
+	g.block("green_sign", Vector3(10.7, 1.2, -0.17), Vector3(11.1, 1.65, -0.1))
+	_label("AED", Vector3(10.9, 1.43, -0.175), PI, 0.004, Color(1, 1, 1), 48, 0.3, 0.15)
+	# Fluchtweg-Kennzeichnung (leuchtend)
+	for p in [[Vector3(-7.85, 2.35, -1.3), PI / 2], [Vector3(35.85, 2.35, -1.3), -PI / 2], [Vector3(-4.0, 2.55, 0.0), PI]]:
+		_exit_sign(p[0], p[1])
+	# Pinnwände und Infobildschirm (Dienstplan)
+	_notice_board(Vector3(8.2, 1.5, -2.51), 0.0, 1.4)
+	_notice_board(Vector3(27.8, 1.5, -2.51), 0.0, 1.4)
+	g.block("bezel", Vector3(15.1, 1.2, -0.17), Vector3(16.5, 2.0, -0.1))
+	_screen_quad("screen_b", Vector3(15.8, 1.6, -0.175), Vector2(1.34, 0.74), PI)
+	# Bilder (Einsatzfotos als abstrakte Drucke, fiktiv)
+	for p in [[Vector3(3.6, 1.6, -2.51), 0.0, "art_a"], [Vector3(19.0, 1.6, -0.11), PI, "art_b"], [Vector3(34.0, 1.6, -0.11), PI, "art_c"], [Vector3(-6.0, 1.6, -2.51), 0.0, "art_b"]]:
+		_picture(p[0], p[1], 1.0, 0.7, p[2])
+	# Wertstofftrennung vor dem Pausenraum
+	for k in 3:
+		var bx := 6.2 + k * 0.42
+		g.block(["binder_d", "logo_a", "fruit_y"][k], Vector3(bx, 0, -2.5), Vector3(bx + 0.38, 0.75, -2.1), true)
+		g.block("dark", Vector3(bx + 0.02, 0.75, -2.48), Vector3(bx + 0.36, 0.78, -2.12))
+	# Wanduhr
+	_wall_clock(Vector3(13.0, 2.35, -0.115), PI)
+	_plant(Vector3(35.5, 0, -2.2), 1.1)
+	_plant(Vector3(-7.5, 0, -2.2), 1.1)
+
+	# Foyer: Außenwand West mit Haupteingang (Windfang), Südwand
 	g.wall("plaster", Vector2(-8, -9.1), Vector2(-8, 10), ROOM_H, 0.25, [{"at": 14.1, "w": 2.0, "h": 2.2}, {"at": 17.6, "w": 1.6, "h": 1.6, "sill": 0.6}])
 	_glass_panes(Vector2(-8, -9.1), Vector2(-8, 10), [{"at": 17.6, "w": 1.6, "h": 1.6, "sill": 0.6}], 0.0)
 	_door("main", "Haupteingang", Vector2(-8, -9.1), Vector2(-8, 10), 14.1, 2.0, true, 1.0, true, false)
-	g.wall("plaster", Vector2(-8, 10), Vector2(0.1, 10), ROOM_H, 0.2, [{"at": 4.0, "w": 2.4, "h": 1.6, "sill": 0.6}])
-	_glass_panes(Vector2(-8, 10), Vector2(0.1, 10), [{"at": 4.0, "w": 2.4, "h": 1.6, "sill": 0.6}], 0.0)
-	# Empfangstheke
-	g.block("wood", Vector3(-6.2, 0, 7.6), Vector3(-3.6, 1.1, 8.2), true)
-	g.block("desk_white", Vector3(-6.25, 1.1, 7.55), Vector3(-3.55, 1.14, 8.25))
-	g.block("black", Vector3(-5.2, 1.14, 8.0), Vector3(-4.7, 1.45, 8.04))
-	_label("EMPFANG", Vector3(-4.9, 0.75, 7.58), PI, 0.004, Color(0.25, 0.2, 0.15), 48, 2.0, 0.4)
-	# Wandtafel im Foyer
-	g.block("red_matte", Vector3(-0.12, 1.2, 6.2), Vector3(-0.1, 2.5, 9.4))
-	var lt := _label("INTEGRIERTE LEITSTELLE BAVARIA\nfür Feuerwehr und Rettungsdienst", Vector3(-0.125, 1.85, 7.8), -PI / 2, 0.0035, Color(1, 1, 1), 48, 3.0, 1.1)
-	lt.rotation.y = -PI / 2
-	_lounge_seat("fb1", "Bank im Foyer", Vector3(-7.4, 0, 2.2), 0.0, false, 0.45)
-	_lounge_seat("fb2", "Bank im Foyer", Vector3(-7.4, 0, 3.2), 0.0, false, 0.45)
-	g.block("fabric", Vector3(-7.75, 0.0, 1.6), Vector3(-7.15, 0.45, 3.8), true)
-	g.block("fabric", Vector3(-7.9, 0.45, 1.6), Vector3(-7.78, 0.9, 3.8))
+	g.wall("plaster", Vector2(-8, 10), Vector2(0.1, 10), ROOM_H, 0.2)
+	g.block("rug", Vector3(-7.86, 0.0, 3.9), Vector3(-6.3, 0.012, 6.1))
+	for z in [2.5, 5.0, 7.5]:
+		for x in [-6.0, -2.5]:
+			_panel_light(Vector3(x, ROOM_H, z))
+	_plinth(Vector3(-7.85, 0, 9.88), Vector3(-0.1, 0.07, 9.9))
+	# Empfangstresen: Besuchertheke (1,10 m) mit Arbeitsplatz dahinter
+	var rx0 := -5.6
+	var rx1 := -2.6
+	g.block("oak", Vector3(rx0, 0.0, 7.0), Vector3(rx1, 1.08, 7.12), true)
+	g.block("oak", Vector3(rx0, 0.0, 7.0), Vector3(rx0 + 0.12, 1.08, 8.4), true)
+	g.block("desk_white", Vector3(rx0 - 0.02, 1.08, 6.94), Vector3(rx1 + 0.02, 1.12, 7.3))
+	g.block("led_white", Vector3(rx0 + 0.05, 0.04, 6.99), Vector3(rx1 - 0.05, 0.06, 7.0))
+	g.block("desk_top", Vector3(rx0 + 0.12, 0.72, 7.12), Vector3(rx1, 0.75, 7.8))
+	g.block("cabinet", Vector3(rx1 - 0.5, 0.0, 7.15), Vector3(rx1 - 0.05, 0.72, 7.75), true)
+	for k in 2:
+		var mx := -4.7 + k * 0.62
+		g.block("bezel", Vector3(mx, 0.85, 7.2), Vector3(mx + 0.56, 1.2, 7.23))
+		_screen_quad(["screen_b", "screen_a"][k], Vector3(mx + 0.28, 1.025, 7.235), Vector2(0.53, 0.32), 0.0)
+		g.block("metal", Vector3(mx + 0.25, 0.75, 7.24), Vector3(mx + 0.31, 0.85, 7.28))
+	g.block("dark", Vector3(-4.6, 0.75, 7.4), Vector3(-4.15, 0.77, 7.55))
+	g.block("dark", Vector3(-3.6, 0.75, 7.35), Vector3(-3.38, 0.8, 7.58))
+	_chair(Transform3D(Basis(Vector3.UP, PI / 2), Vector3(-4.3, 0, 8.25)), true)
+	g.collider(Vector3(-4.3, 0.5, 8.25), Vector3(0.5, 1.0, 0.5))
+	_label("EMPFANG", Vector3(-4.1, 0.75, 6.995), PI, 0.004, Color(0.25, 0.2, 0.15), 48, 1.6, 0.25)
+	g.block("desk_white", Vector3(-3.1, 1.12, 6.98), Vector3(-2.85, 1.15, 7.2))
+	_area({"kind": "info", "text": "Willkommen in der Integrierten Leitstelle Bavaria.\nBesucher melden sich bitte am Empfang. Der Leitstellenraum liegt hinter der Glastür – Zutritt nur für Dienstpersonal."}, Vector3(-4.1, 1.1, 6.7), Vector3(3.0, 1.2, 0.6))
+	# Logo-Wand hinter dem Empfang
+	g.block("red_matte", Vector3(-6.4, 1.3, 9.88), Vector3(-1.8, 2.5, 9.9))
+	var lt := _label("INTEGRIERTE LEITSTELLE BAVARIA\nfür Feuerwehr und Rettungsdienst", Vector3(-4.1, 1.9, 9.875), PI, 0.0035, Color(1, 1, 1), 48, 4.2, 1.0)
+	# Wartebereich mit Sesseln und Tisch
+	for s in [[Vector3(-7.3, 0, 1.6), 0.0, "fb1"], [Vector3(-7.3, 0, 2.9), 0.0, "fb2"], [Vector3(-5.6, 0, 0.75), -PI / 2, "fb3"]]:
+		_armchair(s[0], s[1])
+		_lounge_seat(s[2], "Sessel im Foyer", s[0], s[1], false, 0.44)
+	g.cyl("oak", Vector3(-6.2, 0.42, 2.0), 0.4, 0.04, 24)
+	g.cyl("metal", Vector3(-6.2, 0.2, 2.0), 0.04, 0.4, 8)
+	g.collider_cyl(Vector3(-6.2, 0.22, 2.0), 0.4, 0.44)
+	g.block("paper", Vector3(-6.35, 0.44, 1.85), Vector3(-6.1, 0.455, 2.15))
+	g.block("art_a", Vector3(-6.05, 0.44, 1.9), Vector3(-5.85, 0.47, 2.2))
+	# Garderobe am Eingang
+	g.block("metal", Vector3(-7.9, 1.7, 6.2), Vector3(-7.84, 1.74, 7.6))
+	for k in 6:
+		g.block("metal", Vector3(-7.86, 1.6, 6.3 + k * 0.22), Vector3(-7.74, 1.64, 6.34 + k * 0.22))
+	g.block("trousers", Vector3(-7.84, 0.95, 6.4), Vector3(-7.66, 1.62, 6.8))
+	g.block("fabric_red", Vector3(-7.84, 1.05, 7.0), Vector3(-7.68, 1.62, 7.35))
+	# Zutritt: Kartenleser an der Glastür zum Leitstellenraum
+	g.block("dark", Vector3(-0.17, 1.15, 5.15), Vector3(-0.1, 1.33, 5.27))
+	g.block("led_green", Vector3(-0.175, 1.29, 5.18), Vector3(-0.17, 1.31, 5.24))
+	_label("Zutritt nur für Dienstpersonal", Vector3(-0.115, 2.62, 4.0), -PI / 2, 0.0024, Color(0.25, 0.25, 0.27), 36, 1.4, 0.08)
+	# Infobildschirm im Foyer
+	g.block("bezel", Vector3(-0.16, 1.35, 1.1), Vector3(-0.1, 2.15, 2.5))
+	_screen_quad("screen_a", Vector3(-0.165, 1.75, 1.8), Vector2(1.34, 0.74), -PI / 2)
 	_plant(Vector3(-7.4, 0, 9.3))
 	_plant(Vector3(-0.6, 0, 9.3))
-	_area({"kind": "info", "text": "Willkommen in der Integrierten Leitstelle Bavaria.\nDer Leitstellenraum liegt hinter der Glastür. Freie Arbeitsplätze sind grün beschildert."}, Vector3(-4.9, 1.1, 7.4), Vector3(2.6, 1.2, 0.8))
+	_plant(Vector3(-7.4, 0, 0.5), 1.0)
+
+# ------------------------------------------------------------------ Ausstattungs-Bausteine
+func _panel_light(p: Vector3) -> void:
+	g.block("frame", Vector3(p.x - 0.33, p.y - 0.02, p.z - 0.33), Vector3(p.x + 0.33, p.y, p.z + 0.33))
+	g.block("emit_light", Vector3(p.x - 0.3, p.y - 0.03, p.z - 0.3), Vector3(p.x + 0.3, p.y - 0.02, p.z + 0.3))
+
+func _picture(c: Vector3, yaw: float, w: float, h: float, mat: String) -> void:
+	var T := Transform3D(Basis(Vector3.UP, yaw), c)
+	g.box_t("black", T, Vector3(w, h, 0.03))
+	g.box_t("desk_white", T * Transform3D(Basis(), Vector3(0, 0, 0.016)), Vector3(w - 0.06, h - 0.06, 0.004))
+	g.box_t(mat, T * Transform3D(Basis(), Vector3(0, 0, 0.019)), Vector3(w - 0.2, h - 0.2, 0.004))
+	g.box_t("art_c" if mat != "art_c" else "art_a", T * Transform3D(Basis(Vector3.FORWARD, 0.3), Vector3(-w * 0.12, -h * 0.05, 0.022)), Vector3(w * 0.3, h * 0.12, 0.003))
+
+func _fire_extinguisher(p: Vector3, yaw: float) -> void:
+	var T := Transform3D(Basis(Vector3.UP, yaw), p)
+	var c := T * Vector3(0, 0, 0.11)
+	g.cyl("red_ext", c + Vector3(0, 0.62, 0), 0.08, 0.5, 14)
+	g.cyl("black", c + Vector3(0, 0.92, 0), 0.03, 0.1, 8)
+	g.box_t("black", T * Transform3D(Basis(), Vector3(0.06, 0.98, 0.11)), Vector3(0.12, 0.025, 0.03))
+	g.box_t("dark", T * Transform3D(Basis(), Vector3(0, 0.75, 0.02)), Vector3(0.1, 0.06, 0.03))
+	g.box_t("red_ext", T * Transform3D(Basis(), Vector3(0, 1.45, 0.005)), Vector3(0.2, 0.2, 0.004))
+	_label("F", T * Vector3(0, 1.45, 0.009), yaw, 0.004, Color(1, 1, 1), 40, 0.14, 0.14)
+
+func _exit_sign(p: Vector3, yaw: float) -> void:
+	var T := Transform3D(Basis(Vector3.UP, yaw), p)
+	g.box_t("green_sign", T, Vector3(0.42, 0.16, 0.03))
+	_label("NOTAUSGANG  ➜", T * Vector3(0, 0, 0.018), yaw, 0.0025, Color(1, 1, 1), 40, 0.38, 0.1)
+
+func _notice_board(c: Vector3, yaw: float, w: float) -> void:
+	var T := Transform3D(Basis(Vector3.UP, yaw), c)
+	g.box_t("frame", T, Vector3(w, 0.9, 0.03))
+	g.box_t("cork", T * Transform3D(Basis(), Vector3(0, 0, 0.017)), Vector3(w - 0.06, 0.84, 0.004))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(c.x * 100.0)
+	for k in 6:
+		var px := rng.randf_range(-w * 0.38, w * 0.38)
+		var py := rng.randf_range(-0.25, 0.25)
+		g.box_t(["paper", "paper", "fruit_y", "paper", "art_a", "paper"][k], T * Transform3D(Basis(Vector3.FORWARD, rng.randf_range(-0.06, 0.06)), Vector3(px, py, 0.021)), Vector3(0.21, 0.29, 0.002))
+		g.sphere("red", T * Vector3(px, py + 0.13, 0.025), 0.008)
+
+func _wall_clock(c: Vector3, yaw: float) -> void:
+	var T := Transform3D(Basis(Vector3.UP, yaw), c)
+	g.cyl_t("desk_white", T * Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3(0, 0, 0.02)), 0.17, 0.035, 24)
+	g.cyl_t("black", T * Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3(0, 0, 0.012)), 0.18, 0.025, 24)
+	g.box_t("black", T * Transform3D(Basis(Vector3.FORWARD, 0.5), Vector3(0.02, 0.04, 0.04)), Vector3(0.012, 0.1, 0.004))
+	g.box_t("black", T * Transform3D(Basis(Vector3.FORWARD, -1.8), Vector3(0.05, 0.0, 0.04)), Vector3(0.01, 0.13, 0.004))
+
+func _armchair(p: Vector3, yaw: float) -> void:
+	var T := Transform3D(Basis(Vector3.UP, yaw), p)
+	g.box_t("leather", T * Transform3D(Basis(), Vector3(0.02, 0.3, 0)), Vector3(0.62, 0.26, 0.66))
+	g.box_t("leather", T * Transform3D(Basis(Vector3.FORWARD, deg_to_rad(-8)), Vector3(-0.26, 0.62, 0)), Vector3(0.14, 0.52, 0.66))
+	for s in [-1.0, 1.0]:
+		g.box_t("leather", T * Transform3D(Basis(), Vector3(0.02, 0.5, s * 0.3)), Vector3(0.62, 0.2, 0.08))
+	for sx in [-1.0, 1.0]:
+		for sz in [-1.0, 1.0]:
+			g.box_t("metal", T * Transform3D(Basis(), Vector3(sx * 0.25, 0.08, sz * 0.27)), Vector3(0.03, 0.16, 0.03))
+	g.collider(T * Vector3(0, 0.4, 0), Vector3(0.66, 0.8, 0.7), yaw)
+
+## Jalousien vor einer Fensterreihe (teilweise heruntergelassen).
+func _blinds(z: float, x0: float, x1: float, step: float, w: float, sill: float, h: float) -> void:
+	var x := x0 + step * 0.5
+	while x < x1:
+		var top := sill + h
+		var low := top - h * 0.45
+		g.block("blind", Vector3(x - w * 0.5, top - 0.06, z + 0.13), Vector3(x + w * 0.5, top, z + 0.2))
+		var y := top - 0.1
+		while y > low:
+			g.block("blind", Vector3(x - w * 0.5 + 0.02, y, z + 0.15), Vector3(x + w * 0.5 - 0.02, y + 0.012, z + 0.19))
+			y -= 0.045
+		x += step
 
 # ------------------------------------------------------------------ Räume nördlich des Flurs
 func _room_walls(x0: float, x1: float, windows := true) -> void:
@@ -613,9 +785,21 @@ func _room_walls(x0: float, x1: float, windows := true) -> void:
 		var ops := _window_row(z0, x0, x1, 2.4, 1.6, 0.9, 1.5)
 		g.wall("plaster", Vector2(x0, z0), Vector2(x1, z0), ROOM_H, 0.25, ops)
 		_glass_panes(Vector2(x0, z0), Vector2(x1, z0), ops, 0.0)
+		_blinds(z0, x0, x1, 2.4, 1.6, 0.9, 1.5)
+		# Fensterbänke
+		for o in ops:
+			var cx := x0 + float(o["at"])
+			g.block("desk_white", Vector3(cx - 0.85, 0.88, z0 + 0.12), Vector3(cx + 0.85, 0.91, z0 + 0.3))
 	else:
 		g.wall("plaster", Vector2(x0, z0), Vector2(x1, z0), ROOM_H, 0.25)
 	_ceiling(Rect2(x0, z0, x1 - x0, 6.4), ROOM_H)
+	var x := x0 + 1.5
+	while x < x1 - 0.5:
+		for z in [-7.4, -4.4]:
+			_panel_light(Vector3(x, ROOM_H, z))
+		x += 2.6
+	_plinth(Vector3(x0 + 0.1, 0, z0 + 0.125), Vector3(x1 - 0.1, 0.07, z0 + 0.14))
+	_plinth(Vector3(x0 + 0.1, 0, -2.69), Vector3(x1 - 0.1, 0.07, -2.675))
 
 func _break_room() -> void:
 	var x0 := 0.0
@@ -625,7 +809,7 @@ func _break_room() -> void:
 	g.wall("plaster", Vector2(x1, -9), Vector2(x1, -2.6), ROOM_H, 0.15)
 	# Akzentwand hinter dem Sofa, Leuchten
 	g.block("accent_green", Vector3(9.9, 0.0, -8.9), Vector3(9.92, ROOM_H, -2.7))
-	g.block("plinth", Vector3(0.1, 0, -2.74), Vector3(9.9, 0.07, -2.72))
+	_plinth(Vector3(0.1, 0, -2.74), Vector3(9.9, 0.07, -2.72))
 	# Küchenzeile an der Westwand: Eichenfronten, dunkle Steinplatte, Glasrückwand,
 	# hellgraue Hängeschränke mit Unterbauleuchte, offenes Regal mit Tassen
 	var kx := 0.08
@@ -851,72 +1035,181 @@ func _meeting_room() -> void:
 	_room_walls(x0, x1)
 	_floor("carpet", Rect2(x0, -9, x1 - x0, 6.4))
 	g.wall("plaster", Vector2(x1, -9), Vector2(x1, -2.6), ROOM_H, 0.15)
-	var tc := Vector3(13.0, 0, -5.9)
-	_table(tc, Vector3(1.2, 0.75, 3.4), "desk_top")
+	# Konferenztisch (Eiche) mit Konferenzstühlen, Telefon, Wasser
+	var tc := Vector3(13.0, 0, -5.6)
+	_table(tc, Vector3(1.3, 0.75, 3.2), "oak")
 	var i := 1
-	for dz in [-1.1, 0.0, 1.1]:
-		_lounge_seat("bs%d" % i, "Stuhl im Besprechungsraum", tc + Vector3(-0.95, 0, dz), 0.0)
+	for dz in [-1.0, 0.0, 1.0]:
+		_lounge_seat("bs%d" % i, "Stuhl im Besprechungsraum", tc + Vector3(-1.0, 0, dz), 0.0, true, 0.46, true)
 		i += 1
-		_lounge_seat("bs%d" % i, "Stuhl im Besprechungsraum", tc + Vector3(0.95, 0, dz), PI)
+		_lounge_seat("bs%d" % i, "Stuhl im Besprechungsraum", tc + Vector3(1.0, 0, dz), PI, true, 0.46, true)
 		i += 1
-	g.block("black", Vector3(11.2, 1.0, -8.83), Vector3(14.8, 2.4, -8.78))
-	g.block("wall_display", Vector3(11.3, 1.08, -8.78), Vector3(14.7, 2.32, -8.77))
-	_label("LAGEBESPRECHUNG\nSchichtübergabe 07:00 / 19:00 Uhr", Vector3(13.0, 1.75, -8.76), 0.0, 0.004, Color(0.85, 0.88, 0.92), 48, 3.2, 1.1)
-	g.block("desk_white", Vector3(15.8, 0.9, -7.2), Vector3(15.83, 2.0, -4.4))
-	_label("Whiteboard\n– Übung Großschadenslage\n– Fortbildung Funk\n– Kaffeekasse!", Vector3(15.78, 1.5, -5.8), -PI / 2, 0.0025, Color(0.15, 0.25, 0.6), 40, 2.6, 1.0)
+	g.cyl("dark", tc + Vector3(0, 0.77, 0), 0.14, 0.035, 3)
+	g.cyl("led_green", tc + Vector3(0, 0.79, 0), 0.02, 0.006, 8)
+	for k in 3:
+		g.cyl("water", tc + Vector3(-0.2 + k * 0.2, 0.88, -1.15), 0.035, 0.26, 10)
+		g.cyl("glass", tc + Vector3(-0.3 + k * 0.3, 0.8, 0.9), 0.035, 0.1, 10)
+	g.block("paper", tc + Vector3(-0.5, 0.75, 0.3), tc + Vector3(-0.29, 0.755, 0.6))
+	g.block("paper", tc + Vector3(0.3, 0.75, -0.6), tc + Vector3(0.51, 0.755, -0.3))
+	# Großbildschirm mit Lowboard an der Nordwand
+	g.block("bezel", Vector3(11.6, 1.05, -8.87), Vector3(14.4, 2.65, -8.82))
+	_screen_quad("screen_a", Vector3(13.0, 1.85, -8.815), Vector2(2.74, 1.54), 0.0)
+	g.block("oak", Vector3(11.8, 0.0, -8.86), Vector3(14.2, 0.55, -8.45), true)
+	g.block("cabinet", Vector3(11.8, 0.05, -8.452), Vector3(14.2, 0.5, -8.45))
+	g.block("dark", Vector3(12.8, 0.55, -8.75), Vector3(13.2, 0.62, -8.6))
+	# Whiteboard mit Ablage an der Ostwand
+	g.block("frame", Vector3(15.88, 0.9, -7.3), Vector3(15.92, 2.05, -4.3))
+	g.block("desk_white", Vector3(15.87, 0.93, -7.27), Vector3(15.88, 2.02, -4.33))
+	g.block("frame", Vector3(15.78, 0.88, -7.2), Vector3(15.88, 0.91, -4.4))
+	for k in 3:
+		g.cyl_t(["logo_a", "fruit_r", "black"][k], Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3(15.83, 0.925, -6.5 + k * 0.2)), 0.01, 0.13, 6)
+	_label("Lagebesprechung Schichtwechsel\n– Übergabe offener Einsätze\n– Ausfälle Fahrzeuge / Wachen\n– Übung Großschadenslage Do.", Vector3(15.865, 1.5, -5.8), -PI / 2, 0.0025, Color(0.15, 0.25, 0.6), 40, 2.6, 0.95)
+	# Flipchart, Sideboard mit Thermoskannen, Uhr, Bild, Pflanze
+	var fp := Vector3(15.2, 0, -3.4)
+	for s in [-1.0, 1.0]:
+		g.box_t("metal", Transform3D(Basis(Vector3.FORWARD, s * 0.12), fp + Vector3(s * 0.25, 0.9, 0)), Vector3(0.025, 1.8, 0.025))
+	g.box_t("metal", Transform3D(Basis(Vector3.RIGHT, 0.3), fp + Vector3(0, 0.85, 0.25)), Vector3(0.025, 1.7, 0.025))
+	g.block("paper", fp + Vector3(-0.35, 1.0, -0.03), fp + Vector3(0.35, 1.85, -0.01))
+	g.collider(fp + Vector3(0, 0.9, 0.1), Vector3(0.7, 1.8, 0.4))
+	g.block("oak", Vector3(10.08, 0.0, -7.6), Vector3(10.5, 0.85, -5.2), true)
+	for k in 2:
+		g.cyl("steel", Vector3(10.3, 1.0, -7.2 + k * 0.3), 0.06, 0.3, 12)
+	for k in 6:
+		g.cyl("cup", Vector3(10.25, 0.9, -6.4 + k * 0.17), 0.04, 0.09, 12)
+	_wall_clock(Vector3(10.085, 2.3, -4.0), PI / 2)
+	_picture(Vector3(10.09, 1.6, -3.6), PI / 2, 0.9, 0.6, "art_c")
+	_plant(Vector3(15.4, 0, -8.4), 1.0)
 
 func _toilets() -> void:
-	for room in [[16.0, 19.0, "WC Damen"], [19.0, 22.0, "WC Herren"]]:
+	for room in [[16.0, 19.0, "WC Damen", false], [19.0, 22.0, "WC Herren", true]]:
 		var x0: float = room[0]
 		var x1: float = room[1]
+		var men: bool = room[3]
+		var wx0 := x0 + 0.075
+		var wx1 := x1 - 0.075
 		_room_walls(x0, x1, false)
 		_floor("tiles_floor", Rect2(x0, -9, x1 - x0, 6.4))
 		g.wall("plaster", Vector2(x1, -9), Vector2(x1, -2.6), ROOM_H, 0.15)
-		g.block("tiles_wall", Vector3(x0 + 0.08, 0.0, -8.87), Vector3(x1 - 0.08, 1.6, -8.86))
-		# zwei Kabinen
+		# Wandfliesen bis 2,10 m (Tür zum Flur ausgespart)
+		g.block("tiles_wall", Vector3(wx0, 0, -8.875), Vector3(wx1, 2.1, -8.865))
+		g.block("tiles_wall", Vector3(wx0, 0, -8.875), Vector3(wx0 + 0.01, 2.1, -2.675))
+		g.block("tiles_wall", Vector3(wx1 - 0.01, 0, -8.875), Vector3(wx1, 2.1, -2.675))
+		g.block("tiles_wall", Vector3(wx0, 0, -2.685), Vector3(x0 + 0.95, 2.1, -2.675))
+		g.block("tiles_wall", Vector3(x0 + 2.05, 0, -2.685), Vector3(wx1, 2.1, -2.675))
+		# Kabinen (raumhohe HPL-Trennwände, Türen leicht geöffnet)
+		var cabins := 1 if men else 2
+		var cw := (wx1 - wx0) / 2.0
+		for k in cabins:
+			var cx0 := wx0 + k * cw
+			var cx1 := cx0 + cw
+			var ccx := (cx0 + cx1) * 0.5
+			if k == 0 or not men:
+				g.block("hpl", Vector3(cx1 - 0.015, 0.15, -8.875), Vector3(cx1 + 0.015, 2.05, -7.35), true)
+			g.block("hpl", Vector3(cx0 + 0.02, 0.15, -7.37), Vector3(cx0 + 0.3, 2.05, -7.34), true)
+			g.block("hpl", Vector3(cx1 - 0.2, 0.15, -7.37), Vector3(cx1 - 0.015, 2.05, -7.34), true)
+			var dw := cw - 0.52
+			g.box_t("hpl", Transform3D(Basis(Vector3.UP, 0.5), Vector3(cx0 + 0.3 + cos(0.5) * dw * 0.5, 1.1, -7.355 - sin(0.5) * dw * 0.5)), Vector3(dw, 1.9, 0.025))
+			g.box_t("metal", Transform3D(Basis(Vector3.UP, 0.5), Vector3(cx0 + 0.3 + cos(0.5) * dw * 0.92, 1.0, -7.33 - sin(0.5) * dw * 0.92)), Vector3(0.1, 0.03, 0.03))
+			# Vorwand, wandhängendes WC mit Sitz, Drückerplatte, Papier- und Bürstenhalter
+			g.block("tiles_wall", Vector3(cx0 + 0.03, 0, -8.875), Vector3(cx1 - 0.03, 1.1, -8.68))
+			g.block("ceramic", Vector3(ccx - 0.18, 0.28, -8.68), Vector3(ccx + 0.18, 0.42, -8.35), true)
+			g.sphere("ceramic", Vector3(ccx, 0.36, -8.33), 0.18, Vector3(1.0, 0.45, 0.8))
+			g.cyl("desk_white", Vector3(ccx, 0.43, -8.42), 0.19, 0.025, 20)
+			g.block("desk_white", Vector3(ccx - 0.12, 0.85, -8.68), Vector3(ccx + 0.12, 1.0, -8.67))
+			g.block("metal", Vector3(ccx - 0.05, 0.9, -8.672), Vector3(ccx + 0.05, 0.96, -8.665))
+			g.cyl_t("paper", Transform3D(Basis(Vector3.FORWARD, PI / 2), Vector3(cx1 - 0.08, 0.7, -8.3)), 0.06, 0.1, 12)
+			g.block("metal", Vector3(cx1 - 0.03, 0.75, -8.34), Vector3(cx1 - 0.015, 0.78, -8.26))
+			g.cyl("metal", Vector3(cx0 + 0.15, 0.2, -8.6), 0.05, 0.4, 10)
+		if men:
+			# zwei Urinale mit Schamwand an der Ostwand
+			for k in 2:
+				var uz := -6.7 + k * 0.8
+				g.block("ceramic", Vector3(wx1 - 0.32, 0.5, uz - 0.18), Vector3(wx1 - 0.01, 0.95, uz + 0.18), true)
+				g.sphere("ceramic", Vector3(wx1 - 0.3, 0.6, uz), 0.15, Vector3(0.8, 0.9, 1.0))
+				g.block("desk_white", Vector3(wx1 - 0.012, 1.15, uz - 0.06), Vector3(wx1 - 0.005, 1.25, uz + 0.06))
+			g.block("hpl", Vector3(wx1 - 0.45, 0.5, -6.31), Vector3(wx1 - 0.01, 1.45, -6.29), true)
+		# Waschtisch mit zwei Becken, Spiegel, Spender, Händetrockner
+		var sz0 := -6.3
+		var sz1 := -4.4
+		g.block("ceramic", Vector3(wx0, 0.82, sz0), Vector3(wx0 + 0.52, 0.86, sz1), true)
+		g.block("hpl", Vector3(wx0, 0.7, sz0), Vector3(wx0 + 0.5, 0.82, sz1))
 		for k in 2:
-			var cx0 := x0 + 0.1 + k * 1.4
-			g.block("desk_body", Vector3(cx0 + 1.35, 0.12, -8.9), Vector3(cx0 + 1.38, 2.1, -7.2), true)
-			g.block("ceramic", Vector3(cx0 + 0.45, 0.0, -8.85), Vector3(cx0 + 0.85, 0.42, -8.3), true)
-			g.block("ceramic", Vector3(cx0 + 0.45, 0.42, -8.85), Vector3(cx0 + 0.85, 0.8, -8.7))
-			g.block("desk_body", Vector3(cx0 + 0.05, 0.12, -7.22), Vector3(cx0 + 1.0, 2.1, -7.19), true)
-		# Waschtisch mit Spiegel an der Flurwand
-		var sx := x0 + 2.4
-		g.block("ceramic", Vector3(sx - 0.3, 0.8, -3.2), Vector3(sx + 0.3, 0.88, -2.72), true)
-		g.cyl("metal", Vector3(sx, 1.0, -2.8), 0.015, 0.24, 8)
-		g.block("glass", Vector3(sx - 0.35, 1.15, -2.74), Vector3(sx + 0.35, 1.9, -2.72))
-		_area({"kind": "sink", "text": "Hände waschen"}, Vector3(sx, 1.0, -3.0), Vector3(0.7, 0.6, 0.7))
-		_spot("water", Vector3(sx, 1.0, -3.0))
+			var bz := sz0 + 0.48 + k * 0.95
+			g.block("dark", Vector3(wx0 + 0.12, 0.855, bz - 0.2), Vector3(wx0 + 0.42, 0.862, bz + 0.2))
+			g.cyl("metal", Vector3(wx0 + 0.07, 0.96, bz), 0.016, 0.2, 8)
+			g.box_t("metal", Transform3D(Basis(Vector3.FORWARD, PI / 2), Vector3(wx0 + 0.14, 1.05, bz)), Vector3(0.02, 0.14, 0.02))
+			g.block("desk_white", Vector3(wx0 + 0.005, 1.0, bz + 0.32), Vector3(wx0 + 0.09, 1.2, bz + 0.4))
+		g.block("mirror", Vector3(wx0 + 0.008, 1.1, sz0 + 0.05), Vector3(wx0 + 0.018, 1.95, sz1 - 0.05))
+		g.block("desk_white", Vector3(wx0 + 0.008, 1.2, -4.15), Vector3(wx0 + 0.13, 1.55, -3.75))
+		g.cyl("dark", Vector3(wx0 + 0.2, 0.3, -3.95), 0.16, 0.6, 14)
+		g.block("steel", Vector3(wx1 - 0.15, 1.1, -4.0), Vector3(wx1 - 0.01, 1.4, -3.7))
+		_area({"kind": "sink", "text": "Hände waschen"}, Vector3(wx0 + 0.45, 1.0, (sz0 + sz1) * 0.5), Vector3(0.7, 0.6, 1.8))
+		_spot("water", Vector3(wx0 + 0.3, 1.0, (sz0 + sz1) * 0.5))
 
 func _server_room() -> void:
 	var x0 := 22.0
 	var x1 := 29.0
 	_room_walls(x0, x1, false)
-	_floor("plaster_grey", Rect2(x0, -9, x1 - x0, 6.4))
+	_floor("raised_floor", Rect2(x0, -9, x1 - x0, 6.4))
 	g.wall("plaster", Vector2(x1, -9), Vector2(x1, -2.6), ROOM_H, 0.15)
-	for row in [-7.6, -5.4]:
+	# Zwei Rack-Reihen mit Kaltgang dazwischen (Fronten zueinander)
+	for row in [[-7.6, 1.0], [-5.0, -1.0]]:
+		var rz: float = row[0]
+		var face: float = row[1]
 		for k in 8:
-			var x := x0 + 0.9 + k * 0.66
-			g.block("rack", Vector3(x, 0, row - 0.5), Vector3(x + 0.62, 2.05, row + 0.5), true)
-			g.block("black", Vector3(x + 0.03, 0.1, row + 0.5), Vector3(x + 0.59, 1.95, row + 0.51))
+			var x := x0 + 1.1 + k * 0.64
+			g.block("rack", Vector3(x, 0, rz - 0.5), Vector3(x + 0.62, 2.05, rz + 0.5), true)
+			g.block("rack_door", Vector3(x + 0.02, 0.06, rz + face * 0.5), Vector3(x + 0.6, 2.0, rz + face * 0.505))
+			g.block("rack_door", Vector3(x + 0.02, 0.06, rz - face * 0.5), Vector3(x + 0.6, 2.0, rz - face * 0.505))
+			g.block("metal", Vector3(x + 0.52, 0.95, rz + face * 0.5), Vector3(x + 0.54, 1.15, rz + face * 0.53))
 			for led in 4:
 				var lm := MeshInstance3D.new()
 				var bm := BoxMesh.new()
-				bm.size = Vector3(0.03, 0.015, 0.01)
+				bm.size = Vector3(0.025, 0.012, 0.01)
 				lm.mesh = bm
 				lm.material_override = MATS.get_mat("led_green" if (k + led) % 3 else "led_blue")
-				lm.position = Vector3(x + 0.1 + led * 0.12, 0.4 + ((k * 7 + led * 3) % 10) * 0.15, row + 0.52)
+				lm.position = Vector3(x + 0.08 + led * 0.1, 0.35 + ((k * 7 + led * 3) % 10) * 0.15, rz + face * 0.512)
 				root.add_child(lm)
 				leds.append(lm)
-	g.block("desk_white", Vector3(x0 + 0.15, 0, -3.6), Vector3(x0 + 1.0, 1.9, -2.8), true)
-	g.block("black", Vector3(x0 + 1.0, 1.2, -3.4), Vector3(x0 + 1.01, 1.5, -3.0))
-	_label("Klima", Vector3(x0 + 1.015, 1.6, -3.2), PI / 2, 0.003, Color(0.1, 0.1, 0.1), 40, 0.5, 0.12)
-	g.block("desk_top", Vector3(x1 - 1.6, 0.74, -3.3), Vector3(x1 - 0.2, 0.78, -2.75))
-	g.block("desk_body", Vector3(x1 - 1.58, 0, -3.28), Vector3(x1 - 0.22, 0.74, -2.77), true)
-	g.block("black", Vector3(x1 - 1.2, 0.78, -2.95), Vector3(x1 - 0.6, 1.15, -2.9))
-	_area({"kind": "server", "text": "Einsatzleitsystem – Systemkonsole"}, Vector3(x1 - 0.9, 1.0, -3.1), Vector3(1.4, 0.8, 0.8))
-	_label("ELS-RECHENZENTRUM\nZutritt nur für Systembetreuung", Vector3((x0 + x1) * 0.5, 2.4, -8.86), 0.0, 0.004, Color(0.2, 0.2, 0.22), 48, 5.0, 0.6)
-	_spot("server", Vector3((x0 + x1) * 0.5, 1.2, -6.5))
+		# Kabeltrasse über der Reihe
+		g.block("metal", Vector3(x0 + 1.0, 2.35, rz - 0.22), Vector3(x0 + 6.3, 2.37, rz - 0.2))
+		g.block("metal", Vector3(x0 + 1.0, 2.35, rz + 0.2), Vector3(x0 + 6.3, 2.37, rz + 0.22))
+		var cx := x0 + 1.1
+		while cx < x0 + 6.3:
+			g.block("metal", Vector3(cx, 2.33, rz - 0.22), Vector3(cx + 0.02, 2.35, rz + 0.22))
+			cx += 0.3
+		for c in 4:
+			g.box_t(["logo_a", "fruit_y", "fruit_r", "art_c"][c], Transform3D(Basis(Vector3.FORWARD, PI / 2), Vector3(x0 + 3.65, 2.39, rz - 0.12 + c * 0.08)), Vector3(0.03, 5.2, 0.03))
+		for k in 8:
+			g.cyl("metal", Vector3(x0 + 1.4 + k * 0.64, 2.2, rz), 0.012, 0.3, 6)
+	# Präzisionsklima, USV, Löschanlage
+	g.block("plaster_grey", Vector3(x0 + 0.1, 0, -8.8), Vector3(x0 + 0.95, 2.1, -7.2), true)
+	var gy := 0.3
+	while gy < 1.9:
+		g.block("dark", Vector3(x0 + 0.95, gy, -8.7), Vector3(x0 + 0.96, gy + 0.02, -7.3))
+		gy += 0.08
+	g.block("screen_off", Vector3(x0 + 0.96, 1.75, -8.2), Vector3(x0 + 0.965, 1.85, -8.0))
+	_label("Präzisionsklima", Vector3(x0 + 0.966, 1.95, -8.0), PI / 2, 0.003, Color(0.15, 0.15, 0.15), 36, 0.8, 0.08)
+	for k in 2:
+		var ux := x1 - 1.0 + k * 0.45
+		g.block("plaster_grey", Vector3(ux, 0, -8.85), Vector3(ux + 0.42, 1.9, -8.15), true)
+		g.block("led_green", Vector3(ux + 0.15, 1.5, -8.149), Vector3(ux + 0.27, 1.58, -8.145))
+	_label("USV", Vector3(x1 - 0.55, 1.75, -8.144), 0.0, 0.004, Color(0.15, 0.15, 0.15), 40, 0.3, 0.1)
+	for k in 3:
+		g.cyl("red_ext", Vector3(x1 - 0.35, 0.75, -6.9 + k * 0.32), 0.13, 1.5, 16)
+		g.cyl("metal", Vector3(x1 - 0.35, 1.55, -6.9 + k * 0.32), 0.04, 0.12, 8)
+	g.collider(Vector3(x1 - 0.35, 0.75, -6.58), Vector3(0.3, 1.5, 0.95))
+	_label("LÖSCHANLAGE – bei Alarm Raum verlassen", Vector3(x1 - 0.09, 1.95, -6.6), -PI / 2, 0.0024, Color(0.6, 0.08, 0.05), 36, 1.4, 0.1)
+	# Systemkonsole
+	g.block("desk_top", Vector3(x1 - 1.8, 0.72, -3.4), Vector3(x1 - 0.2, 0.75, -2.75))
+	g.block("cabinet", Vector3(x1 - 1.78, 0, -3.38), Vector3(x1 - 1.4, 0.72, -2.77), true)
+	g.collider(Vector3(x1 - 1.0, 0.37, -3.07), Vector3(1.6, 0.74, 0.65))
+	g.block("bezel", Vector3(x1 - 1.4, 0.8, -2.83), Vector3(x1 - 0.8, 1.17, -2.8))
+	_screen_quad("screen_c", Vector3(x1 - 1.1, 0.985, -2.835), Vector2(0.57, 0.34), PI)
+	g.block("dark", Vector3(x1 - 1.3, 0.75, -3.2), Vector3(x1 - 0.85, 0.77, -3.05))
+	_area({"kind": "server", "text": "Einsatzleitsystem – Systemkonsole"}, Vector3(x1 - 1.0, 1.0, -3.4), Vector3(1.6, 0.8, 0.8))
+	_label("ELS-RECHENZENTRUM\nZutritt nur für Systembetreuung", Vector3((x0 + x1) * 0.5, 2.45, -8.86), 0.0, 0.004, Color(0.2, 0.2, 0.22), 48, 4.0, 0.5)
+	_spot("server", Vector3((x0 + x1) * 0.5, 1.2, -6.3))
 
 func _office() -> void:
 	var x0 := 29.0
@@ -924,16 +1217,50 @@ func _office() -> void:
 	_room_walls(x0, x1)
 	_floor("carpet", Rect2(x0, -9, x1 - x0, 6.4))
 	g.wall("plaster", Vector2(x1, -9.1), Vector2(x1, -2.6), ROOM_H, 0.2)
-	g.block("desk_top", Vector3(31.5, 0.72, -8.2), Vector3(34.3, 0.76, -7.3))
-	g.block("desk_body", Vector3(31.55, 0, -8.15), Vector3(31.9, 0.72, -7.35), true)
-	g.block("desk_body", Vector3(33.9, 0, -8.15), Vector3(34.25, 0.72, -7.35), true)
-	g.collider(Vector3(32.9, 0.37, -7.75), Vector3(2.8, 0.74, 0.9))
-	g.block("black", Vector3(32.2, 0.76, -8.15), Vector3(32.75, 1.1, -8.1))
-	g.block("black", Vector3(33.0, 0.76, -8.15), Vector3(33.55, 1.1, -8.1))
-	_lounge_seat("of1", "Bürostuhl Schichtführung", Vector3(32.9, 0, -6.8), PI / 2)
-	g.block("wood", Vector3(35.4, 0, -8.5), Vector3(35.85, 2.0, -4.5), true)
-	_label("Ordner: Alarm- und Ausrückeordnung · Sonderlagen · Dienstanweisungen", Vector3(35.39, 1.5, -6.5), -PI / 2, 0.0022, Color(0.2, 0.2, 0.2), 40, 3.6, 0.3)
-	_plant(Vector3(29.6, 0, -3.3), 1.0)
+	# Schreibtisch (Eiche) mit zwei Monitoren, Blick zur Tür
+	var dc := Vector3(32.4, 0, -6.5)
+	g.block("oak", dc + Vector3(-1.0, 0.72, -0.4), dc + Vector3(1.0, 0.75, 0.4))
+	g.block("cabinet", dc + Vector3(-0.98, 0, -0.38), dc + Vector3(-0.55, 0.72, 0.38))
+	g.block("cabinet", dc + Vector3(0.96, 0, -0.38), dc + Vector3(0.98, 0.72, 0.38))
+	g.block("cabinet", dc + Vector3(-0.55, 0.2, 0.36), dc + Vector3(0.96, 0.72, 0.38))
+	g.collider(dc + Vector3(0, 0.37, 0), Vector3(2.0, 0.74, 0.8))
+	for k in 2:
+		var mx := dc.x - 0.62 + k * 0.64
+		g.block("bezel", Vector3(mx, 0.85, dc.z + 0.12), Vector3(mx + 0.58, 1.2, dc.z + 0.145))
+		_screen_quad(["screen_b", "screen_a"][k], Vector3(mx + 0.29, 1.025, dc.z + 0.11), Vector2(0.55, 0.32), PI)
+		g.block("metal", Vector3(mx + 0.26, 0.75, dc.z + 0.15), Vector3(mx + 0.32, 0.85, dc.z + 0.2))
+	g.block("dark", dc + Vector3(-0.25, 0.75, -0.25), dc + Vector3(0.2, 0.77, -0.1))
+	g.block("dark", dc + Vector3(0.55, 0.75, -0.2), dc + Vector3(0.78, 0.8, 0.05))
+	g.cyl("black", dc + Vector3(-0.85, 0.76, 0.25), 0.07, 0.02, 12)
+	g.box_t("black", Transform3D(Basis(Vector3.FORWARD, 0.4), dc + Vector3(-0.78, 0.95, 0.25)), Vector3(0.02, 0.4, 0.02))
+	g.cyl("lamp_shade", dc + Vector3(-0.68, 1.12, 0.25), 0.03, 0.09, 12, 0.07)
+	g.block("paper", dc + Vector3(0.3, 0.75, -0.35), dc + Vector3(0.51, 0.757, -0.05))
+	g.cyl("cup", dc + Vector3(0.85, 0.8, -0.3), 0.04, 0.09, 12)
+	_chair(Transform3D(Basis(Vector3.UP, -PI / 2), dc + Vector3(0, 0, -0.85)), true)
+	_lounge_seat("of1", "Bürostuhl Schichtführung", dc + Vector3(0, 0, -0.85), -PI / 2, false, 0.49)
+	g.collider(dc + Vector3(0, 0.5, -0.85), Vector3(0.5, 1.0, 0.5))
+	# Regale mit Ordnern (Alarm- und Ausrückeordnung, Dienstanweisungen)
+	_shelf(Vector3(35.88, 0, -8.7), 2.2, -PI / 2)
+	_shelf(Vector3(35.88, 0, -6.4), 2.2, -PI / 2)
+	_label("Alarm- und Ausrückeordnung · Sonderlagen · Dienstanweisungen", Vector3(35.87, 1.35, -6.4), -PI / 2, 0.0022, Color(0.2, 0.2, 0.2), 40, 3.8, 0.12)
+	# Dienstplan-Whiteboard an der Westwand
+	g.block("frame", Vector3(29.075, 1.0, -7.8), Vector3(29.1, 2.0, -5.6))
+	g.block("desk_white", Vector3(29.1, 1.03, -7.77), Vector3(29.11, 1.97, -5.63))
+	_label("DIENSTPLAN\nFrühdienst 07–19 · Nachtdienst 19–07\nSchichtführung: siehe Aushang", Vector3(29.115, 1.5, -6.7), PI / 2, 0.0025, Color(0.15, 0.2, 0.45), 40, 2.0, 0.85)
+	# Besprechungsecke, Garderobe, Pflanze, Bild
+	g.cyl("oak", Vector3(30.4, 0.72, -4.0), 0.45, 0.035, 24)
+	g.cyl("metal", Vector3(30.4, 0.36, -4.0), 0.04, 0.72, 8)
+	g.collider_cyl(Vector3(30.4, 0.37, -4.0), 0.45, 0.74)
+	_lounge_seat("of2", "Stuhl im Büro", Vector3(29.6, 0, -4.0), 0.0)
+	_lounge_seat("of3", "Stuhl im Büro", Vector3(30.4, 0, -4.85), -PI / 2)
+	var cr := Vector3(34.9, 0, -3.2)
+	g.cyl("metal", cr + Vector3(0, 0.9, 0), 0.02, 1.8, 8)
+	g.cyl("dark", cr + Vector3(0, 0.02, 0), 0.22, 0.04, 14)
+	g.block("trousers", cr + Vector3(-0.15, 0.95, 0.0), cr + Vector3(0.15, 1.7, 0.12))
+	g.collider_cyl(cr + Vector3(0, 0.9, 0), 0.2, 1.8)
+	_picture(Vector3(29.09, 1.6, -3.6), PI / 2, 0.8, 0.6, "art_b")
+	_wall_clock(Vector3(34.2, 2.2, -2.69), PI)
+	_plant(Vector3(29.6, 0, -8.4), 1.1)
 
 func _lockers() -> void:
 	var x0 := -8.0
@@ -941,16 +1268,46 @@ func _lockers() -> void:
 	_room_walls(x0, x1)
 	_floor("tiles_floor", Rect2(x0, -9, x1 - x0, 6.4))
 	g.wall("plaster", Vector2(x1, -9), Vector2(x1, -2.6), ROOM_H, 0.15)
-	for k in 10:
-		var z := -8.4 + k * 0.5
-		g.block("plaster_grey", Vector3(x0 + 0.15, 0, z), Vector3(x0 + 0.65, 1.9, z + 0.48), true)
-		g.block("dark", Vector3(x0 + 0.65, 1.2, z + 0.2), Vector3(x0 + 0.66, 1.3, z + 0.28))
-	g.block("wood", Vector3(-4.6, 0.4, -7.0), Vector3(-4.2, 0.45, -4.6), true)
-	g.block("metal", Vector3(-4.45, 0, -6.9), Vector3(-4.35, 0.4, -6.8))
-	g.block("metal", Vector3(-4.45, 0, -4.8), Vector3(-4.35, 0.4, -4.7))
-	_lounge_seat("uk1", "Bank in der Umkleide", Vector3(-4.4, 0, -6.2), 0.0, false, 0.45)
-	_lounge_seat("uk2", "Bank in der Umkleide", Vector3(-4.4, 0, -5.4), PI, false, 0.45)
-	_area({"kind": "info", "text": "Spind – Dienstkleidung und Funkmeldeempfänger."}, Vector3(x0 + 0.9, 1.0, -6.0), Vector3(0.6, 1.6, 4.0))
+	# Spindreihen (zweitürig, mit Lüftungsschlitzen, Nummern) an West- und Ostwand
+	var nr := 1
+	for side in [[x0 + 0.125, 1.0], [x1 - 0.075, -1.0]]:
+		var wx: float = side[0]
+		var dir: float = side[1]
+		var front := wx + dir * 0.5
+		var zz := -8.7
+		while zz < -4.1:
+			var a := Vector3(minf(wx, front), 0.1, zz)
+			var b := Vector3(maxf(wx, front), 1.9, zz + 0.4)
+			g.block("locker", a, b, true)
+			g.block("plinth", Vector3(a.x, 0, zz), Vector3(b.x, 0.1, zz + 0.4))
+			for tier in 2:
+				var y0 := 0.14 + tier * 0.88
+				var fx := front + dir * 0.005
+				g.block("locker_door", Vector3(minf(front, fx), y0, zz + 0.015), Vector3(maxf(front, fx), y0 + 0.84, zz + 0.385))
+				for sl in 4:
+					var sy := y0 + 0.62 + sl * 0.04
+					g.block("dark", Vector3(minf(front, fx + dir * 0.002), sy, zz + 0.12), Vector3(maxf(front, fx + dir * 0.002), sy + 0.012, zz + 0.28))
+				g.block("metal", Vector3(minf(front, fx + dir * 0.02), y0 + 0.38, zz + 0.31), Vector3(maxf(front, fx + dir * 0.02), y0 + 0.5, zz + 0.34))
+				_label(str(nr), Vector3(fx + dir * 0.004, y0 + 0.75, zz + 0.2), PI / 2 if dir > 0 else -PI / 2, 0.002, Color(0.1, 0.1, 0.1), 36, 0.1, 0.06)
+				nr += 1
+			zz += 0.41
+	# Sitzbänke mit Schuhablage
+	for bx in [-4.4]:
+		g.block("oak", Vector3(bx - 0.2, 0.42, -7.2), Vector3(bx + 0.2, 0.46, -4.4), true)
+		g.block("metal", Vector3(bx - 0.18, 0.1, -7.15), Vector3(bx + 0.18, 0.12, -4.45))
+		for zl in [-7.1, -4.5]:
+			g.block("metal", Vector3(bx - 0.17, 0, zl - 0.02), Vector3(bx + 0.17, 0.42, zl + 0.02))
+	_lounge_seat("uk1", "Bank in der Umkleide", Vector3(-4.4, 0, -6.2), 0.0, false, 0.46)
+	_lounge_seat("uk2", "Bank in der Umkleide", Vector3(-4.4, 0, -5.4), PI, false, 0.46)
+	# Spiegel, Garderobenhaken, Wäschesammler
+	g.block("mirror", Vector3(-3.4, 0.9, -2.69), Vector3(-2.2, 2.0, -2.68))
+	g.block("oak", Vector3(-6.2, 1.62, -2.7), Vector3(-5.0, 1.68, -2.66))
+	for k in 5:
+		g.block("metal", Vector3(-6.1 + k * 0.26, 1.55, -2.74), Vector3(-6.06 + k * 0.26, 1.6, -2.66))
+	g.block("fabric", Vector3(-5.9, 0.95, -2.78), Vector3(-5.6, 1.55, -2.7))
+	g.cyl("fabric_red", Vector3(-1.2, 0.35, -3.3), 0.22, 0.7, 14)
+	g.collider_cyl(Vector3(-1.2, 0.35, -3.3), 0.22, 0.7)
+	_area({"kind": "info", "text": "Spind – Dienstkleidung, Einsatzjacke und Funkmeldeempfänger."}, Vector3(x0 + 0.9, 1.0, -6.4), Vector3(0.6, 1.6, 4.6))
 
 func _outside() -> void:
 	# Umgebung hinter den Fenstern: Vorplatz, Wiese und Nachbargebäude
