@@ -309,7 +309,7 @@ func _desk_row(xc: float, z0: float, count: int, first_nr: int, prefix := "ws", 
 		var txt := (left + "  " + right).strip_edges() if prefix == "ws" else "SF"
 		_label(txt, pp + Vector3(-0.135, 1.92, 0), -PI / 2, 0.003, Color(0.15, 0.15, 0.17), 40, 0.22, 0.14)
 	if title != "":
-		_label(title, Vector3(xc + 1.45, 1.95, z0 + (count - 1) * step * 0.5), -PI / 2, 0.004, Color(0.2, 0.2, 0.22), 40, 2.0, 0.2).double_sided = true
+		_label(title, Vector3(xc + 1.45, 1.95, z0 + (count - 1) * step * 0.5), -PI / 2, 0.004, Color(0.2, 0.2, 0.22), 40, 2.0, 0.2)
 
 func _chair(T: Transform3D, swivel: bool) -> void:
 	if swivel:
@@ -421,9 +421,9 @@ func _hall() -> void:
 	# Logo der Leitstelle an der Westwand (fiktiv)
 	var lz := 10.0
 	for i in 3:
-		var bt := Transform3D(Basis(Vector3.RIGHT, deg_to_rad(-24)), Vector3(0.13, 3.95, lz - 1.15 + i * 0.3))
+		var bt := Transform3D(Basis(Vector3.RIGHT, deg_to_rad(-24)), Vector3(0.13, 3.95, lz + 1.75 - i * 0.3))
 		g.box_t(["logo_a", "logo_b", "logo_c"][i], bt, Vector3(0.04, 1.05, 0.13))
-	_label("Leitstelle\nBavaria", Vector3(0.14, 3.95, lz + 0.55), PI / 2, 0.012, Color(0.86, 0.87, 0.88), 64, 2.6, 1.25).horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_label("Leitstelle\nBavaria", Vector3(0.14, 3.95, lz - 0.2), PI / 2, 0.012, Color(0.86, 0.87, 0.88), 64, 2.4, 1.25).horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	# Runder Besprechungstisch unter der Galerie
 	g.cyl("desk_top", Vector3(18, 0.74, 15.9), 0.62, 0.04, 28)
 	g.cyl("metal", Vector3(18, 0.37, 15.9), 0.05, 0.72, 10)

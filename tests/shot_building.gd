@@ -6,6 +6,7 @@ var f := 0
 var main
 var b
 var views := [
+	["b_warmup", Vector3(33.5, 4.7, 12.8), PI / 2 - 0.32, -0.36],
 	["b_overview", Vector3(33.5, 4.7, 12.8), PI / 2 - 0.32, -0.36],
 	["b_wall", Vector3(19.0, 1.65, 8.0), -PI / 2 + 0.05, 0.06],
 	["b_desk", Vector3(6.4, 1.65, 4.9), -PI / 2 + 0.3, -0.32],
@@ -50,6 +51,7 @@ func _process(_d):
 			b.mode = "walk"
 			b.body.position = Vector3(6.8, 0.05, 3.4)
 			b.yaw = -PI / 2
+			b.pending_seat = "ws1"
 			Presence.request_seat("ws1")
 	if b != null and b.has_meta("sat") and b.mode == "desk" and not b.has_meta("desk_shot"):
 		b.set_meta("desk_shot", true)
