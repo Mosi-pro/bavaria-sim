@@ -25,6 +25,39 @@ static func get_mat(name: String) -> Material:
 			_tri(m, tex("ceiling"), 0.42)
 			m.albedo_color = Color(0.97, 0.95, 0.91)
 			m.roughness = 0.95
+		"oak":
+			_tri(m, tex("oak"), 1.4)
+			m.roughness = 0.45
+		"parquet":
+			_tri(m, tex("parquet"), 0.6)
+			m.roughness = 0.4
+		"kitchen_front":
+			m.albedo_color = Color(0.86, 0.87, 0.86)
+			m.roughness = 0.2
+		"accent_green":
+			m.albedo_color = Color(0.45, 0.55, 0.45)
+			m.roughness = 0.9
+		"warm_light":
+			m.albedo_color = Color(1, 0.95, 0.85)
+			m.emission_enabled = true
+			m.emission = Color(1.0, 0.85, 0.6)
+			m.emission_energy_multiplier = 3.0
+		"lamp_shade":
+			m.albedo_color = Color(0.12, 0.13, 0.14)
+			m.roughness = 0.4
+			m.metallic = 0.6
+			m.cull_mode = BaseMaterial3D.CULL_DISABLED
+		"fruit_o", "fruit_g", "fruit_r", "fruit_y":
+			m.albedo_color = {"fruit_o": Color(0.95, 0.5, 0.1), "fruit_g": Color(0.45, 0.7, 0.2), "fruit_r": Color(0.75, 0.1, 0.08), "fruit_y": Color(0.95, 0.85, 0.3)}[name]
+			m.roughness = 0.4
+		"bread":
+			m.albedo_color = Color(0.72, 0.5, 0.25)
+		"rug":
+			_tri(m, tex("carpet"), 2.0)
+			m.albedo_color = Color(0.85, 0.7, 0.55)
+		"art_a", "art_b", "art_c":
+			m.albedo_color = {"art_a": Color(0.3, 0.45, 0.6), "art_b": Color(0.75, 0.55, 0.35), "art_c": Color(0.5, 0.6, 0.4)}[name]
+			m.roughness = 0.8
 		"tiles_floor":
 			_tri(m, tex("tiles"), 0.5)
 			m.albedo_color = Color(0.72, 0.72, 0.7)
@@ -253,6 +286,28 @@ static func tex(name: String) -> Texture2D:
 					var n := rng.randf() * 0.025
 					if y % 128 < 3:
 						c = Color(0.12, 0.08, 0.05)
+					img.set_pixel(x, y, Color(c.r - n, c.g - n, c.b - n))
+		"oak":
+			# helle Eiche (Küchenfronten, Tisch, Parkett), Maserung längs
+			img = Image.create(256, 256, false, Image.FORMAT_RGB8)
+			for x in 256:
+				var stripe := 0.5 + 0.5 * sin(float(x) * 0.23 + sin(float(x) * 0.031) * 3.0)
+				for y in 256:
+					var g2 := 0.5 + 0.5 * sin(float(x) * 0.9 + sin(float(y) * 0.02 + x * 0.05) * 2.0)
+					var c := Color(0.78, 0.62, 0.42).lerp(Color(0.68, 0.5, 0.32), stripe * 0.5 + g2 * 0.15)
+					var n := rng.randf() * 0.03
+					img.set_pixel(x, y, Color(c.r - n, c.g - n, c.b - n))
+		"parquet":
+			img = Image.create(256, 256, false, Image.FORMAT_RGB8)
+			for x in 256:
+				for y in 256:
+					var plank := int(x / 32)
+					var off := (plank * 97) % 256
+					var g2 := 0.5 + 0.5 * sin(float(x) * 0.7 + sin(float(y + off) * 0.03) * 2.5)
+					var c := Color(0.72, 0.55, 0.36).lerp(Color(0.6, 0.44, 0.27), g2 * 0.4 + float((plank * 7) % 4) * 0.08)
+					if x % 32 == 0 or (y + off) % 256 == 0:
+						c = c.darkened(0.35)
+					var n := rng.randf() * 0.025
 					img.set_pixel(x, y, Color(c.r - n, c.g - n, c.b - n))
 		"carpet":
 			img = Image.create(256, 256, false, Image.FORMAT_RGB8)

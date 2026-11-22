@@ -390,9 +390,15 @@ func _hall() -> void:
 	g.wall("wood", Vector2(0, 0), Vector2(36, 0), HALL_H, 0.2, [{"at": 6, "w": 1.1, "h": 2.2}, {"at": 30, "w": 1.1, "h": 2.2}])
 	g.wall("wood", Vector2(36, -2.7), Vector2(36, 18.1), HALL_H, 0.2)
 	g.wall("wood", Vector2(0, 0), Vector2(0, 18), HALL_H, 0.2, [{"at": 4, "w": 1.9, "h": 2.2}])
-	var ops := _window_row(18, 0, 36, 3.0, 2.5, 0.6, 2.1)
-	g.wall("plaster_grey", Vector2(0, 18), Vector2(36, 18), GALLERY_Y, 0.25, ops)
-	_glass_panes(Vector2(0, 18), Vector2(36, 18), ops, 0.0)
+	# Südwand ohne Fenster nach draußen (Leitstellenraum nur mit Sichtverbindung zur Galerie)
+	g.wall("wood", Vector2(0, 18), Vector2(36, 18), GALLERY_Y, 0.25)
+	g.block("plinth", Vector3(0.1, 0, 17.86), Vector3(35.9, 0.08, 17.88))
+	# Wandschränke und Bildschirm-Infotafeln unter der Galerie
+	for x0 in [3.0, 27.0]:
+		_shelf(Vector3(x0 + 2.4, 0, 17.87), 2.4, PI)
+	for xi in [8.0, 12.0, 24.0, 28.0]:
+		g.block("bezel", Vector3(xi - 0.9, 1.35, 17.8), Vector3(xi + 0.9, 2.4, 17.86))
+		_screen_quad(["screen_a", "screen_b", "screen_c", "screen_a"][[8.0, 12.0, 24.0, 28.0].find(xi)], Vector3(xi, 1.875, 17.795), Vector2(1.72, 0.97), PI)
 	_door("hall_n1", "Leitstellenraum", Vector2(0, 0), Vector2(36, 0), 6, 1.1, false, -1.0)
 	_door("hall_n2", "Leitstellenraum", Vector2(0, 0), Vector2(36, 0), 30, 1.1, false, -1.0)
 	_door("hall_w", "Leitstellenraum", Vector2(0, 0), Vector2(0, 18), 4, 1.9, true, 1.0, true)
@@ -446,12 +452,28 @@ func _hall() -> void:
 	_spot("murmur", Vector3(11, 1.5, 7))
 	_spot("murmur", Vector3(25, 1.5, 7))
 
+## Bildschirmfläche (zeigt die Live-Inhalte der Leitstelle).
+func _screen_quad(mat: String, c: Vector3, size: Vector2, yaw: float) -> void:
+	var mi := MeshInstance3D.new()
+	var q := QuadMesh.new()
+	q.size = size
+	mi.mesh = q
+	mi.position = c
+	mi.rotation.y = yaw
+	mi.material_override = MATS.get_mat(mat)
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	root.add_child(mi)
+
 ## Wandregal mit farbigen Ordnern (niedrig, wie an der Großbildwand im Vorbild).
 func _shelf(p: Vector3, w: float, facing := 0.0) -> void:
 	var T := Transform3D(Basis(Vector3.UP, facing), p)
-	g.box_t("cabinet", T * Transform3D(Basis(), Vector3(w * 0.5, 0.5, 0.2)), Vector3(w, 1.0, 0.4))
+	# offenes Regal: Rückwand, Seiten, Böden
+	g.box_t("cabinet", T * Transform3D(Basis(), Vector3(w * 0.5, 0.5, 0.015)), Vector3(w, 1.0, 0.03))
+	for sx in [0.015, w - 0.015]:
+		g.box_t("cabinet", T * Transform3D(Basis(), Vector3(sx, 0.5, 0.2)), Vector3(0.03, 1.0, 0.4))
+	for yy in [0.03, 0.52]:
+		g.box_t("cabinet", T * Transform3D(Basis(), Vector3(w * 0.5, yy, 0.2)), Vector3(w, 0.03, 0.4))
 	g.box_t("desk_top", T * Transform3D(Basis(), Vector3(w * 0.5, 1.015, 0.2)), Vector3(w + 0.02, 0.03, 0.42))
-	g.box_t("dark", T * Transform3D(Basis(), Vector3(w * 0.5, 0.5, 0.401)), Vector3(w - 0.04, 0.012, 0.004))
 	var cols := ["binder_a", "binder_b", "binder_c", "binder_d"]
 	var k := 0
 	for row in [0.08, 0.56]:
@@ -493,7 +515,7 @@ func _gallery() -> void:
 		for k in 2:
 			var mx := xx + 0.45 + k * 0.75
 			g.block("bezel", Vector3(mx, fy + 0.85, 16.3), Vector3(mx + 0.6, fy + 1.22, 16.33))
-			g.block("screen_a" if (xx + k) % 2 == 0 else "screen_b", Vector3(mx + 0.02, fy + 0.87, 16.29), Vector3(mx + 0.58, fy + 1.2, 16.3))
+			_screen_quad("screen_a" if (xx + k) % 2 == 0 else "screen_b", Vector3(mx + 0.3, fy + 1.035, 16.295), Vector2(0.56, 0.33), PI)
 		g.block("chair", Vector3(xx + 0.85, fy + 0.4, 15.0), Vector3(xx + 1.35, fy + 0.5, 15.5))
 		g.block("chair", Vector3(xx + 0.85, fy + 0.5, 14.95), Vector3(xx + 1.35, fy + 1.15, 15.03))
 	for xx in range(2, 35, 4):
@@ -599,35 +621,104 @@ func _break_room() -> void:
 	var x0 := 0.0
 	var x1 := 10.0
 	_room_walls(x0, x1)
-	_floor("tiles_floor", Rect2(x0, -9, x1 - x0, 6.4))
+	_floor("parquet", Rect2(x0, -9, x1 - x0, 6.4))
 	g.wall("plaster", Vector2(x1, -9), Vector2(x1, -2.6), ROOM_H, 0.15)
-	# Küchenzeile an der Westwand (unter dem Fenster bleibt Platz)
+	# Akzentwand hinter dem Sofa, Leuchten
+	g.block("accent_green", Vector3(9.9, 0.0, -8.9), Vector3(9.92, ROOM_H, -2.7))
+	g.block("plinth", Vector3(0.1, 0, -2.74), Vector3(9.9, 0.07, -2.72))
+	# Küchenzeile an der Westwand: Eichenfronten, dunkle Steinplatte, Glasrückwand,
+	# hellgraue Hängeschränke mit Unterbauleuchte, offenes Regal mit Tassen
 	var kx := 0.08
-	g.block("kitchen", Vector3(kx, 0.1, -8.3), Vector3(kx + 0.62, 0.88, -3.3), true)
-	g.block("dark", Vector3(kx + 0.02, 0.0, -8.3), Vector3(kx + 0.58, 0.1, -3.3))
-	g.block("worktop", Vector3(kx, 0.88, -8.32), Vector3(kx + 0.65, 0.92, -3.28))
-	g.block("tiles_wall", Vector3(kx, 0.92, -8.3), Vector3(kx + 0.02, 1.5, -3.3))
-	g.block("kitchen", Vector3(kx, 1.5, -8.3), Vector3(kx + 0.36, 2.2, -3.3))
-	for z in range(-8, -3, 1):
-		g.block("frame", Vector3(kx + 0.62, 0.55, z - 0.2), Vector3(kx + 0.63, 0.57, z + 0.2))
-		g.block("frame", Vector3(kx + 0.36, 1.53, float(z) - 0.2), Vector3(kx + 0.37, 1.55, float(z) + 0.2))
-	# Kaffeevollautomat
-	var cm := Vector3(kx + 0.3, 0.92, -7.8)
-	g.block("black", cm + Vector3(-0.2, 0, -0.18), cm + Vector3(0.18, 0.42, 0.18))
-	g.block("steel", cm + Vector3(0.18, 0.05, -0.12), cm + Vector3(0.19, 0.4, 0.12))
-	g.block("led_blue", cm + Vector3(0.185, 0.3, -0.06), cm + Vector3(0.195, 0.36, 0.06))
+	var z0 := -8.55
+	var z1 := -3.3
+	g.block("plinth", Vector3(kx + 0.04, 0.0, z0), Vector3(kx + 0.56, 0.1, z1))
+	g.block("kitchen", Vector3(kx, 0.1, z0), Vector3(kx + 0.58, 0.88, z1), true)
+	var z := z0
+	var fronts := [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.45]
+	var fi := 0
+	for wv in fronts:
+		var w: float = wv
+		if z + w > z1 + 0.001:
+			w = z1 - z
+		var kind := "door"
+		if absf(z + w * 0.5 - (-5.3)) < 0.31:
+			kind = "oven"
+		elif absf(z + w * 0.5 - (-6.0)) < 0.31:
+			kind = "dishwasher"
+		var zc: float = z + w * 0.5
+		if kind == "oven":
+			g.block("steel", Vector3(kx + 0.58, 0.12, z + 0.003), Vector3(kx + 0.6, 0.86, z + w - 0.003))
+			g.block("black", Vector3(kx + 0.601, 0.2, z + 0.04), Vector3(kx + 0.605, 0.68, z + w - 0.04))
+			g.block("metal", Vector3(kx + 0.61, 0.74, zc - 0.22), Vector3(kx + 0.63, 0.76, zc + 0.22))
+			g.block("dark", Vector3(kx + 0.601, 0.76, zc - 0.2), Vector3(kx + 0.605, 0.83, zc + 0.2))
+		else:
+			g.block("oak", Vector3(kx + 0.58, 0.12, z + 0.003), Vector3(kx + 0.6, 0.86, z + w - 0.003))
+			if kind == "dishwasher":
+				g.block("metal", Vector3(kx + 0.605, 0.78, zc - 0.2), Vector3(kx + 0.615, 0.795, zc + 0.2))
+			else:
+				g.block("oak", Vector3(kx + 0.6, 0.47, z + 0.003), Vector3(kx + 0.601, 0.474, z + w - 0.003))
+				g.block("metal", Vector3(kx + 0.605, 0.78, zc - 0.15), Vector3(kx + 0.615, 0.795, zc + 0.15))
+				g.block("metal", Vector3(kx + 0.605, 0.4, zc - 0.15), Vector3(kx + 0.615, 0.415, zc + 0.15))
+		z += w
+		fi += 1
+	g.block("worktop", Vector3(kx, 0.88, z0 - 0.02), Vector3(kx + 0.64, 0.92, z1 + 0.02))
+	g.block("glass", Vector3(kx, 0.92, z0), Vector3(kx + 0.012, 1.48, z1))
+	g.block("accent_green", Vector3(kx - 0.002, 0.92, z0), Vector3(kx + 0.004, 1.48, z1))
+	# Hängeschränke (mit Lücke für das offene Regal über dem Kaffeeautomaten)
+	var shelf_z0 := -8.55
+	var shelf_z1 := -7.35
+	g.block("kitchen_front", Vector3(kx, 1.5, shelf_z1), Vector3(kx + 0.36, 2.25, z1), true)
+	var uz := shelf_z1
+	while uz < z1 - 0.1:
+		var w2 := minf(0.6, z1 - uz)
+		g.block("kitchen_front", Vector3(kx + 0.36, 1.505, uz + 0.003), Vector3(kx + 0.375, 2.245, uz + w2 - 0.003))
+		g.block("metal", Vector3(kx + 0.375, 1.53, uz + w2 * 0.5 - 0.12), Vector3(kx + 0.385, 1.545, uz + w2 * 0.5 + 0.12))
+		uz += w2
+	g.block("warm_light", Vector3(kx + 0.28, 1.49, shelf_z1 + 0.05), Vector3(kx + 0.32, 1.5, z1 - 0.05))
+	# offenes Regal mit Tassen und Gläsern
+	for sy in [1.55, 1.9]:
+		g.block("oak", Vector3(kx, sy, shelf_z0), Vector3(kx + 0.3, sy + 0.03, shelf_z1))
+		for k in 7:
+			var cz := shelf_z0 + 0.12 + k * 0.16
+			if sy < 1.6:
+				g.cyl(["cup", "fruit_r", "cup", "accent_green", "cup", "cup", "art_a"][k], Vector3(kx + 0.15, sy + 0.08, cz), 0.04, 0.1, 12)
+			else:
+				g.cyl("glass", Vector3(kx + 0.15, sy + 0.09, cz), 0.035, 0.12, 10)
+	# Kaffeevollautomat (Edelstahl, Tassenablage, Bohnenbehälter)
+	var cm := Vector3(kx + 0.3, 0.92, -8.1)
+	g.block("steel", cm + Vector3(-0.22, 0, -0.17), cm + Vector3(0.16, 0.46, 0.17))
+	g.block("black", cm + Vector3(-0.22, 0.46, -0.17), cm + Vector3(0.16, 0.5, 0.17))
+	g.block("black", cm + Vector3(0.16, 0.06, -0.1), cm + Vector3(0.2, 0.24, 0.1))
+	g.block("dark", cm + Vector3(0.12, 0.22, -0.05), cm + Vector3(0.24, 0.26, 0.05))
+	g.block("led_blue", cm + Vector3(0.161, 0.34, -0.08), cm + Vector3(0.165, 0.42, 0.08))
+	g.cyl("cup", cm + Vector3(0.18, 0.11, 0), 0.04, 0.09, 12)
+	g.cyl("glass", cm + Vector3(-0.08, 0.56, 0.05), 0.07, 0.12, 12)
+	g.cyl("coffee", cm + Vector3(-0.08, 0.535, 0.05), 0.065, 0.06, 12)
 	_area({"kind": "coffee"}, cm + Vector3(0.2, 0.25, 0), Vector3(0.6, 0.6, 0.6))
 	_spot("coffee", cm)
-	# Spüle mit Armatur
-	var sk := Vector3(kx + 0.32, 0.92, -6.6)
-	g.block("steel", sk + Vector3(-0.22, -0.01, -0.3), sk + Vector3(0.22, 0.005, 0.3))
-	g.cyl("metal", sk + Vector3(-0.2, 0.15, 0), 0.015, 0.3, 8)
-	g.box_t("metal", Transform3D(Basis(Vector3.FORWARD, PI / 2), sk + Vector3(-0.12, 0.29, 0)), Vector3(0.02, 0.17, 0.02))
+	# Wasserkocher, Toaster, Brett mit Brot
+	g.cyl("steel", Vector3(kx + 0.28, 1.02, -7.55), 0.08, 0.2, 14)
+	g.cyl("black", Vector3(kx + 0.28, 0.925, -7.55), 0.09, 0.01, 14)
+	g.block("art_c", Vector3(kx + 0.18, 0.92, -7.25), Vector3(kx + 0.42, 1.1, -7.05))
+	g.block("oak", Vector3(kx + 0.2, 0.92, -6.95), Vector3(kx + 0.5, 0.94, -6.75))
+	g.sphere("bread", Vector3(kx + 0.35, 0.97, -6.85), 0.07, Vector3(1.5, 0.7, 1.0))
+	# Spüle mit Bogenarmatur und Abtropfgitter
+	var sk := Vector3(kx + 0.32, 0.92, -6.25)
+	g.block("steel", sk + Vector3(-0.22, -0.005, -0.22), sk + Vector3(0.2, 0.006, 0.22))
+	g.block("dark", sk + Vector3(-0.18, 0.0, -0.18), sk + Vector3(0.16, 0.007, 0.18))
+	g.cyl("metal", sk + Vector3(-0.2, 0.16, 0), 0.016, 0.32, 10)
+	g.box_t("metal", Transform3D(Basis(Vector3.FORWARD, PI / 2), sk + Vector3(-0.1, 0.32, 0)), Vector3(0.022, 0.21, 0.022))
+	g.cyl("metal", sk + Vector3(0.0, 0.28, 0), 0.014, 0.08, 8)
+	g.block("metal", sk + Vector3(-0.12, 0.006, 0.3), sk + Vector3(0.2, 0.1, 0.55))
+	for k in 3:
+		g.box_t("ceramic", Transform3D(Basis(Vector3.FORWARD, 0.25), sk + Vector3(0.0, 0.14, 0.34 + k * 0.07)), Vector3(0.02, 0.22, 0.2))
 	_area({"kind": "water", "text": "Wasser zapfen"}, sk + Vector3(0.1, 0.2, 0), Vector3(0.6, 0.5, 0.7))
 	_spot("water", sk)
-	# Kochfeld
+	# Kochfeld (Glaskeramik) über dem Backofen
 	var hb := Vector3(kx + 0.32, 0.92, -5.3)
-	g.block("black", hb + Vector3(-0.26, 0, -0.3), hb + Vector3(0.26, 0.01, 0.3))
+	g.block("black", hb + Vector3(-0.26, 0, -0.29), hb + Vector3(0.26, 0.008, 0.29))
+	g.cyl("steel", hb + Vector3(0.05, 0.09, 0.12), 0.1, 0.16, 16)
+	g.cyl("black", hb + Vector3(0.05, 0.175, 0.12), 0.105, 0.012, 16)
 	var plates := Node3D.new()
 	root.add_child(plates)
 	for dx in [-0.12, 0.12]:
@@ -639,18 +730,33 @@ func _break_room() -> void:
 			cmesh.height = 0.004
 			cmesh.radial_segments = 20
 			hp.mesh = cmesh
-			hp.position = hb + Vector3(dx, 0.012, dz)
+			hp.position = hb + Vector3(dx, 0.011, dz)
 			hp.material_override = MATS.get_mat("dark")
 			plates.add_child(hp)
 			hotplates.append(hp)
 	_area({"kind": "stove", "id": "stove"}, hb + Vector3(0.1, 0.2, 0), Vector3(0.6, 0.4, 0.7))
+	# Messerblock, Gewürze, Küchenrolle
+	g.block("oak", Vector3(kx + 0.08, 0.92, -4.85), Vector3(kx + 0.2, 1.15, -4.73))
+	for k in 5:
+		g.cyl(["fruit_r", "fruit_y", "fruit_g", "fruit_o", "fruit_r"][k], Vector3(kx + 0.1, 0.97, -4.62 + k * 0.06), 0.022, 0.09, 8)
+	g.box_t("ceramic", Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3(kx + 0.12, 1.42, -4.45)), Vector3(0.12, 0.25, 0.12))
 	# Mikrowelle
-	var mw := Vector3(kx + 0.3, 0.92, -4.1)
+	var mw := Vector3(kx + 0.3, 0.92, -4.0)
 	g.block("steel", mw + Vector3(-0.2, 0, -0.27), mw + Vector3(0.18, 0.3, 0.27))
 	g.block("black", mw + Vector3(0.18, 0.04, -0.24), mw + Vector3(0.19, 0.26, 0.12))
 	g.block("led_green", mw + Vector3(0.185, 0.2, 0.15), mw + Vector3(0.195, 0.24, 0.24))
 	_area({"kind": "microwave"}, mw + Vector3(0.2, 0.15, 0), Vector3(0.6, 0.5, 0.7))
 	_spot("microwave", mw)
+	# Obstschale und Kräutertopf
+	var fb := Vector3(kx + 0.33, 0.92, -3.55)
+	g.cyl("ceramic", fb + Vector3(0, 0.03, 0), 0.13, 0.06, 18, 0.07)
+	for k in 6:
+		var a := TAU * k / 6.0
+		g.sphere(["fruit_o", "fruit_g", "fruit_r", "fruit_y", "fruit_o", "fruit_g"][k], fb + Vector3(cos(a) * 0.06, 0.09 + (k % 2) * 0.03, sin(a) * 0.06), 0.04)
+	g.cyl("pot", Vector3(kx + 0.3, 1.66, -3.55), 0.06, 0.12, 12)
+	g.sphere("plant", Vector3(kx + 0.3, 1.78, -3.55), 0.1, Vector3(1, 0.8, 1))
+	_label("KAFFEEKASSE\n0,50 € pro Tasse", Vector3(kx + 0.015, 1.2, -7.55), PI / 2, 0.003, Color(0.15, 0.15, 0.15), 40, 0.4, 0.14)
+	g.block("desk_white", Vector3(kx + 0.008, 1.11, -7.78), Vector3(kx + 0.012, 1.29, -7.32))
 	# Kühlschrank (Tür über den Türmechanismus)
 	var fx := 9.2
 	g.block("steel", Vector3(fx - 0.33, 0, -8.85), Vector3(fx + 0.33, 1.85, -8.22), true)
@@ -695,9 +801,18 @@ func _break_room() -> void:
 	g.cyl("water", wd + Vector3(0, 1.28, 0), 0.14, 0.45, 16)
 	g.block("led_blue", wd + Vector3(-0.05, 0.85, 0.17), wd + Vector3(0.05, 0.9, 0.18))
 	_area({"kind": "water", "text": "Wasser zapfen (Wasserspender)"}, wd + Vector3(0, 0.9, 0.3), Vector3(0.6, 0.8, 0.5))
-	# Esstisch mit sechs Stühlen
+	# Esstisch (Eiche) mit sechs Stühlen und drei Pendelleuchten
 	var tc := Vector3(4.6, 0, -6.0)
-	_table(tc, Vector3(2.4, 0.75, 1.0), "desk_top")
+	_table(tc, Vector3(2.4, 0.75, 1.0), "oak")
+	for dx in [-0.8, 0.0, 0.8]:
+		var lp := tc + Vector3(dx, 0, 0)
+		g.cyl("black", lp + Vector3(0, (ROOM_H + 1.75) * 0.5, 0), 0.006, ROOM_H - 1.75, 6)
+		g.cyl("lamp_shade", lp + Vector3(0, 1.66, 0), 0.04, 0.18, 18, 0.2)
+		g.cyl("warm_light", lp + Vector3(0, 1.575, 0), 0.17, 0.01, 18)
+	g.cyl("glass", tc + Vector3(0, 0.84, 0), 0.05, 0.18, 12)
+	g.sphere("plant", tc + Vector3(0, 0.98, 0), 0.09, Vector3(1, 1.3, 1))
+	for k in 3:
+		g.cyl("cup", tc + Vector3(-0.7 + k * 0.6, 0.8, -0.25 + (k % 2) * 0.5), 0.04, 0.09, 12)
 	var i := 1
 	for dx in [-0.75, 0.0, 0.75]:
 		_lounge_seat("pr%d" % i, "Stuhl im Pausenraum", tc + Vector3(dx, 0, -0.85), -PI / 2)
@@ -713,10 +828,21 @@ func _break_room() -> void:
 	_lounge_seat("so2", "Sofa", Vector3(9.55, 0, -5.0), PI, false, 0.42)
 	g.block("desk_top", Vector3(8.2, 0.38, -6.2), Vector3(8.8, 0.42, -5.2))
 	g.block("metal", Vector3(8.45, 0, -5.75), Vector3(8.55, 0.38, -5.65))
+	# Teppich vor dem Sofa, Bilder, Wanduhr
+	g.block("rug", Vector3(7.6, 0.0, -7.0), Vector3(9.1, 0.012, -4.4))
+	for pic in [[Vector3(9.89, 1.55, -6.6), "art_a"], [Vector3(9.89, 1.55, -5.0), "art_b"]]:
+		g.block("black", pic[0] + Vector3(-0.02, -0.38, -0.5), pic[0] + Vector3(0.0, 0.38, 0.5))
+		g.block(pic[1], pic[0] + Vector3(-0.025, -0.33, -0.45), pic[0] + Vector3(-0.02, 0.33, 0.45))
+	g.cyl_t("desk_white", Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3(3.0, 2.25, -2.69)), 0.17, 0.04, 24)
+	g.cyl_t("black", Transform3D(Basis(Vector3.RIGHT, PI / 2), Vector3(3.0, 2.25, -2.7)), 0.18, 0.03, 24)
+	g.box_t("black", Transform3D(Basis(Vector3.FORWARD, 0.6), Vector3(3.0, 2.29, -2.715)), Vector3(0.012, 0.11, 0.004))
+	g.box_t("black", Transform3D(Basis(Vector3.FORWARD, -1.9), Vector3(3.04, 2.25, -2.715)), Vector3(0.012, 0.08, 0.004))
+	_plant(Vector3(6.9, 0, -8.5), 1.2)
+	_plant(Vector3(9.4, 0, -3.2), 0.9)
 	# Pinnwand
 	g.block("wood", Vector3(4.0, 1.2, -2.78), Vector3(6.2, 2.1, -2.75))
 	_label("PAUSENRAUM\nDienstplan · Aushänge · Kochplan", Vector3(5.1, 1.65, -2.79), PI, 0.0024, Color(0.2, 0.15, 0.1), 40, 2.0, 0.8)
-	_plant(Vector3(1.0, 0, -3.2), 1.1)
+	_plant(Vector3(0.45, 0, -2.98), 0.9)
 	_spot("murmur_soft", Vector3(4.6, 1.2, -6.0))
 
 func _meeting_room() -> void:
