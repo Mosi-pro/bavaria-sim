@@ -1341,7 +1341,8 @@
       "logistik": 1,
       "rtw": 1,
       "polizei": 2,
-      "luefter": 1
+      "luefter": 1,
+      "schaum": 1
      },
      "work": 5400,
      "patients": [
@@ -2312,7 +2313,15 @@
       1,
       2
      ],
-     "keyword": "ABC 3"
+     "keyword": "ABC 3",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "gefahrgut": 1,
+      "loeschen": 2,
+      "atemschutz": 1,
+      "polizei": 2,
+      "messtechnik": 1
+     }
     },
     {
      "p": 0.2,
@@ -2959,7 +2968,8 @@
     "loeschen": 2,
     "logistik": 1,
     "pumpen": 1,
-    "thw": 1
+    "thw": 1,
+    "sandsack": 1
    },
    "work": 5400,
    "patients": [
@@ -4073,7 +4083,8 @@
       "dekon": 1,
       "rtw": 2,
       "notarzt": 1,
-      "polizei": 2
+      "polizei": 2,
+      "messtechnik": 1
      },
      "work": 3600,
      "patients": [
@@ -5169,6 +5180,98 @@
     "done": "Patient an Rettungsdienst übergeben, Flugzeug freigegeben."
    },
    "gate": 0.8
+  },
+  "baugrube": {
+   "name": "Person in Baugrube verschüttet",
+   "keyword": "THL 3",
+   "kw_ok": [
+    "THL P RETTUNG H/T"
+   ],
+   "weight": 0.15,
+   "cat": "thl",
+   "call": "baugrube",
+   "loc": {
+    "mode": "road",
+    "classes": [
+     3,
+     4,
+     8
+    ],
+    "styles": [
+     "zentrum",
+     "wohn_dicht",
+     "wohn",
+     "gewerbe",
+     "industrie",
+     "vorstadt"
+    ]
+   },
+   "objects": [
+    "Baugrube für einen Kanalanschluss",
+    "Leitungsgraben vor einem Neubau",
+    "Baugrube einer Tiefgarage"
+   ],
+   "reqs": {
+    "fuehrung_fw": 1,
+    "thl": 2,
+    "rw": 1,
+    "bauunfall": 1,
+    "polizei": 1
+   },
+   "work": 4200,
+   "patients": [
+    1,
+    1
+   ],
+   "sev": [
+    2,
+    3
+   ],
+   "gate": 0.7,
+   "variants": [
+    {
+     "p": 0.6,
+     "name": "Bis zur Hüfte verschüttet",
+     "lage": "Bauarbeiter im Graben bis zur Hüfte verschüttet, ansprechbar. Grabenwände instabil – Verbau mit AB Bauunfall erforderlich."
+    },
+    {
+     "p": 0.25,
+     "name": "Vollständig verschüttet",
+     "lage": "Person komplett verschüttet! Freilegen von Hand unter Verbau, Notarzt dringend.",
+     "reqs": {
+      "fuehrung_fw": 1,
+      "thl": 2,
+      "rw": 1,
+      "bauunfall": 1,
+      "notarzt": 1,
+      "polizei": 1
+     },
+     "sev": [
+      3,
+      4
+     ]
+    },
+    {
+     "p": 0.15,
+     "name": "Selbst befreit",
+     "keyword": "RD 1",
+     "lage": "Person konnte sich selbst aus dem Graben befreien, leicht verletzt. Grube wird gesichert.",
+     "reqs": {
+      "loeschen": 1
+     },
+     "work": 600,
+     "gate": 0,
+     "sev": [
+      1,
+      2
+     ]
+    }
+   ],
+   "reports": {
+    "p35": "Grabenwände mit Verbau gesichert.",
+    "p75": "Person freigelegt, Übergabe an Rettungsdienst.",
+    "done": "Einsatzstelle an Bauleitung und Polizei übergeben."
+   }
   }
  }
 }

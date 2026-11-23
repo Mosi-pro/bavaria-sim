@@ -28,6 +28,11 @@ static func module_name(v: Dictionary, m := "") -> String:
 		m = module_of(v)
 	return String(vtype(v).get("modules", {}).get(m, {}).get("name", m))
 
+## Anzeige der Beladung, z. B. »Rollcontainer Atemschutz« oder »AB Bauunfall«.
+static func module_label(v: Dictionary, m := "") -> String:
+	var n := module_name(v, m)
+	return n if vtype(v).get("station_modules", false) else "Rollcontainer " + n
+
 static func caps_with_module(v: Dictionary, m: String) -> Dictionary:
 	var t := vtype(v)
 	var out: Dictionary = t.get("caps", {}).duplicate()
@@ -40,9 +45,38 @@ static func caps_with_module(v: Dictionary, m: String) -> Dictionary:
 static func can_change_module(v: Dictionary) -> bool:
 	return has_modules(v) and v["state"] == "station"
 
+## Wählbare Beladungen. GW-L: alle Rollcontainer. Wechsellader (station_modules):
+## nur die Abrollbehälter, die an der eigenen Wache stehen und nicht schon auf einem
+## anderen Fahrzeug sind.
+static func available_modules(v: Dictionary) -> Array:
+	var t := vtype(v)
+	var mods: Dictionary = t.get("modules", {})
+	if not t.get("station_modules", false):
+		return mods.keys()
+	var out: Array = []
+	if mods.has("leer"):
+		out.append("leer")
+	var st: Dictionary = State.stations.get(v["station"], {})
+	for m in st.get("ab", []):
+		if mods.has(m) and not out.has(m) and not _module_taken(v, m):
+			out.append(m)
+	var cur := module_of(v)
+	if not out.has(cur):
+		out.append(cur)
+	return out
+
+static func _module_taken(v: Dictionary, m: String) -> bool:
+	for vid in State.station_vehicles(v["station"]):
+		if vid == v["id"]:
+			continue
+		var o: Dictionary = State.vehicles[vid]
+		if has_modules(o) and module_of(o) == m:
+			return true
+	return false
+
 ## Setzt die Beladung. Rückgabe: true, wenn tatsächlich umgeladen wurde.
 static func set_module(v: Dictionary, m: String) -> bool:
-	if not can_change_module(v) or not vtype(v)["modules"].has(m) or m == module_of(v):
+	if not can_change_module(v) or not vtype(v)["modules"].has(m) or m == module_of(v) or not available_modules(v).has(m):
 		return false
 	v["module"] = m
 	return true

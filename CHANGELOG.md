@@ -1,5 +1,27 @@
 # Änderungen – LEITSTELLE 112
 
+## Version 1.6.0 (23.11.2026)
+
+**Neu: Wechsellader mit Abrollbehältern (AB)**
+- Wechsellader (WLF) und Wechsellader mit Ladekran (WLF-K) nehmen vor dem Ausrücken einen Abrollbehälter ihrer Wache auf (Auswahl in der Spalte »Rollcontainer / AB«, Aufnehmen dauert 3 Minuten). Der Vorschlag wählt den passenden AB automatisch.
+- Feuerwache 2: WLF mit AB Messtechnik (mobiles Gefahrstofflabor), AB Teleskopstapler, AB Gefahrgutauffangen
+- FF Zentrum Süd (Abteilung Stadtmitte): WLF mit AB Dekon-Z, AB Unterkunft, AB Wasserfördersystem
+- Feuerwache 6: WLF-K mit AB Mulde, AB MANV, AB Schaummittel, AB Bauunfall, AB Taucherübungscontainer, AB Sandsackabfüllanlage
+- Feuerwache 10 (Messe): WLF-K mit AB Mulde und AB Schweres Heben (Begleitung für den Feuerwehrkran)
+- Neuer Einsatz »Person in Baugrube verschüttet« (THL 3) – braucht den AB Bauunfall. Große Gefahrstofflagen fordern das mobile Labor (AB Messtechnik) an, ausgedehnte Industriebrände Schaummittel, Hochwasser die Sandsackabfüllanlage.
+
+**Neu: Sonderfahrzeuge**
+- Vorauslöschfahrzeug »Blitz« (VLF) an Feuerwache 3, 4 und 5 – klein, schnell, für Erstmaßnahmen
+- Zweiter Einsatzleitwagen ELW 2 (Feuerwache 9)
+- Gerätewagen Atemschutz-Logistik (GW-AL), jetzt 4 Fahrzeuge (Feuerwache 2, 6, 9, 10)
+- Gerätewagen Großlüfter (GW-GL) an Feuerwache 4 und 8
+- Hubrettungsbühne 53 m (HRB 53) an Feuerwache 9
+- Sonderlöschmittelfahrzeug (SLF) an Feuerwache 2, 6, 9 und 10
+- Wassernotfahrzeug (WNF) an Feuerwache 5 und 6
+
+**Fehlerbehebungen**
+- **Nachalarmieren bei offener Einsatzakte:** War die Akte schon geöffnet, passierte beim Klick auf »Nachalarmieren« bzw. »Disponieren« nichts. Jetzt kommt die Akte nach vorne, wechselt direkt zur Fahrzeugauswahl und schlägt die fehlenden Kräfte vor. Zusätzlich gibt es im Reiter »Am Einsatz« den Knopf »Weitere Fahrzeuge alarmieren«.
+
 ## Version 1.5.0 (20.11.2026)
 
 **Neu: Mehrspieler mit Gebieten**

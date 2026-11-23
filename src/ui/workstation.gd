@@ -489,10 +489,28 @@ func open_dispatch(id: String) -> void:
 		return
 	left.select_incident(id)
 	map.select("incident", id)
+	# Akte schon offen? Dann nach vorne holen und direkt zur Fahrzeugauswahl wechseln
+	for c in get_children():
+		if c is Window and c.get_meta("key", "") == "inc_" + id:
+			c.move_to_foreground()
+			c.grab_focus()
+			var akte := _find_dispatch(c)
+			if akte != null:
+				akte.focus_alarm()
+			return
 	var w := VBoxContainer.new()
 	w.set_script(WinDispatch)
 	w.setup(id)
 	UI.window(self, "Einsatzakte %s" % State.incidents[id]["nr"], Vector2i(900, 640), w, "inc_" + id)
+
+func _find_dispatch(n: Node) -> Node:
+	if n.get_script() == WinDispatch:
+		return n
+	for ch in n.get_children():
+		var r := _find_dispatch(ch)
+		if r != null:
+			return r
+	return null
 
 func open_vehicle(id: String) -> void:
 	if not State.vehicles.has(id):

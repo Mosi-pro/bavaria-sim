@@ -93,9 +93,9 @@ static func suggest(inc: Dictionary, org_filter: Array = []) -> Dictionary:
 
 ## Rollcontainer, der die Fähigkeit cap liefert ("" = keiner).
 static func _module_for(vid: String, cap: String) -> String:
-	var t: Dictionary = Data.vehicle_types[State.vehicles[vid]["type"]]
-	var mods: Dictionary = t.get("modules", {})
-	for m in mods:
-		if int(mods[m].get("caps", {}).get(cap, 0)) > 0:
+	var v: Dictionary = State.vehicles[vid]
+	var mods: Dictionary = Data.vehicle_types[v["type"]].get("modules", {})
+	for m in VL.available_modules(v):
+		if int(mods.get(m, {}).get("caps", {}).get(cap, 0)) > 0:
 			return m
 	return ""

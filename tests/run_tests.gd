@@ -73,6 +73,9 @@ func test_data() -> void:
 	for t in Data.vehicle_types.values():
 		for c in t["caps"]:
 			caps_provided[c] = true
+		for m in t.get("modules", {}).values():
+			for c in m.get("caps", {}):
+				caps_provided[c] = true
 		check(Data.organisations.has(t["org"]), "Fahrzeugtyp %s hat gültige Organisation" % t["short"]) if not Data.organisations.has(t["org"]) else null
 	var ok := true
 	for k in Data.keywords:
@@ -480,6 +483,26 @@ func test_gwl_modules() -> void:
 	kinc["need"] = {"kran": 1}
 	var ks: Array = Advisor.suggest(kinc)["suggested"]
 	check(ks.size() == 1 and State.vehicles[ks[0]]["type"] == "FWK", "Bei Kranbedarf wird ein Feuerwehrkran vorgeschlagen")
+	# Wechsellader mit Abrollbehältern der eigenen Wache
+	var wlf := ""
+	for vid in State.station_vehicles("fw6"):
+		if State.vehicles[vid]["type"] == "WLFK":
+			wlf = vid
+	check(wlf != "", "WLF-K an Feuerwache 6")
+	if wlf != "":
+		var av: Array = VL.available_modules(State.vehicles[wlf])
+		check(av.has("ab_bauunfall") and av.has("ab_sandsack") and not av.has("ab_messtechnik"), "WLF bietet nur die Abrollbehälter seiner Wache an")
+		var br: Dictionary = Sim.act({"a": "inc_create", "form": {"keyword": "THL 3", "x": -5300.0, "y": -1000.0}}, me)
+		var binc: Dictionary = State.incidents[br["id"]]
+		binc["revealed"] = true
+		binc["need"] = {"bauunfall": 1}
+		var bs: Dictionary = Advisor.suggest(binc)
+		check(bs["suggested"].size() == 1 and String(bs["modules"].get(bs["suggested"][0], "")) == "ab_bauunfall", "Bei Verschüttung wird ein WLF mit AB Bauunfall vorgeschlagen")
+	var cnt := {}
+	for vid in State.vehicles:
+		var tt: String = State.vehicles[vid]["type"]
+		cnt[tt] = int(cnt.get(tt, 0)) + 1
+	check(int(cnt.get("VLF", 0)) == 3 and int(cnt.get("ELW2", 0)) == 2 and int(cnt.get("GWA", 0)) == 4 and int(cnt.get("GWGL", 0)) == 2 and int(cnt.get("HRB53", 0)) == 1 and int(cnt.get("SLF", 0)) == 4 and int(cnt.get("WNF", 0)) == 2, "Sonderfahrzeuge: 3 VLF, 2 ELW 2, 4 GW-AL, 2 GW-GL, 1 HRB 53, 4 SLF, 2 WNF")
 	# Anrufer legt auf: keine Rückfragen mehr
 	var nc := CallGen.make_nuisance_call()
 	var ncall: Dictionary = State.calls[nc]

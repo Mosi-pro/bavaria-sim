@@ -30,7 +30,7 @@ static func add_station_from_def(def: Dictionary) -> void:
 	var p := Vector2(def["pos"][0], def["pos"][1])
 	var id: String = def["id"]
 	_create_station(id, int(def["nr"]), def["name"], def["org"], def["kind"], p, int(def["slots"]), false)
-	for k in ["callsign", "flight", "operator"]:
+	for k in ["callsign", "flight", "operator", "ab"]:
 		if def.has(k):
 			State.stations[id][k] = def[k]
 	for t in def["vehicles"]:

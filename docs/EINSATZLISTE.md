@@ -1,10 +1,10 @@
-# Einsatzliste – LEITSTELLE 112 (Version 1.4.0)
+# Einsatzliste – LEITSTELLE 112 (Version 1.6.0)
 
 Alle Einsätze, die im Spiel vorkommen können. Die Häufigkeit ist der Anteil an allen
 zufälligen Notrufen (gerundet). Jede Einsatzart hat Varianten: Was der Anrufer meldet
 und was die erste Einheit vor Ort vorfindet, kann sich unterscheiden.
 
-**53 Einsatzarten** in 6 Kategorien, 143 Varianten, 53 Stichwörter.
+**54 Einsatzarten** in 6 Kategorien, 146 Varianten, 53 Stichwörter.
 
 ## Brand
 
@@ -43,6 +43,7 @@ _Person eingeklemmt/eingeschlossen, Baum, Wasser, Unwetter_
 | Person unter Straßenbahn | THL P STRAßENBAHN | 0.2 % | Person unter Bahn; Person neben Bahn (→ RD 2) |
 | Wasser im Keller | THL UNWETTER | 0.2 % (häufiger bei Starkregen, Sturm, Regen) | Keller auspumpen; Tiefgarage geflutet |
 | PKW in Gewässer | THL WASSER | 0.1 % | Fahrzeug leer; Person im Fahrzeug (→ RD WASSERNOT 3); Fahrer selbst gerettet |
+| Person in Baugrube verschüttet | THL 3 | 0.1 % | Bis zur Hüfte verschüttet; Vollständig verschüttet; Selbst befreit (→ RD 1) |
 | Baukran umgestürzt | THL 3 | 0.1 % | Kran auf Gebäude gestürzt; Person unter Last eingeklemmt; Kranführer in Höhe (→ THL P RETTUNG H/T) |
 | Straßenbahn entgleist | THL 2 | 0.1 % | Entgleist ohne Verletzte; Fahrgäste verletzt (→ RD 3); Gegen Gebäude geprallt (→ THL 3) |
 | Sturmschaden an Gebäude | THL UNWETTER | sehr selten (häufiger bei Sturm, Starkregen) | Sicherung; Passant verletzt |

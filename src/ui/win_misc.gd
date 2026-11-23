@@ -154,6 +154,9 @@ Dort steht immer, was als Nächstes erledigt werden muss – mit einem Knopf fü
 [b]GW-L mit Rollcontainern[/b]
 Der Gerätewagen Logistik hat einen wechselbaren Rollcontainer: Schlauch/Wasserversorgung, Tragkraftspritze, Hochwasser/Unwetter (Pumpen), Strom & Licht, Atemschutz, Gefahrgut/Ölspur oder Gitterbox/Transport. Beim Alarmieren in der Spalte »Rollcontainer« auswählen – Umladen geht nur auf der Wache und dauert 2 Minuten. Nachts brauchen längere Feuerwehreinsätze Beleuchtung (RW, GKW oder GW-L mit Strom & Licht).
 
+[b]Wechsellader und Abrollbehälter (AB)[/b]
+Wechsellader (WLF, WLF-K mit Ladekran) nehmen vor dem Ausrücken einen Abrollbehälter ihrer Wache auf – Auswahl in der Spalte »Rollcontainer / AB« beim Alarmieren (Aufnehmen dauert 3 Minuten). Feuerwache 2: Messtechnik, Teleskopstapler, Gefahrgutauffangen · FF Zentrum Süd: Dekon-Z, Unterkunft, Wasserfördersystem · Feuerwache 6: Mulde, MANV, Schaummittel, Bauunfall, Taucherübung, Sandsack · Feuerwache 10: Mulde, Schweres Heben. Der Vorschlag wählt den passenden AB automatisch.
+
 [b]Feuerwehrkran (FwK 70)[/b]
 Zwei Kranwagen an Feuerwache 6 und 9 – für umgestürzte LKW, Baukranunfälle, entgleiste Straßenbahnen und Fahrzeuge im Wasser. Sie fahren langsam (max. 80 km/h), also früh alarmieren.
 

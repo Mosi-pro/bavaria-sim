@@ -896,6 +896,18 @@
     "{objekt}, der Mann ist ganz blass und schwitzt."
    ],
    "danger": "no"
+  },
+  "baugrube": {
+   "open": [
+    "Auf der Baustelle ist ein Graben eingestürzt, da liegt einer drin!",
+    "Hilfe, ein Arbeiter ist in der Baugrube verschüttet!",
+    "Bei uns ist die Grabenwand eingebrochen, ein Kollege steckt fest."
+   ],
+   "what": [
+    "{objekt}. Er steckt bis zum Bauch in der Erde.",
+    "{objekt}, man sieht nur noch seinen Arm."
+   ],
+   "danger": "yes"
   }
  },
  "nuisance": [

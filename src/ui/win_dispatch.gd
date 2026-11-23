@@ -75,7 +75,7 @@ func setup(id: String) -> void:
 	sugg_label = UI.label("", UI.TEXT2)
 	sugg_label.clip_text = true
 	sugg_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	disp_tree = UI.tree([{"title": "", "width": 26}, {"title": "ETA", "width": 50}, {"title": "Funkrufname", "width": 150}, {"title": "Typ", "width": 70}, {"title": "Wache"}, {"title": "km", "width": 44}, {"title": "Status", "width": 120}, {"title": "Rollcontainer", "width": 170}])
+	disp_tree = UI.tree([{"title": "", "width": 26}, {"title": "ETA", "width": 50}, {"title": "Funkrufname", "width": 150}, {"title": "Typ", "width": 70}, {"title": "Wache"}, {"title": "km", "width": 44}, {"title": "Status", "width": 120}, {"title": "Rollcontainer / AB", "width": 190}])
 	disp_tree.item_edited.connect(_on_check)
 	disp_tree.item_activated.connect(func():
 		var it := disp_tree.get_selected()
@@ -107,7 +107,8 @@ func setup(id: String) -> void:
 			var it := force_tree.get_selected()
 			if it != null:
 				Game.ui.open_vehicle(it.get_metadata(0))),
-		UI.spacer()])])
+		UI.spacer(),
+		UI.accent(UI.button("Weitere Fahrzeuge alarmieren", focus_alarm, "Zur Fahrzeugauswahl wechseln – Vorschlag enthält die fehlenden Kräfte"), UI.RED)])])
 	fv.name = "Am Einsatz"
 	tabs.add_child(fv)
 	# --- Notizen
@@ -199,6 +200,12 @@ func _refresh() -> void:
 	if sig != _sugg_sig:
 		_fill_disposition(false)
 
+## Von außen aufgerufen (Aufgabenliste »Nachalarmieren«, erneutes Öffnen der Akte):
+## zur Fahrzeugauswahl wechseln und den Vorschlag für die fehlenden Kräfte neu berechnen.
+func focus_alarm() -> void:
+	tabs.current_tab = 0
+	_fill_disposition(true)
+
 func _plain_status(inc: Dictionary) -> String:
 	match inc["status"]:
 		"neu", "in_bearbeitung":
@@ -237,7 +244,7 @@ func _fill_forces() -> void:
 		it.set_text(1, v["callsign"])
 		it.set_text(2, Data.vehicle_types[v["type"]]["short"])
 		if VL.has_modules(v):
-			it.set_tooltip_text(2, "Rollcontainer: " + VL.module_name(v))
+			it.set_tooltip_text(2, VL.module_label(v))
 		var z := ""
 		match v["state"]:
 			"alarmed": z = "alarmiert, rückt aus in %s" % State.dur_str(float(v["timer"]))
@@ -245,7 +252,7 @@ func _fill_forces() -> void:
 			"onscene": z = "an der Einsatzstelle" + ("  –  SPRECHWUNSCH" if v["talk"] != "" else "")
 			_: z = v["state"]
 		if VL.has_modules(v):
-			z += "  ·  Rollcontainer: " + VL.module_name(v)
+			z += "  ·  " + VL.module_label(v)
 		it.set_text(3, z)
 		it.set_text(4, Sim.Personnel.crew_text(v))
 		if vid == sel:
@@ -329,11 +336,14 @@ func _fill_disposition(apply_suggestion: bool) -> void:
 ## Rollcontainer-Auswahl (Dropdown in der Tabelle) für Fahrzeuge mit Wechselbeladung
 func _module_cell(it: TreeItem, v: Dictionary) -> void:
 	var mods: Dictionary = Data.vehicle_types[v["type"]]["modules"]
-	var keys: Array = mods.keys()
+	var keys: Array = VL.available_modules(v)
+	it.set_metadata(7, keys)
 	var cur: String = String(_modules.get(v["id"], VL.module_of(v)))
-	var tip := "Rollcontainer wählen – Umladen auf der Wache dauert %s.\n" % State.dur_str(float(Data.vehicle_types[v["type"]].get("module_change", 120)))
+	var tip := "Beladung wählen – Aufnehmen auf der Wache dauert %s.\n" % State.dur_str(float(Data.vehicle_types[v["type"]].get("module_change", 120)))
 	for m in keys:
 		tip += "\n%s: %s" % [mods[m]["name"], mods[m].get("equip", "")]
+	if Data.vehicle_types[v["type"]].get("station_modules", false):
+		tip += "\n\nNur Abrollbehälter, die an der Wache %s stehen." % State.stations[v["station"]]["name"]
 	if VL.can_change_module(v):
 		var names: Array = []
 		for m in keys:
@@ -356,7 +366,7 @@ func _on_check() -> void:
 		return
 	var vid: String = it.get_metadata(0)
 	if disp_tree.get_edited_column() == 7 and State.vehicles.has(vid):
-		var keys: Array = Data.vehicle_types[State.vehicles[vid]["type"]].get("modules", {}).keys()
+		var keys: Array = it.get_metadata(7) if it.get_metadata(7) is Array else []
 		var i := int(it.get_range(7))
 		if i >= 0 and i < keys.size():
 			_modules[vid] = keys[i]

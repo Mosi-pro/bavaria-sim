@@ -144,7 +144,7 @@ static func alarm(inc: Dictionary, vehicle_ids: Array, by: String, modules: Dict
 		if changed:
 			v["timer"] = float(v["timer"]) + float(VL.vtype(v).get("module_change", 120))
 		if err == "" and VL.has_modules(v):
-			loaded.append("%s mit Rollcontainer %s%s" % [v["callsign"], VL.module_name(v), " (wird umgeladen)" if changed else ""])
+			loaded.append("%s mit %s%s" % [v["callsign"], VL.module_label(v), " (wird aufgenommen)" if changed else ""])
 		if err == "":
 			ok.append(v["callsign"])
 		else:

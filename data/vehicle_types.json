@@ -58,7 +58,11 @@
   "licht": "Beleuchtung / Stromerzeuger",
   "kran": "Feuerwehrkran",
   "treppe": "Flugzeug-Treppenfahrzeug",
-  "luefter": "Hochleistungslüfter"
+  "luefter": "Hochleistungslüfter",
+  "bauunfall": "Bauunfall-Ausrüstung (Verbau, Abstützung)",
+  "messtechnik": "Mobiles Gefahrstofflabor (Messtechnik)",
+  "sandsack": "Sandsackabfüllanlage",
+  "schaum": "Schaummittel / Sonderlöschmittel"
  },
  "types": {
   "KDOW": {
@@ -417,8 +421,8 @@
    ]
   },
   "GWA": {
-   "short": "GW-A",
-   "name": "Gerätewagen Atemschutz",
+   "short": "GW-AL",
+   "name": "Gerätewagen Atemschutz-Logistik",
    "org": "fw",
    "kenn": "53",
    "speed": 100,
@@ -1362,6 +1366,360 @@
    "equip": [
     "Großlüfter mit Wassernebel",
     "Entrauchung von Hallen und Tiefgaragen"
+   ]
+  },
+  "WLF": {
+   "short": "WLF",
+   "name": "Wechselladerfahrzeug",
+   "org": "fw",
+   "kenn": "66",
+   "speed": 90,
+   "crew": 1,
+   "min": 1,
+   "quals": {
+    "MA": 1
+   },
+   "caps": {},
+   "price": 320000,
+   "equip": [
+    "Abrollbehälter-System",
+    "Aufnahme eines Abrollbehälters von der Wache"
+   ],
+   "module_default": "leer",
+   "module_change": 180,
+   "station_modules": true,
+   "modules": {
+    "leer": {
+     "name": "ohne Abrollbehälter",
+     "caps": {},
+     "equip": "Wechsellader ohne Behälter"
+    },
+    "ab_bauunfall": {
+     "name": "AB Bauunfall",
+     "caps": {
+      "bauunfall": 1
+     },
+     "equip": "Schacht- und Grubenrettung, Deckenstützen, Schalungsmaterial, Leichtbauförderbänder, Aluminium-Leichtverbau für Gräben bis ca. 3 m"
+    },
+    "ab_messtechnik": {
+     "name": "AB Messtechnik",
+     "caps": {
+      "messtechnik": 1
+     },
+     "equip": "Mobiles Labor: Gefahrstoffarbeitsplatz, Gaschromatograph, Massenspektrometer, Sicherheitswerkbank"
+    },
+    "ab_sandsack": {
+     "name": "AB Sandsackabfüllanlage",
+     "caps": {
+      "sandsack": 1
+     },
+     "equip": "Leistungsfähige Anlage zum Befüllen von Sandsäcken bei Hochwasser"
+    },
+    "ab_dekon": {
+     "name": "AB Dekon-Z",
+     "caps": {
+      "dekon": 1
+     },
+     "equip": "Dekontamination von Zivilpersonen (Duschzelte, Ersatzkleidung)"
+    },
+    "ab_wfs": {
+     "name": "AB Wasserfördersystem",
+     "caps": {
+      "wasser": 2
+     },
+     "equip": "Große Wassermengen über lange Wegstrecken"
+    },
+    "ab_mulde": {
+     "name": "AB Mulde",
+     "caps": {
+      "logistik": 1
+     },
+     "equip": "Mulde für Schutt, Brandgut und Ladung"
+    },
+    "ab_heben": {
+     "name": "AB Schweres Heben",
+     "caps": {
+      "rw": 1,
+      "thl": 1
+     },
+     "equip": "Anschlagmittel, Hebekissen, Unterbaumaterial – Begleitung für den Feuerwehrkran"
+    },
+    "ab_manv": {
+     "name": "AB MANV",
+     "caps": {
+      "seg": 1
+     },
+     "equip": "Material für einen Behandlungsplatz bei vielen Verletzten"
+    },
+    "ab_schaum": {
+     "name": "AB Schaummittel",
+     "caps": {
+      "schaum": 1
+     },
+     "equip": "Schaummittelvorrat für Großbrände"
+    },
+    "ab_taucher": {
+     "name": "AB Taucherübungscontainer",
+     "caps": {},
+     "equip": "Übungscontainer – im Einsatz ohne Wirkung"
+    },
+    "ab_stapler": {
+     "name": "AB Teleskopstapler",
+     "caps": {
+      "logistik": 1
+     },
+     "equip": "Teleskopstapler zum Be- und Entladen"
+    },
+    "ab_gefahrgut": {
+     "name": "AB Gefahrgutauffangen",
+     "caps": {
+      "gefahrgut": 1
+     },
+     "equip": "Auffangbehälter, Pumpen und Dichtmaterial für auslaufende Gefahrstoffe"
+    },
+    "ab_uk": {
+     "name": "AB Unterkunft",
+     "caps": {
+      "betreuung": 1
+     },
+     "equip": "Unterkunftsmodul für Einsatzkräfte und Betroffene"
+    },
+    "ab_brandvorf": {
+     "name": "AB Brandvorführung",
+     "caps": {},
+     "equip": "Mobiler Übungscontainer (Wohnungsbrand-Simulation) – im Einsatz ohne Wirkung"
+    }
+   }
+  },
+  "WLFK": {
+   "short": "WLF-K",
+   "name": "Wechselladerfahrzeug mit Ladekran",
+   "org": "fw",
+   "kenn": "67",
+   "speed": 90,
+   "crew": 1,
+   "min": 1,
+   "quals": {
+    "MA": 1
+   },
+   "caps": {},
+   "price": 320000,
+   "equip": [
+    "Abrollbehälter-System",
+    "Ladekran",
+    "Palettengabeln, Greifer"
+   ],
+   "module_default": "leer",
+   "module_change": 180,
+   "station_modules": true,
+   "modules": {
+    "leer": {
+     "name": "ohne Abrollbehälter",
+     "caps": {},
+     "equip": "Wechsellader ohne Behälter"
+    },
+    "ab_bauunfall": {
+     "name": "AB Bauunfall",
+     "caps": {
+      "bauunfall": 1
+     },
+     "equip": "Schacht- und Grubenrettung, Deckenstützen, Schalungsmaterial, Leichtbauförderbänder, Aluminium-Leichtverbau für Gräben bis ca. 3 m"
+    },
+    "ab_messtechnik": {
+     "name": "AB Messtechnik",
+     "caps": {
+      "messtechnik": 1
+     },
+     "equip": "Mobiles Labor: Gefahrstoffarbeitsplatz, Gaschromatograph, Massenspektrometer, Sicherheitswerkbank"
+    },
+    "ab_sandsack": {
+     "name": "AB Sandsackabfüllanlage",
+     "caps": {
+      "sandsack": 1
+     },
+     "equip": "Leistungsfähige Anlage zum Befüllen von Sandsäcken bei Hochwasser"
+    },
+    "ab_dekon": {
+     "name": "AB Dekon-Z",
+     "caps": {
+      "dekon": 1
+     },
+     "equip": "Dekontamination von Zivilpersonen (Duschzelte, Ersatzkleidung)"
+    },
+    "ab_wfs": {
+     "name": "AB Wasserfördersystem",
+     "caps": {
+      "wasser": 2
+     },
+     "equip": "Große Wassermengen über lange Wegstrecken"
+    },
+    "ab_mulde": {
+     "name": "AB Mulde",
+     "caps": {
+      "logistik": 1
+     },
+     "equip": "Mulde für Schutt, Brandgut und Ladung"
+    },
+    "ab_heben": {
+     "name": "AB Schweres Heben",
+     "caps": {
+      "rw": 1,
+      "thl": 1
+     },
+     "equip": "Anschlagmittel, Hebekissen, Unterbaumaterial – Begleitung für den Feuerwehrkran"
+    },
+    "ab_manv": {
+     "name": "AB MANV",
+     "caps": {
+      "seg": 1
+     },
+     "equip": "Material für einen Behandlungsplatz bei vielen Verletzten"
+    },
+    "ab_schaum": {
+     "name": "AB Schaummittel",
+     "caps": {
+      "schaum": 1
+     },
+     "equip": "Schaummittelvorrat für Großbrände"
+    },
+    "ab_taucher": {
+     "name": "AB Taucherübungscontainer",
+     "caps": {},
+     "equip": "Übungscontainer – im Einsatz ohne Wirkung"
+    },
+    "ab_stapler": {
+     "name": "AB Teleskopstapler",
+     "caps": {
+      "logistik": 1
+     },
+     "equip": "Teleskopstapler zum Be- und Entladen"
+    },
+    "ab_gefahrgut": {
+     "name": "AB Gefahrgutauffangen",
+     "caps": {
+      "gefahrgut": 1
+     },
+     "equip": "Auffangbehälter, Pumpen und Dichtmaterial für auslaufende Gefahrstoffe"
+    },
+    "ab_uk": {
+     "name": "AB Unterkunft",
+     "caps": {
+      "betreuung": 1
+     },
+     "equip": "Unterkunftsmodul für Einsatzkräfte und Betroffene"
+    },
+    "ab_brandvorf": {
+     "name": "AB Brandvorführung",
+     "caps": {},
+     "equip": "Mobiler Übungscontainer (Wohnungsbrand-Simulation) – im Einsatz ohne Wirkung"
+    }
+   }
+  },
+  "VLF": {
+   "short": "VLF",
+   "name": "Vorauslöschfahrzeug »Blitz«",
+   "org": "fw",
+   "kenn": "20",
+   "speed": 140,
+   "crew": 2,
+   "min": 2,
+   "quals": {
+    "MA": 1
+   },
+   "caps": {
+    "loeschen": 1,
+    "thl_klein": 1
+   },
+   "price": 180000,
+   "equip": [
+    "Kleiner Wassertank",
+    "Schnellangriff",
+    "Erstmaßnahmen bei Bränden"
+   ]
+  },
+  "GWGL": {
+   "short": "GW-GL",
+   "name": "Gerätewagen Großlüfter",
+   "org": "fw",
+   "kenn": "68",
+   "speed": 90,
+   "crew": 2,
+   "min": 2,
+   "quals": {
+    "MA": 1
+   },
+   "caps": {
+    "luefter": 1
+   },
+   "price": 420000,
+   "equip": [
+    "Großlüfter",
+    "Entrauchung von Gebäuden, Tiefgaragen und Tunneln"
+   ]
+  },
+  "HRB53": {
+   "short": "HRB 53",
+   "name": "Hubrettungsbühne 53 m",
+   "org": "fw",
+   "kenn": "33",
+   "speed": 80,
+   "crew": 2,
+   "min": 2,
+   "quals": {
+    "MA": 1
+   },
+   "caps": {
+    "dlk": 1
+   },
+   "price": 1300000,
+   "equip": [
+    "Arbeitshöhe 53 m",
+    "Rettungskorb",
+    "Wenderohr"
+   ]
+  },
+  "SLF": {
+   "short": "SLF",
+   "name": "Sonderlöschmittelfahrzeug",
+   "org": "fw",
+   "kenn": "24",
+   "speed": 100,
+   "crew": 3,
+   "min": 2,
+   "quals": {
+    "GF": 1,
+    "MA": 1
+   },
+   "caps": {
+    "loeschen": 1,
+    "schaum": 1
+   },
+   "price": 650000,
+   "equip": [
+    "Schaummittel",
+    "Löschpulver",
+    "CO₂"
+   ]
+  },
+  "WNF": {
+   "short": "WNF",
+   "name": "Wassernotfahrzeug",
+   "org": "fw",
+   "kenn": "58",
+   "speed": 110,
+   "crew": 3,
+   "min": 2,
+   "quals": {
+    "GF": 1
+   },
+   "caps": {
+    "wasserrettung": 1
+   },
+   "price": 240000,
+   "equip": [
+    "Rettungsboot",
+    "Wathosen",
+    "Eisrettungsschlitten"
    ]
   }
  }
